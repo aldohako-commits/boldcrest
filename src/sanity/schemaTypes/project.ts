@@ -32,6 +32,21 @@ export const project = defineType({
       name: 'industry',
       title: 'Industry',
       type: 'string',
+      options: {
+        list: [
+          { title: 'Construction', value: 'Construction' },
+          { title: 'Fashion', value: 'Fashion' },
+          { title: 'Finance', value: 'Finance' },
+          { title: 'Food & Beverage', value: 'Food & Beverage' },
+          { title: 'Health & Beauty', value: 'Health & Beauty' },
+          { title: 'Home & Appliances', value: 'Home & Appliances' },
+          { title: 'HoReCa', value: 'HoReCa' },
+          { title: 'NGO', value: 'NGO' },
+          { title: 'Our Crests', value: 'Our Crests' },
+          { title: 'Services', value: 'Services' },
+          { title: 'Tech', value: 'Tech' },
+        ],
+      },
     }),
     defineField({
       name: 'year',
@@ -42,8 +57,23 @@ export const project = defineType({
       name: 'services',
       title: 'Services',
       type: 'array',
-      of: [{ type: 'string' }],
-      options: { layout: 'tags' },
+      of: [
+        {
+          type: 'string',
+          options: {
+            list: [
+              { title: 'Ads Management', value: 'Ads Management' },
+              { title: 'Branding', value: 'Branding' },
+              { title: 'Creative Advertising', value: 'Creative Advertising' },
+              { title: 'Packaging', value: 'Packaging' },
+              { title: 'Photography', value: 'Photography' },
+              { title: 'Social Media Management', value: 'Social Media Management' },
+              { title: 'Television Commercials', value: 'Television Commercials' },
+              { title: 'Videography', value: 'Videography' },
+            ],
+          },
+        },
+      ],
     }),
     defineField({
       name: 'overview',
