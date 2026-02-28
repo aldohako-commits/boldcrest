@@ -10,7 +10,9 @@ export const featuredProjectsQuery = defineQuery(
     industry,
     year,
     services,
+    thumbnailType,
     thumbnail,
+    thumbnailVideo,
     "firstMediaType": media[0]._type
   }`
 )
@@ -25,7 +27,9 @@ export const allProjectsQuery = defineQuery(
     industry,
     year,
     services,
+    thumbnailType,
     thumbnail,
+    thumbnailVideo,
     "firstMediaType": media[0]._type
   }`
 )
@@ -41,7 +45,9 @@ export const projectBySlugQuery = defineQuery(
     year,
     services,
     overview,
+    thumbnailType,
     thumbnail,
+    thumbnailVideo,
     order,
     media[] {
       _type,

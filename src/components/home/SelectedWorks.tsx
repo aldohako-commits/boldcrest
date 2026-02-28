@@ -15,9 +15,11 @@ interface Project {
   name: string
   slug: { current: string }
   services?: string[]
+  thumbnailType?: string
   thumbnail?: {
     asset: { _ref: string }
   }
+  thumbnailVideo?: string
 }
 
 interface SelectedWorksProps {
@@ -72,8 +74,16 @@ export default function SelectedWorks({ projects }: SelectedWorksProps) {
                 href={`/work/${project.slug?.current}`}
                 className="group relative block aspect-[4/3] overflow-hidden rounded-[var(--radius-lg)] bg-bg-card"
               >
-                {/* Image */}
-                {project.thumbnail?.asset ? (
+                {/* Thumbnail */}
+                {project.thumbnailType === 'video' && project.thumbnailVideo ? (
+                  <iframe
+                    src={`https://player.vimeo.com/video/${project.thumbnailVideo.match(/vimeo\.com\/(\d+)/)?.[1]}?background=1&autoplay=1&loop=1&muted=1`}
+                    className="pointer-events-none absolute inset-0 h-full w-full scale-[1.2] object-cover transition-transform duration-[0.8s]"
+                    style={{ transitionTimingFunction: 'var(--ease-out-expo)', border: 'none' }}
+                    allow="autoplay; fullscreen"
+                    loading="lazy"
+                  />
+                ) : project.thumbnail?.asset ? (
                   <Image
                     loader={sanityImageLoader}
                     src={urlFor(project.thumbnail)

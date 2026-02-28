@@ -19,9 +19,11 @@ interface Project {
   client?: string
   industry?: string
   services?: string[]
+  thumbnailType?: string
   thumbnail?: {
     asset: { _ref: string }
   }
+  thumbnailVideo?: string
 }
 
 interface WorkPageClientProps {
@@ -148,8 +150,16 @@ export default function WorkPageClient({ projects }: WorkPageClientProps) {
                   href={`/work/${project.slug?.current}`}
                   className="group relative block aspect-[16/9] overflow-hidden rounded-[var(--radius-lg)] bg-bg-card max-md:aspect-[4/3]"
                 >
-                  {/* Image */}
-                  {project.thumbnail?.asset ? (
+                  {/* Thumbnail */}
+                  {project.thumbnailType === 'video' && project.thumbnailVideo ? (
+                    <iframe
+                      src={`https://player.vimeo.com/video/${project.thumbnailVideo.match(/vimeo\.com\/(\d+)/)?.[1]}?background=1&autoplay=1&loop=1&muted=1`}
+                      className="pointer-events-none absolute inset-0 h-full w-full scale-[1.2] object-cover transition-transform duration-[0.8s] group-hover:scale-[1.3]"
+                      style={{ transitionTimingFunction: 'var(--ease-out-expo)', border: 'none' }}
+                      allow="autoplay; fullscreen"
+                      loading="lazy"
+                    />
+                  ) : project.thumbnail?.asset ? (
                     <Image
                       loader={sanityImageLoader}
                       src={urlFor(project.thumbnail)
