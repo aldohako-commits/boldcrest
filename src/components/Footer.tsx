@@ -1,9 +1,9 @@
 'use client'
 
-import { useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion } from 'framer-motion'
 
 const socialLinks = [
   { label: 'Instagram', href: '#' },
@@ -20,35 +20,24 @@ const pageLinks = [
   { label: 'Contact', href: '/contact' },
 ]
 
-function StretchText({ text }: { text: string }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start end', 'end 0.8'],
-  })
-
-  // Text starts tall & narrow, settles to normal proportions
-  const scaleX = useTransform(scrollYProgress, [0, 1], [0.6, 1])
-  const scaleY = useTransform(scrollYProgress, [0, 1], [2.5, 1])
-  const opacity = useTransform(scrollYProgress, [0, 0.3], [0, 1])
-
-  return (
-    <div
-      ref={ref}
-      className="overflow-hidden border-t border-border pb-[var(--space-lg)] pt-[var(--space-xl)]"
-    >
-      <motion.h2
-        style={{ scaleX, scaleY, opacity, transformOrigin: 'center bottom' }}
-        className="cursor-default font-display text-[clamp(3rem,10vw,8rem)] font-bold leading-none text-text-tertiary transition-colors duration-[0.8s] hover:text-text-secondary"
-      >
-        {text}
-      </motion.h2>
-    </div>
-  )
-}
-
 export default function Footer() {
   const pathname = usePathname()
+  const [hasRevealed, setHasRevealed] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (hasRevealed) return
+      const scrollBottom = window.scrollY + window.innerHeight
+      const pageHeight = document.body.scrollHeight
+      if (pageHeight - scrollBottom < 300) {
+        setHasRevealed(true)
+      }
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [hasRevealed])
+
   if (pathname?.startsWith('/studio')) return null
 
   const scrollToTop = () => {
@@ -56,83 +45,118 @@ export default function Footer() {
   }
 
   return (
-    <footer className="border-t border-border bg-bg pb-[var(--space-lg)] pt-[var(--space-2xl)]">
-      <div className="mx-auto max-w-[var(--max-width)] px-[var(--gutter)]">
-        {/* Top 3-column */}
-        <div className="grid grid-cols-1 gap-[var(--space-xl)] pb-[var(--space-2xl)] md:grid-cols-3">
-          {/* Talk to Us */}
-          <div>
-            <h4 className="mb-[var(--space-md)] text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
-              Talk to Us
-            </h4>
-            <a
-              href="mailto:info@boldcrest.com"
-              className="group mb-2 flex items-center gap-[0.4rem] text-[0.95rem] text-text-secondary transition-all duration-200 hover:gap-[0.6rem] hover:text-white"
-            >
-              <span className="text-[0.75rem]">&rarr;</span>
-              info@boldcrest.com
-            </a>
-            <Link
-              href="/contact"
-              className="group flex items-center gap-[0.4rem] text-[0.95rem] text-text-secondary transition-all duration-200 hover:gap-[0.6rem] hover:text-white"
-            >
-              <span className="text-[0.75rem]">&rarr;</span>
-              Start a Project
-            </Link>
-          </div>
+    <>
+      {/* Spacer so the sticky footer has room to reveal */}
+      <div className="h-screen" />
 
-          {/* Follow Us */}
-          <div>
-            <h4 className="mb-[var(--space-md)] text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
-              Follow Us
-            </h4>
-            {socialLinks.map((link) => (
+      <footer className="sticky bottom-0 z-0 flex min-h-screen flex-col bg-accent">
+        {/* Top section with links */}
+        <div className="mx-auto w-full max-w-[var(--max-width)] px-[var(--gutter)] pt-[var(--space-2xl)]">
+          <div className="grid grid-cols-1 gap-[var(--space-xl)] pb-[var(--space-2xl)] md:grid-cols-3">
+            {/* Talk to Us */}
+            <div>
+              <h4 className="mb-[var(--space-md)] text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-white/40">
+                Talk to Us
+              </h4>
               <a
-                key={link.label}
-                href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group mb-2 flex items-center gap-[0.4rem] text-[0.95rem] text-text-secondary transition-all duration-200 hover:gap-[0.6rem] hover:text-white"
+                href="mailto:info@boldcrest.com"
+                className="group mb-2 flex items-center gap-[0.4rem] text-[0.95rem] text-white/70 transition-all duration-200 hover:gap-[0.6rem] hover:text-white"
               >
                 <span className="text-[0.75rem]">&rarr;</span>
-                {link.label}
+                info@boldcrest.com
               </a>
-            ))}
-          </div>
-
-          {/* Navigate */}
-          <div>
-            <h4 className="mb-[var(--space-md)] text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
-              Navigate
-            </h4>
-            {pageLinks.map((link) => (
               <Link
-                key={link.href}
-                href={link.href}
-                className="mb-2 block text-[0.95rem] text-text-secondary transition-colors duration-200 hover:text-white"
+                href="/contact"
+                className="group flex items-center gap-[0.4rem] text-[0.95rem] text-white/70 transition-all duration-200 hover:gap-[0.6rem] hover:text-white"
               >
-                {link.label}
+                <span className="text-[0.75rem]">&rarr;</span>
+                Start a Project
               </Link>
-            ))}
+            </div>
+
+            {/* Follow Us */}
+            <div>
+              <h4 className="mb-[var(--space-md)] text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-white/40">
+                Follow Us
+              </h4>
+              {socialLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group mb-2 flex items-center gap-[0.4rem] text-[0.95rem] text-white/70 transition-all duration-200 hover:gap-[0.6rem] hover:text-white"
+                >
+                  <span className="text-[0.75rem]">&rarr;</span>
+                  {link.label}
+                </a>
+              ))}
+            </div>
+
+            {/* Navigate */}
+            <div>
+              <h4 className="mb-[var(--space-md)] text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-white/40">
+                Navigate
+              </h4>
+              {pageLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="mb-2 block text-[0.95rem] text-white/70 transition-colors duration-200 hover:text-white"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Big Text — Stretch on Scroll */}
-        <StretchText text="Climbing Mountains Together." />
+        {/* Big Text — fills remaining space */}
+        <div className="mt-auto flex items-end overflow-hidden px-[var(--gutter)] pb-[var(--space-lg)]">
+          <div className="mx-auto w-full max-w-[var(--max-width)]">
+            <motion.h2
+              initial={{ scaleY: 4, scaleX: 0.5, opacity: 0 }}
+              animate={
+                hasRevealed
+                  ? { scaleY: 1, scaleX: 1, opacity: 1 }
+                  : { scaleY: 4, scaleX: 0.5, opacity: 0 }
+              }
+              transition={{
+                scaleY: {
+                  type: 'spring',
+                  stiffness: 120,
+                  damping: 12,
+                  mass: 1,
+                },
+                scaleX: {
+                  type: 'spring',
+                  stiffness: 120,
+                  damping: 12,
+                  mass: 1,
+                },
+                opacity: { duration: 0.3 },
+              }}
+              style={{ transformOrigin: 'center bottom' }}
+              className="cursor-default whitespace-nowrap font-display text-[clamp(2rem,5.5vw,5.5rem)] font-bold leading-none text-white"
+            >
+              Climbing Mountains Together.
+            </motion.h2>
 
-        {/* Bottom Bar */}
-        <div className="flex items-center justify-between border-t border-border pt-[var(--space-md)]">
-          <span className="text-[0.8rem] text-text-tertiary">
-            &copy; {new Date().getFullYear()} BoldCrest
-          </span>
-          <button
-            onClick={scrollToTop}
-            className="flex items-center gap-[0.4rem] text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-text-secondary transition-colors duration-200 hover:text-white"
-          >
-            Back to top &uarr;
-          </button>
+            {/* Bottom Bar */}
+            <div className="mt-[var(--space-md)] flex items-center justify-between border-t border-white/20 pt-[var(--space-md)]">
+              <span className="text-[0.8rem] text-white/40">
+                &copy; {new Date().getFullYear()} BoldCrest
+              </span>
+              <button
+                onClick={scrollToTop}
+                className="flex items-center gap-[0.4rem] text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-white/70 transition-colors duration-200 hover:text-white"
+              >
+                Back to top &uarr;
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-    </footer>
+      </footer>
+    </>
   )
 }
