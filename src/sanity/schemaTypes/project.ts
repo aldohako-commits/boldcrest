@@ -1,0 +1,152 @@
+import { defineField, defineType } from 'sanity'
+
+export const project = defineType({
+  name: 'project',
+  title: 'Project',
+  type: 'document',
+  fields: [
+    defineField({
+      name: 'name',
+      title: 'Name',
+      type: 'string',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'slug',
+      title: 'Slug',
+      type: 'slug',
+      options: { source: 'name', maxLength: 96 },
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'tagline',
+      title: 'Tagline',
+      type: 'string',
+    }),
+    defineField({
+      name: 'client',
+      title: 'Client',
+      type: 'string',
+    }),
+    defineField({
+      name: 'industry',
+      title: 'Industry',
+      type: 'string',
+    }),
+    defineField({
+      name: 'year',
+      title: 'Year',
+      type: 'string',
+    }),
+    defineField({
+      name: 'services',
+      title: 'Services',
+      type: 'array',
+      of: [{ type: 'string' }],
+      options: { layout: 'tags' },
+    }),
+    defineField({
+      name: 'overview',
+      title: 'Overview',
+      type: 'array',
+      of: [{ type: 'block' }],
+    }),
+    defineField({
+      name: 'thumbnail',
+      title: 'Thumbnail',
+      type: 'image',
+      options: { hotspot: true },
+    }),
+    defineField({
+      name: 'media',
+      title: 'Media',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          name: 'videoMedia',
+          title: 'Video',
+          fields: [
+            defineField({
+              name: 'type',
+              title: 'Type',
+              type: 'string',
+              initialValue: 'video',
+              readOnly: true,
+              hidden: true,
+            }),
+            defineField({
+              name: 'vimeoUrl',
+              title: 'Vimeo URL',
+              type: 'url',
+              validation: (rule) => rule.required(),
+            }),
+          ],
+          preview: {
+            select: { url: 'vimeoUrl' },
+            prepare({ url }) {
+              return { title: 'Video', subtitle: url }
+            },
+          },
+        },
+        {
+          type: 'object',
+          name: 'imageMedia',
+          title: 'Image',
+          fields: [
+            defineField({
+              name: 'type',
+              title: 'Type',
+              type: 'string',
+              initialValue: 'image',
+              readOnly: true,
+              hidden: true,
+            }),
+            defineField({
+              name: 'image',
+              title: 'Image',
+              type: 'image',
+              options: { hotspot: true },
+              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              name: 'aspectRatio',
+              title: 'Aspect Ratio',
+              type: 'string',
+              options: {
+                list: [
+                  { title: '4:3', value: '4:3' },
+                  { title: '16:9', value: '16:9' },
+                  { title: '21:9', value: '21:9' },
+                ],
+                layout: 'radio',
+              },
+              initialValue: '16:9',
+            }),
+          ],
+          preview: {
+            select: { media: 'image', ratio: 'aspectRatio' },
+            prepare({ media, ratio }) {
+              return { title: 'Image', subtitle: ratio || '16:9', media }
+            },
+          },
+        },
+      ],
+    }),
+    defineField({
+      name: 'order',
+      title: 'Order',
+      type: 'number',
+    }),
+  ],
+  orderings: [
+    {
+      title: 'Manual Order',
+      name: 'orderAsc',
+      by: [{ field: 'order', direction: 'asc' }],
+    },
+  ],
+  preview: {
+    select: { title: 'name', subtitle: 'client', media: 'thumbnail' },
+  },
+})
