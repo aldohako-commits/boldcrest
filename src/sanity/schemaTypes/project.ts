@@ -82,10 +82,30 @@ export const project = defineType({
       of: [{ type: 'block' }],
     }),
     defineField({
+      name: 'thumbnailType',
+      title: 'Thumbnail Type',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Image', value: 'image' },
+          { title: 'Vimeo Video', value: 'video' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'image',
+    }),
+    defineField({
       name: 'thumbnail',
-      title: 'Thumbnail',
+      title: 'Thumbnail Image',
       type: 'image',
       options: { hotspot: true },
+      hidden: ({ parent }) => parent?.thumbnailType === 'video',
+    }),
+    defineField({
+      name: 'thumbnailVideo',
+      title: 'Thumbnail Vimeo URL',
+      type: 'url',
+      hidden: ({ parent }) => parent?.thumbnailType !== 'video',
     }),
     defineField({
       name: 'media',
