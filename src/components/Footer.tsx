@@ -1,7 +1,9 @@
 'use client'
 
+import { useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { motion, useScroll, useTransform } from 'framer-motion'
 
 const socialLinks = [
   { label: 'Instagram', href: '#' },
@@ -17,6 +19,33 @@ const pageLinks = [
   { label: 'People', href: '/people' },
   { label: 'Contact', href: '/contact' },
 ]
+
+function StretchText({ text }: { text: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start end', 'end 0.8'],
+  })
+
+  // Text starts tall & narrow, settles to normal proportions
+  const scaleX = useTransform(scrollYProgress, [0, 1], [0.6, 1])
+  const scaleY = useTransform(scrollYProgress, [0, 1], [2.5, 1])
+  const opacity = useTransform(scrollYProgress, [0, 0.3], [0, 1])
+
+  return (
+    <div
+      ref={ref}
+      className="overflow-hidden border-t border-border pb-[var(--space-lg)] pt-[var(--space-xl)]"
+    >
+      <motion.h2
+        style={{ scaleX, scaleY, opacity, transformOrigin: 'center bottom' }}
+        className="cursor-default font-display text-[clamp(3rem,10vw,8rem)] font-bold leading-none text-text-tertiary transition-colors duration-[0.8s] hover:text-text-secondary"
+      >
+        {text}
+      </motion.h2>
+    </div>
+  )
+}
 
 export default function Footer() {
   const pathname = usePathname()
@@ -88,12 +117,8 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Big Text */}
-        <div className="overflow-hidden border-t border-border pb-[var(--space-lg)] pt-[var(--space-xl)]">
-          <h2 className="cursor-default font-display text-[clamp(3rem,10vw,8rem)] font-bold leading-none text-text-tertiary transition-colors duration-[0.8s] hover:text-text-secondary">
-            Climbing Mountains Together.
-          </h2>
-        </div>
+        {/* Big Text — Stretch on Scroll */}
+        <StretchText text="Climbing Mountains Together." />
 
         {/* Bottom Bar */}
         <div className="flex items-center justify-between border-t border-border pt-[var(--space-md)]">
