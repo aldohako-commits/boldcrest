@@ -118,6 +118,20 @@ ul {
   padding: 0;
 }
 
+/* --- Custom Cursor: Big Red Arrow --- */
+a,
+button,
+select,
+[role="button"],
+label[for],
+input[type="submit"],
+input[type="button"],
+input[type="checkbox"],
+input[type="radio"],
+.cursor-pointer {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M6 2L34 20L6 38V2Z' fill='%23e63228' stroke='%23fff' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") 20 20, pointer;
+}
+
 /* --- Selection --- */
 ::selection {
   background: var(--accent);
