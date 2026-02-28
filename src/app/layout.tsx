@@ -64,8 +64,10 @@ export default function RootLayout({
       <body className={`${inter.variable} ${spaceGrotesk.variable}`}>
         <LenisProvider>
           <LoadingScreen />
-          <Header />
-          {children}
+          <div className="relative z-[1] bg-bg">
+            <Header />
+            {children}
+          </div>
           <Footer />
         </LenisProvider>
       </body>

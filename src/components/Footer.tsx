@@ -25,17 +25,19 @@ export default function Footer() {
   const [hasRevealed, setHasRevealed] = useState(false)
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (hasRevealed) return
+    if (hasRevealed) return
+    let rafId: number
+    const check = () => {
       const scrollBottom = window.scrollY + window.innerHeight
       const pageHeight = document.body.scrollHeight
       if (pageHeight - scrollBottom < 300) {
         setHasRevealed(true)
+        return
       }
+      rafId = requestAnimationFrame(check)
     }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    handleScroll()
-    return () => window.removeEventListener('scroll', handleScroll)
+    rafId = requestAnimationFrame(check)
+    return () => cancelAnimationFrame(rafId)
   }, [hasRevealed])
 
   if (pathname?.startsWith('/studio')) return null
