@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { motion } from 'framer-motion'
 
 const socialLinks = [
   { label: 'Instagram', href: '#' },
@@ -22,23 +21,78 @@ const pageLinks = [
 
 export default function Footer() {
   const pathname = usePathname()
-  const [hasRevealed, setHasRevealed] = useState(false)
-
+  const spacerRef = useRef<HTMLDivElement>(null)
+  const h2Ref = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
-    if (hasRevealed) return
-    let rafId: number
-    const check = () => {
-      const scrollBottom = window.scrollY + window.innerHeight
-      const pageHeight = document.body.scrollHeight
-      if (pageHeight - scrollBottom < 300) {
-        setHasRevealed(true)
-        return
+    // Simple spring state for physics bounce
+    let currentY = 100 // percentage translateY (100 = hidden, 0 = visible)
+    let currentScaleY = 1
+    let targetY = 100
+    let targetScaleY = 1
+    let velocityY = 0
+    let velocityScale = 0
+
+    // Spring params (Wolf Olins spec: tension 500, friction 30, mass 1)
+    const tension = 500
+    const friction = 30
+    const mass = 1
+    const dt = 1 / 60 // timestep
+
+    const tick = () => {
+      const spacer = spacerRef.current
+      const h2 = h2Ref.current
+
+      if (spacer && h2) {
+        const rect = spacer.getBoundingClientRect()
+        const vh = window.innerHeight
+
+        if (rect.top >= vh) {
+          // Spacer not visible — reset instantly
+          targetY = 100
+          targetScaleY = 1
+          currentY = 100
+          currentScaleY = 1
+          velocityY = 0
+          velocityScale = 0
+        } else if (rect.bottom <= 0) {
+          // Spacer fully past — fully revealed
+          targetY = 0
+          targetScaleY = 1
+        } else {
+          // Spacer in view — calculate progress
+          const progress = Math.max(0, Math.min(1, 1 - rect.top / vh))
+          targetY = (1 - progress) * 100
+          targetScaleY = 1 + Math.sin(progress * Math.PI) * 0.5
+        }
+
+        // Spring physics for translateY
+        const springForceY = -tension * (currentY - targetY)
+        const dampingForceY = -friction * velocityY
+        const accelY = (springForceY + dampingForceY) / mass
+        velocityY += accelY * dt
+        currentY += velocityY * dt
+
+        // Spring physics for scaleY
+        const springForceS = -tension * (currentScaleY - targetScaleY)
+        const dampingForceS = -friction * velocityScale
+        const accelS = (springForceS + dampingForceS) / mass
+        velocityScale += accelS * dt
+        currentScaleY += velocityScale * dt
+
+        // Apply transform directly to DOM
+        h2.style.transform = `translateY(${currentY}%) scaleY(${currentScaleY})`
       }
-      rafId = requestAnimationFrame(check)
     }
-    rafId = requestAnimationFrame(check)
+
+    let rafId: number
+    const loop = () => {
+      tick()
+      rafId = requestAnimationFrame(loop)
+    }
+    rafId = requestAnimationFrame(loop)
+
     return () => cancelAnimationFrame(rafId)
-  }, [hasRevealed])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (pathname?.startsWith('/studio')) return null
 
@@ -48,8 +102,8 @@ export default function Footer() {
 
   return (
     <>
-      {/* Spacer so the sticky footer has room to reveal */}
-      <div className="h-screen" />
+      {/* Spacer so the sticky footer has room to reveal — ref tracks scroll progress */}
+      <div ref={spacerRef} className="h-screen" />
 
       <footer className="sticky bottom-0 z-0 flex min-h-screen flex-col bg-accent">
         {/* Top section with links */}
@@ -113,49 +167,32 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Big Text — fills remaining space */}
-        <div className="mt-auto flex items-end overflow-hidden px-[var(--gutter)] pb-[var(--space-lg)]">
-          <div className="mx-auto w-full max-w-[var(--max-width)]">
-            <motion.h2
-              initial={{ scaleY: 4, scaleX: 0.5, opacity: 0 }}
-              animate={
-                hasRevealed
-                  ? { scaleY: 1, scaleX: 1, opacity: 1 }
-                  : { scaleY: 4, scaleX: 0.5, opacity: 0 }
-              }
-              transition={{
-                scaleY: {
-                  type: 'spring',
-                  stiffness: 120,
-                  damping: 12,
-                  mass: 1,
-                },
-                scaleX: {
-                  type: 'spring',
-                  stiffness: 120,
-                  damping: 12,
-                  mass: 1,
-                },
-                opacity: { duration: 0.3 },
+        {/* Animated "Climbing Mountains Together." — anchored at bottom */}
+        <div className="mt-auto w-full overflow-hidden px-[var(--gutter)] pb-[var(--space-lg)]">
+          <div className="mx-auto w-full max-w-[var(--max-width)] overflow-hidden">
+            <h2
+              ref={h2Ref}
+              style={{
+                transformOrigin: 'center bottom',
+                transform: 'translateY(100%) scaleY(1)',
               }}
-              style={{ transformOrigin: 'center bottom' }}
               className="cursor-default whitespace-nowrap font-display text-[clamp(2rem,5.5vw,5.5rem)] font-bold leading-none text-white"
             >
               Climbing Mountains Together.
-            </motion.h2>
+            </h2>
+          </div>
 
-            {/* Bottom Bar */}
-            <div className="mt-[var(--space-md)] flex items-center justify-between border-t border-white/20 pt-[var(--space-md)]">
-              <span className="text-[0.8rem] text-white/40">
-                &copy; {new Date().getFullYear()} BoldCrest
-              </span>
-              <button
-                onClick={scrollToTop}
-                className="flex items-center gap-[0.4rem] text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-white/70 transition-colors duration-200 hover:text-white"
-              >
-                Back to top &uarr;
-              </button>
-            </div>
+          {/* Bottom Bar */}
+          <div className="mx-auto mt-[var(--space-md)] flex w-full max-w-[var(--max-width)] items-center justify-between border-t border-white/20 pt-[var(--space-md)]">
+            <span className="text-[0.8rem] text-white/40">
+              &copy; {new Date().getFullYear()} BoldCrest
+            </span>
+            <button
+              onClick={scrollToTop}
+              className="flex items-center gap-[0.4rem] text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-white/70 transition-colors duration-200 hover:text-white"
+            >
+              Back to top &uarr;
+            </button>
           </div>
         </div>
       </footer>
