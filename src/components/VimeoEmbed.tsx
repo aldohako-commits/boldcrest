@@ -30,7 +30,7 @@ export default function VimeoEmbed({ url, className = '' }: VimeoEmbedProps) {
     <div className={`relative overflow-hidden ${className}`}>
       <iframe
         src={embedUrl}
-        className="pointer-events-none absolute top-1/2 left-1/2 h-[120%] w-[120%] -translate-x-1/2 -translate-y-1/2 border-none"
+        className="pointer-events-none absolute top-1/2 left-1/2 h-[200%] w-[200%] -translate-x-1/2 -translate-y-1/2 border-none"
         allow="autoplay; fullscreen; picture-in-picture"
         allowFullScreen
         loading="lazy"
