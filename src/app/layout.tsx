@@ -1,20 +1,23 @@
 import type { Metadata } from 'next'
-import { Inter, Space_Grotesk } from 'next/font/google'
+import localFont from 'next/font/local'
 import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LenisProvider from '@/components/LenisProvider'
 import LoadingScreen from '@/components/LoadingScreen'
 
-const inter = Inter({
-  variable: '--font-inter',
-  subsets: ['latin'],
-  display: 'swap',
-})
-
-const spaceGrotesk = Space_Grotesk({
-  variable: '--font-space-grotesk',
-  subsets: ['latin'],
+const metropolis = localFont({
+  src: [
+    { path: '../fonts/Metropolis-Light.otf', weight: '300', style: 'normal' },
+    { path: '../fonts/Metropolis-Regular.otf', weight: '400', style: 'normal' },
+    { path: '../fonts/Metropolis-RegularItalic.otf', weight: '400', style: 'italic' },
+    { path: '../fonts/Metropolis-Medium.otf', weight: '500', style: 'normal' },
+    { path: '../fonts/Metropolis-SemiBold.otf', weight: '600', style: 'normal' },
+    { path: '../fonts/Metropolis-Bold.otf', weight: '700', style: 'normal' },
+    { path: '../fonts/Metropolis-ExtraBold.otf', weight: '800', style: 'normal' },
+    { path: '../fonts/Metropolis-Black.otf', weight: '900', style: 'normal' },
+  ],
+  variable: '--font-metropolis',
   display: 'swap',
 })
 
@@ -61,7 +64,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${spaceGrotesk.variable}`}>
+      <body className={metropolis.variable}>
         <LenisProvider>
           <LoadingScreen />
           <div className="relative z-[1] bg-bg">

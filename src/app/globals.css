@@ -59,8 +59,8 @@
   --color-accent-hover: var(--accent-hover);
   --color-accent-glow: var(--accent-glow);
 
-  --font-display: var(--font-space-grotesk);
-  --font-body: var(--font-inter);
+  --font-display: var(--font-metropolis);
+  --font-body: var(--font-metropolis);
 
   --radius-sm: 4px;
   --radius-md: 8px;
