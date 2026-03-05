@@ -78,7 +78,7 @@ export default function SelectedWorks({ projects }: SelectedWorksProps) {
                 {project.thumbnailType === 'video' && project.thumbnailVideo ? (
                   <iframe
                     src={`https://player.vimeo.com/video/${project.thumbnailVideo.match(/vimeo\.com\/(\d+)/)?.[1]}?background=1&autoplay=1&loop=1&muted=1`}
-                    className="pointer-events-none absolute inset-0 h-full w-full scale-[1.2] object-cover transition-transform duration-[0.8s]"
+                    className="pointer-events-none absolute top-1/2 left-1/2 h-[140%] w-[140%] -translate-x-1/2 -translate-y-1/2 transition-transform duration-[0.8s]"
                     style={{ transitionTimingFunction: 'var(--ease-out-expo)', border: 'none' }}
                     allow="autoplay; fullscreen"
                     loading="lazy"
