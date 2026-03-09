@@ -5,6 +5,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LenisProvider from '@/components/LenisProvider'
 import LoadingScreen from '@/components/LoadingScreen'
+import { SanityLive } from '@/sanity/lib/live'
 
 const metropolis = localFont({
   src: [
@@ -73,6 +74,7 @@ export default function RootLayout({
           </div>
           <Footer />
         </LenisProvider>
+        <SanityLive />
       </body>
     </html>
   )
