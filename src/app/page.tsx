@@ -14,6 +14,9 @@ const PartnersMarquee = dynamic(
 const ServicesPreview = dynamic(
   () => import('@/components/home/ServicesPreview')
 )
+const GravityOverlay = dynamic(
+  () => import('@/components/GravityOverlay')
+)
 
 export default async function Home() {
   const [projectsResult, partnersResult, settingsResult] = await Promise.all([
@@ -28,6 +31,7 @@ export default async function Home() {
 
   return (
     <main>
+      <GravityOverlay />
       <Hero subtitle={settings?.heroSubtitle ?? undefined} />
       <SelectedWorks projects={projects} />
       <PartnersMarquee partners={partners} />

@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Gravity, MatterBody } from '@/components/ui/gravity'
 
 const LINE_1 = [
   { text: 'Build', effect: null },
@@ -23,19 +22,6 @@ const LINE_3 = [
 ]
 
 const lines = [LINE_1, LINE_2, LINE_3]
-
-const gravityTags = [
-  { label: 'Branding', x: '10%', y: '5%', angle: -5 },
-  { label: 'Strategy', x: '30%', y: '10%', angle: 8 },
-  { label: 'Motion', x: '55%', y: '5%', angle: -3 },
-  { label: 'Photography', x: '75%', y: '8%', angle: 12 },
-  { label: 'Identity', x: '20%', y: '20%', angle: -8 },
-  { label: 'Digital', x: '45%', y: '15%', angle: 5 },
-  { label: 'Advertising', x: '65%', y: '18%', angle: -10 },
-  { label: 'Social Media', x: '85%', y: '12%', angle: 6 },
-  { label: 'Packaging', x: '15%', y: '25%', angle: -12 },
-  { label: 'Videography', x: '50%', y: '22%', angle: 3 },
-]
 
 // Flatten for stagger delay calculation
 function getWordDelay(lineIndex: number, wordIndex: number): number {
@@ -153,7 +139,7 @@ export default function Hero({ subtitle }: HeroProps) {
     "We don't just navigate the landscape of advertising, we sculpt it. Breathing life into your brand, we embark on a journey together."
 
   return (
-    <section className="relative flex min-h-screen flex-col overflow-hidden px-[var(--gutter)] pt-32 pb-0">
+    <section className="relative flex min-h-screen flex-col justify-center overflow-hidden px-[var(--gutter)] pt-32 pb-16">
       <div className="mx-auto w-full max-w-[var(--max-width)]">
         {/* Mountain BG */}
         <div className="pointer-events-none absolute top-0 right-[-5%] h-full w-[55%] opacity-[0.04]">
@@ -165,73 +151,37 @@ export default function Hero({ subtitle }: HeroProps) {
           </svg>
         </div>
 
-        <div className="mt-[15vh]">
-          <h1 className="font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[1.05] tracking-[-0.03em]">
-            {lines.map((line, lineIndex) => (
-              <span key={lineIndex} className="block overflow-hidden">
-                {line.map((word, wordIndex) => (
-                  <span key={wordIndex}>
-                    {wordIndex > 0 && ' '}
-                    <Word
-                      text={word.text}
-                      effect={word.effect}
-                      delay={getWordDelay(lineIndex, wordIndex)}
-                      isLastInLine={wordIndex === line.length - 1}
-                    />
-                  </span>
-                ))}
-              </span>
-            ))}
-          </h1>
-
-          <motion.p
-            className="mt-[var(--space-xl)] max-w-[500px] text-[clamp(1rem,1.5vw,1.15rem)] leading-[1.7] text-text-secondary"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.8,
-              delay: 1.2,
-              ease: [0.16, 1, 0.3, 1],
-            }}
-          >
-            {subtitle || defaultSubtitle}
-          </motion.p>
-        </div>
-      </div>
-
-      {/* Gravity Physics — Service Tags */}
-      <motion.div
-        className="relative mt-auto w-full flex-1"
-        style={{ minHeight: 'clamp(200px, 30vh, 400px)' }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 1.6, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <Gravity
-          gravity={{ x: 0, y: 1 }}
-          grabCursor={true}
-          addTopWall={false}
-          className="w-full h-full"
-        >
-          {gravityTags.map((tag) => (
-            <MatterBody
-              key={tag.label}
-              matterBodyOptions={{
-                friction: 0.4,
-                restitution: 0.3,
-                density: 0.001,
-              }}
-              x={tag.x}
-              y={tag.y}
-              angle={tag.angle}
-            >
-              <div className="select-none rounded-full border border-border bg-bg-card/80 px-5 py-2.5 font-display text-[clamp(0.75rem,1.2vw,0.95rem)] font-medium tracking-wide text-text-secondary backdrop-blur-sm transition-colors duration-300 hover:border-accent/40 hover:text-white">
-                {tag.label}
-              </div>
-            </MatterBody>
+        <h1 className="font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[1.05] tracking-[-0.03em]">
+          {lines.map((line, lineIndex) => (
+            <span key={lineIndex} className="block overflow-hidden">
+              {line.map((word, wordIndex) => (
+                <span key={wordIndex}>
+                  {wordIndex > 0 && ' '}
+                  <Word
+                    text={word.text}
+                    effect={word.effect}
+                    delay={getWordDelay(lineIndex, wordIndex)}
+                    isLastInLine={wordIndex === line.length - 1}
+                  />
+                </span>
+              ))}
+            </span>
           ))}
-        </Gravity>
-      </motion.div>
+        </h1>
+
+        <motion.p
+          className="mt-[var(--space-xl)] max-w-[500px] text-[clamp(1rem,1.5vw,1.15rem)] leading-[1.7] text-text-secondary"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: 0.8,
+            delay: 1.2,
+            ease: [0.16, 1, 0.3, 1],
+          }}
+        >
+          {subtitle || defaultSubtitle}
+        </motion.p>
+      </div>
     </section>
   )
 }

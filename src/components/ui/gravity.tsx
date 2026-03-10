@@ -14,6 +14,7 @@ import {
 import { debounce } from "lodash"
 import Matter, {
   Bodies,
+  Body,
   Common,
   Engine,
   Events,
@@ -101,6 +102,7 @@ export type GravityRef = {
   start: () => void
   stop: () => void
   reset: () => void
+  applyForceToAll: (force: { x: number; y: number }) => void
 }
 
 const GravityContext = createContext<{
@@ -455,14 +457,26 @@ const Gravity = forwardRef<GravityRef, GravityProps>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
+    const applyForceToAll = useCallback(
+      (force: { x: number; y: number }) => {
+        bodiesMap.current.forEach(({ body }) => {
+          if (!body.isStatic) {
+            Body.applyForce(body, body.position, force)
+          }
+        })
+      },
+      []
+    )
+
     useImperativeHandle(
       ref,
       () => ({
         start: startEngine,
         stop: stopEngine,
         reset,
+        applyForceToAll,
       }),
-      [startEngine, stopEngine, reset]
+      [startEngine, stopEngine, reset, applyForceToAll]
     )
 
     useEffect(() => {
