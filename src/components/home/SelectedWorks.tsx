@@ -28,8 +28,8 @@ interface SelectedWorksProps {
 
 export default function SelectedWorks({ projects }: SelectedWorksProps) {
   return (
-    <section className="px-[var(--gutter)] pt-[var(--space-3xl)] pb-[var(--space-2xl)]">
-      <div className="mx-auto max-w-[var(--max-width)]">
+    <section className="px-[var(--gutter)] pt-[var(--space-lg)] pb-[var(--space-2xl)]">
+      <div className="w-full">
         {/* Section Header */}
         <ScrollReveal>
           <div className="mb-[var(--space-xl)] flex items-center justify-between">

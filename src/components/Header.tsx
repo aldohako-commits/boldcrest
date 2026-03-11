@@ -44,7 +44,7 @@ export default function Header() {
         }}
       >
         <div
-          className="mx-auto flex max-w-[var(--max-width)] items-center justify-between transition-all duration-[0.8s]"
+          className="flex w-full items-center justify-between transition-all duration-[0.8s]"
           style={{
             padding: scrolled ? '0.6rem 1.5rem' : '0.75rem 1rem',
             borderRadius: scrolled ? 'var(--radius-pill)' : '0',

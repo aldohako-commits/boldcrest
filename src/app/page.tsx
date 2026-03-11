@@ -32,7 +32,7 @@ export default async function Home() {
   return (
     <main>
       <GravityOverlay />
-      <Hero subtitle={settings?.heroSubtitle ?? undefined} />
+      <Hero />
       <SelectedWorks projects={projects} />
       <PartnersMarquee partners={partners} />
       <ServicesPreview />
