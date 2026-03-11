@@ -8,8 +8,9 @@ import {
 
 const Hero = dynamic(() => import('@/components/home/Hero'))
 const SelectedWorks = dynamic(() => import('@/components/home/SelectedWorks'))
-const PartnersMarquee = dynamic(
-  () => import('@/components/home/PartnersMarquee')
+const WeDoSection = dynamic(() => import('@/components/home/WeDoSection'))
+const SelectedClients = dynamic(
+  () => import('@/components/home/SelectedClients')
 )
 const ServicesPreview = dynamic(
   () => import('@/components/home/ServicesPreview')
@@ -34,7 +35,8 @@ export default async function Home() {
       <GravityOverlay />
       <Hero />
       <SelectedWorks projects={projects} />
-      <PartnersMarquee partners={partners} />
+      <WeDoSection />
+      <SelectedClients partners={partners} />
       <ServicesPreview />
     </main>
   )

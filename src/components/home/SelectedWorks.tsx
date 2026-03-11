@@ -26,7 +26,84 @@ interface SelectedWorksProps {
   projects: Project[]
 }
 
+function ProjectCard({
+  project,
+  aspect = 'aspect-[4/3]',
+  sizes = '(max-width: 768px) 100vw, 50vw',
+}: {
+  project: Project
+  aspect?: string
+  sizes?: string
+}) {
+  return (
+    <Link
+      href={`/work/${project.slug?.current}`}
+      className={`group relative block ${aspect} overflow-hidden rounded-[var(--radius-lg)] bg-bg-card`}
+    >
+      {/* Thumbnail */}
+      {project.thumbnailType === 'video' && project.thumbnailVideo ? (
+        <iframe
+          src={`https://player.vimeo.com/video/${project.thumbnailVideo.match(/vimeo\.com\/(\d+)/)?.[1]}?background=1&autoplay=1&loop=1&muted=1`}
+          className="pointer-events-none absolute top-1/2 left-1/2 h-[200%] w-[200%] -translate-x-1/2 -translate-y-1/2 transition-transform duration-[0.8s]"
+          style={{
+            transitionTimingFunction: 'var(--ease-out-expo)',
+            border: 'none',
+          }}
+          allow="autoplay; fullscreen"
+          loading="lazy"
+        />
+      ) : project.thumbnail?.asset ? (
+        <Image
+          loader={sanityImageLoader}
+          src={urlFor(project.thumbnail).width(1200).height(800).url()}
+          alt={project.name}
+          fill
+          loading="lazy"
+          className="object-cover transition-transform duration-[0.8s] group-hover:scale-105"
+          style={{ transitionTimingFunction: 'var(--ease-out-expo)' }}
+          sizes={sizes}
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center bg-bg-card">
+          <div className="h-[60px] w-[60px] rounded-full border-2 border-text-tertiary" />
+        </div>
+      )}
+
+      {/* Overlay */}
+      <div
+        className="absolute inset-0 flex flex-col justify-end p-[var(--space-lg)] opacity-0 transition-opacity duration-[0.4s] group-hover:opacity-100"
+        style={{
+          background:
+            'linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.7) 100%)',
+          transitionTimingFunction: 'var(--ease-out-expo)',
+        }}
+      >
+        <h3 className="font-display text-[1.4rem] font-semibold">
+          {project.name}
+        </h3>
+        {project.services?.[0] && (
+          <span className="mt-2 inline-block w-fit rounded-[var(--radius-pill)] bg-white/10 px-3 py-1 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-text-secondary">
+            {project.services[0]}
+          </span>
+        )}
+      </div>
+    </Link>
+  )
+}
+
 export default function SelectedWorks({ projects }: SelectedWorksProps) {
+  // Need at least 1 project to render
+  if (!projects.length) return null
+
+  // Duplicate projects to always have at least 6 for the layout
+  const padded: Project[] = []
+  for (let i = 0; i < 6; i++) {
+    padded.push({
+      ...projects[i % projects.length],
+      _id: projects[i % projects.length]._id + (i >= projects.length ? `-dup-${i}` : ''),
+    })
+  }
+
   return (
     <section className="px-[var(--gutter)] pt-[var(--space-lg)] pb-[var(--space-2xl)]">
       <div className="w-full">
@@ -48,9 +125,7 @@ export default function SelectedWorks({ projects }: SelectedWorksProps) {
                 viewBox="0 0 16 16"
                 fill="none"
                 className="transition-transform duration-[0.4s] group-hover:translate-x-1"
-                style={{
-                  transitionTimingFunction: 'var(--ease-out-expo)',
-                }}
+                style={{ transitionTimingFunction: 'var(--ease-out-expo)' }}
               >
                 <path
                   d="M3 8h10M9 4l4 4-4 4"
@@ -64,72 +139,45 @@ export default function SelectedWorks({ projects }: SelectedWorksProps) {
           </div>
         </ScrollReveal>
 
-        {/* Portfolio Grid */}
-        <ScrollRevealStagger
-          className="grid grid-cols-1 gap-6 md:grid-cols-2"
-          staggerDelay={0.1}
-        >
-          {projects.map((project) => (
-            <ScrollRevealItem key={project._id}>
-              <Link
-                href={`/work/${project.slug?.current}`}
-                className="group relative block aspect-[4/3] overflow-hidden rounded-[var(--radius-lg)] bg-bg-card"
-              >
-                {/* Thumbnail */}
-                {project.thumbnailType === 'video' && project.thumbnailVideo ? (
-                  <iframe
-                    src={`https://player.vimeo.com/video/${project.thumbnailVideo.match(/vimeo\.com\/(\d+)/)?.[1]}?background=1&autoplay=1&loop=1&muted=1`}
-                    className="pointer-events-none absolute top-1/2 left-1/2 h-[200%] w-[200%] -translate-x-1/2 -translate-y-1/2 transition-transform duration-[0.8s]"
-                    style={{ transitionTimingFunction: 'var(--ease-out-expo)', border: 'none' }}
-                    allow="autoplay; fullscreen"
-                    loading="lazy"
-                  />
-                ) : project.thumbnail?.asset ? (
-                  <Image
-                    loader={sanityImageLoader}
-                    src={urlFor(project.thumbnail)
-                      .width(800)
-                      .height(600)
-                      .url()}
-                    alt={project.name}
-                    fill
-                    loading="lazy"
-                    className="object-cover transition-transform duration-[0.8s]"
-                    style={{
-                      transitionTimingFunction: 'var(--ease-out-expo)',
-                    }}
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-bg-card">
-                    <div className="h-[60px] w-[60px] rounded-full border-2 border-text-tertiary" />
-                  </div>
-                )}
+        {/* Alternating Grid: full / 2-col / full / 2-col */}
+        <ScrollRevealStagger className="flex flex-col gap-6" staggerDelay={0.1}>
+          {/* Row 1 — Full width */}
+          <ScrollRevealItem>
+            <ProjectCard
+              project={padded[0]}
+              aspect="aspect-[16/7]"
+              sizes="100vw"
+            />
+          </ScrollRevealItem>
 
-                {/* Hover scale */}
-                <div className="absolute inset-0 transition-transform duration-[0.8s] group-hover:scale-105" style={{ transitionTimingFunction: 'var(--ease-out-expo)' }} />
-
-                {/* Overlay */}
-                <div
-                  className="absolute inset-0 flex flex-col justify-end p-[var(--space-lg)] opacity-0 transition-opacity duration-[0.4s] group-hover:opacity-100"
-                  style={{
-                    background:
-                      'linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.7) 100%)',
-                    transitionTimingFunction: 'var(--ease-out-expo)',
-                  }}
-                >
-                  <h3 className="font-display text-[1.4rem] font-semibold">
-                    {project.name}
-                  </h3>
-                  {project.services?.[0] && (
-                    <span className="mt-2 inline-block w-fit rounded-[var(--radius-pill)] bg-white/10 px-3 py-1 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-text-secondary">
-                      {project.services[0]}
-                    </span>
-                  )}
-                </div>
-              </Link>
+          {/* Row 2 — Two columns */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <ScrollRevealItem>
+              <ProjectCard project={padded[1]} />
             </ScrollRevealItem>
-          ))}
+            <ScrollRevealItem>
+              <ProjectCard project={padded[2]} />
+            </ScrollRevealItem>
+          </div>
+
+          {/* Row 3 — Full width */}
+          <ScrollRevealItem>
+            <ProjectCard
+              project={padded[3]}
+              aspect="aspect-[16/7]"
+              sizes="100vw"
+            />
+          </ScrollRevealItem>
+
+          {/* Row 4 — Two columns */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <ScrollRevealItem>
+              <ProjectCard project={padded[4]} />
+            </ScrollRevealItem>
+            <ScrollRevealItem>
+              <ProjectCard project={padded[5]} />
+            </ScrollRevealItem>
+          </div>
         </ScrollRevealStagger>
       </div>
     </section>
