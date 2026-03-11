@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import MobileMenu from './MobileMenu'
+import { CTAButton } from './MagneticButton'
 
 const navLinks = [
   { href: '/work', label: 'Work' },
@@ -123,26 +124,12 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* CTA Button — Reform-style text slide */}
-          <Link
+          {/* CTA Button — text slide + magnetic trailing outlines */}
+          <CTAButton
             href="/contact"
-            className="group relative hidden overflow-hidden rounded-[var(--radius-pill)] border border-border-hover px-6 py-[0.7rem] text-[0.75rem] font-semibold uppercase tracking-[0.12em] transition-all duration-[0.5s] hover:border-accent hover:text-white md:inline-flex"
-            style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
-          >
-            <span
-              className="absolute inset-0 origin-bottom scale-y-0 rounded-[inherit] bg-accent transition-transform duration-[0.5s] group-hover:origin-top group-hover:scale-y-100"
-              style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
-            />
-            <span className="relative z-10 inline-flex overflow-hidden" style={{ height: '1.2em' }}>
-              <span
-                className="flex flex-col transition-transform duration-[0.5s] group-hover:-translate-y-1/2"
-                style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
-              >
-                <span className="leading-[1.2]">Start a Project</span>
-                <span className="leading-[1.2]">Start a Project</span>
-              </span>
-            </span>
-          </Link>
+            label="Start a Project"
+            className="hidden md:inline-flex"
+          />
 
           {/* Mobile Hamburger */}
           <button
