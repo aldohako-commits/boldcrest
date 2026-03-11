@@ -116,16 +116,25 @@ export default function SelectedWorks({ projects }: SelectedWorksProps) {
             </h2>
             <Link
               href="/work"
-              className="group flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-text-secondary transition-all duration-200 hover:gap-3 hover:text-white"
+              className="group flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-text-secondary transition-all duration-[0.5s] hover:gap-3 hover:text-white"
+              style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
             >
-              See All
+              <span className="inline-flex overflow-hidden" style={{ height: '1.2em' }}>
+                <span
+                  className="flex flex-col transition-transform duration-[0.5s] group-hover:-translate-y-1/2"
+                  style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
+                >
+                  <span className="leading-[1.2]">See All</span>
+                  <span className="leading-[1.2]">See All</span>
+                </span>
+              </span>
               <svg
                 width="16"
                 height="16"
                 viewBox="0 0 16 16"
                 fill="none"
-                className="transition-transform duration-[0.4s] group-hover:translate-x-1"
-                style={{ transitionTimingFunction: 'var(--ease-out-expo)' }}
+                className="transition-transform duration-[0.5s] group-hover:translate-x-1"
+                style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
               >
                 <path
                   d="M3 8h10M9 4l4 4-4 4"

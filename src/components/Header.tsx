@@ -87,25 +87,34 @@ export default function Header() {
                 )}
                 <Link
                   href={link.href}
-                  className={`group relative text-[0.8rem] font-medium uppercase tracking-[0.12em] transition-colors duration-[0.2s] ${
+                  className={`group relative text-[0.8rem] font-medium uppercase tracking-[0.12em] transition-colors duration-[0.5s] ${
                     pathname === link.href
                       ? 'text-accent'
                       : 'text-text-secondary hover:text-text-primary'
                   }`}
+                  style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
                 >
-                  {link.label}
+                  <span className="inline-flex overflow-hidden" style={{ height: '1.2em' }}>
+                    <span
+                      className="flex flex-col transition-transform duration-[0.5s] group-hover:-translate-y-1/2"
+                      style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
+                    >
+                      <span className="leading-[1.2]">{link.label}</span>
+                      <span className="leading-[1.2]">{link.label}</span>
+                    </span>
+                  </span>
                   <span
-                    className="absolute -bottom-1 left-0 h-[1.5px] bg-accent transition-[width] duration-[0.4s]"
+                    className="absolute -bottom-1 left-0 h-[1.5px] bg-accent transition-[width] duration-[0.5s]"
                     style={{
                       width:
                         pathname === link.href ? '100%' : '0%',
-                      transitionTimingFunction: 'var(--ease-out-expo)',
+                      transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)',
                     }}
                   />
                   <span
-                    className="absolute -bottom-1 left-0 h-[1.5px] w-0 bg-accent transition-[width] duration-[0.4s] group-hover:w-full"
+                    className="absolute -bottom-1 left-0 h-[1.5px] w-0 bg-accent transition-[width] duration-[0.5s] group-hover:w-full"
                     style={{
-                      transitionTimingFunction: 'var(--ease-out-expo)',
+                      transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)',
                       display: pathname === link.href ? 'none' : 'block',
                     }}
                   />
@@ -114,17 +123,25 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* CTA Button */}
+          {/* CTA Button — Reform-style text slide */}
           <Link
             href="/contact"
-            className="group relative hidden overflow-hidden rounded-[var(--radius-pill)] border border-border-hover px-6 py-[0.7rem] text-[0.75rem] font-semibold uppercase tracking-[0.12em] transition-all duration-[0.4s] hover:border-accent hover:text-white md:inline-flex"
-            style={{ transitionTimingFunction: 'var(--ease-out-expo)' }}
+            className="group relative hidden overflow-hidden rounded-[var(--radius-pill)] border border-border-hover px-6 py-[0.7rem] text-[0.75rem] font-semibold uppercase tracking-[0.12em] transition-all duration-[0.5s] hover:border-accent hover:text-white md:inline-flex"
+            style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
           >
             <span
-              className="absolute inset-0 origin-right scale-x-0 rounded-[inherit] bg-accent transition-transform duration-[0.4s] group-hover:origin-left group-hover:scale-x-100"
-              style={{ transitionTimingFunction: 'var(--ease-out-expo)' }}
+              className="absolute inset-0 origin-bottom scale-y-0 rounded-[inherit] bg-accent transition-transform duration-[0.5s] group-hover:origin-top group-hover:scale-y-100"
+              style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
             />
-            <span className="relative z-10">Start a Project</span>
+            <span className="relative z-10 inline-flex overflow-hidden" style={{ height: '1.2em' }}>
+              <span
+                className="flex flex-col transition-transform duration-[0.5s] group-hover:-translate-y-1/2"
+                style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
+              >
+                <span className="leading-[1.2]">Start a Project</span>
+                <span className="leading-[1.2]">Start a Project</span>
+              </span>
+            </span>
           </Link>
 
           {/* Mobile Hamburger */}

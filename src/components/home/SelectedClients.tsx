@@ -31,40 +31,48 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
           { _id: '8', name: 'Altus' },
         ]
 
-  // Pad to at least 16 for a full grid
+  // Pad to at least 16 for a full 4x4 grid
   const logos: Partner[] = []
   for (let i = 0; i < Math.max(16, displayPartners.length); i++) {
     logos.push({
       ...displayPartners[i % displayPartners.length],
-      _id: displayPartners[i % displayPartners.length]._id + (i >= displayPartners.length ? `-dup-${i}` : ''),
+      _id:
+        displayPartners[i % displayPartners.length]._id +
+        (i >= displayPartners.length ? `-dup-${i}` : ''),
     })
   }
 
   return (
     <section className="px-[var(--gutter)] pb-[var(--space-2xl)]">
-      <div className="w-full">
-        <ScrollReveal>
-          <div className="mb-[var(--space-xl)]">
+      <div className="flex flex-col gap-[var(--space-lg)] md:flex-row md:gap-0">
+        {/* Heading — pinned to the left on desktop */}
+        <div className="md:w-[20%] md:shrink-0 md:pt-[var(--space-md)]">
+          <ScrollReveal>
             <h2 className="text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-secondary">
-              Selected Clients
+              Selected
+              <br />
+              Clients
             </h2>
-          </div>
-        </ScrollReveal>
+          </ScrollReveal>
+        </div>
 
-        <ScrollRevealStagger
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4"
-          staggerDelay={0.04}
-        >
-          {logos.map((partner) => (
-            <ScrollRevealItem key={partner._id}>
-              <div className="flex items-center justify-center px-6 py-10 md:px-10 md:py-14">
-                <span className="font-display text-[clamp(0.9rem,1.4vw,1.2rem)] font-semibold tracking-[0.02em] text-text-secondary/70 transition-colors duration-300 hover:text-text-primary">
-                  {partner.name}
-                </span>
-              </div>
-            </ScrollRevealItem>
-          ))}
-        </ScrollRevealStagger>
+        {/* 4×4 Grid — right side */}
+        <div className="md:w-[80%]">
+          <ScrollRevealStagger
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4"
+            staggerDelay={0.03}
+          >
+            {logos.map((partner) => (
+              <ScrollRevealItem key={partner._id}>
+                <div className="flex items-center justify-center py-8 md:py-10">
+                  <span className="font-display text-[clamp(0.8rem,1.1vw,1rem)] font-medium tracking-[-0.01em] text-text-secondary/50 transition-colors duration-[0.5s] hover:text-text-primary" style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}>
+                    {partner.name}
+                  </span>
+                </div>
+              </ScrollRevealItem>
+            ))}
+          </ScrollRevealStagger>
+        </div>
       </div>
     </section>
   )
