@@ -12,11 +12,8 @@ const WeDoSection = dynamic(() => import('@/components/home/WeDoSection'))
 const SelectedClients = dynamic(
   () => import('@/components/home/SelectedClients')
 )
-const ServicesPreview = dynamic(
-  () => import('@/components/home/ServicesPreview')
-)
-const GravityOverlay = dynamic(
-  () => import('@/components/GravityOverlay')
+const ServiceCards = dynamic(
+  () => import('@/components/home/ServiceCards')
 )
 
 export default async function Home() {
@@ -32,12 +29,11 @@ export default async function Home() {
 
   return (
     <main>
-      <GravityOverlay />
       <Hero />
       <SelectedWorks projects={projects} />
       <WeDoSection />
       <SelectedClients partners={partners} />
-      <ServicesPreview />
+      <ServiceCards />
     </main>
   )
 }

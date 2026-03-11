@@ -57,7 +57,7 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
         >
           {logos.map((partner) => (
             <ScrollRevealItem key={partner._id}>
-              <div className="flex items-center justify-center border-[0.5px] border-border px-6 py-10 md:px-10 md:py-14">
+              <div className="flex items-center justify-center px-6 py-10 md:px-10 md:py-14">
                 <span className="font-display text-[clamp(0.9rem,1.4vw,1.2rem)] font-semibold tracking-[0.02em] text-text-secondary/70 transition-colors duration-300 hover:text-text-primary">
                   {partner.name}
                 </span>

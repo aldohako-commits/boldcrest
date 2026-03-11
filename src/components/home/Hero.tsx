@@ -118,7 +118,7 @@ export default function Hero() {
         <div className="absolute inset-0 bg-black/50" />
       </div>
 
-      <div className="relative z-10 w-full px-[var(--gutter)] text-center">
+      <div className="relative z-10 w-full px-[var(--gutter)]">
         <h1 className="font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[1.05] tracking-[-0.03em]">
           {lines.map((line, lineIndex) => (
             <span key={lineIndex} className="block overflow-hidden">
