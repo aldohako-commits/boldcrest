@@ -1,16 +1,15 @@
 'use client'
 
 import { useRef } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
-import ScrollReveal from '@/components/ScrollReveal'
+import { motion, useScroll, useTransform, MotionValue } from 'framer-motion'
 
-interface ServiceCard {
+interface ServiceCardData {
   title: string
   color: string
   services: string[]
 }
 
-const cards: ServiceCard[] = [
+const cards: ServiceCardData[] = [
   {
     title: 'Brand Development',
     color: '#DA291C',
@@ -49,71 +48,91 @@ const cards: ServiceCard[] = [
   },
 ]
 
-/* Placeholder SVG icon — replace later */
-function PlaceholderIcon({ color }: { color: string }) {
+/* Placeholder SVG — replace later */
+function PlaceholderIcon() {
   return (
-    <svg
-      width="64"
-      height="64"
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle
-        cx="32"
-        cy="32"
-        r="28"
-        stroke={color}
-        strokeWidth="2"
-        strokeDasharray="4 4"
-        opacity="0.4"
-      />
-      <circle cx="32" cy="32" r="8" fill={color} opacity="0.3" />
+    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+      <rect x="8" y="8" width="14" height="14" rx="2" fill="currentColor" />
+      <rect x="26" y="8" width="14" height="14" rx="2" fill="currentColor" opacity="0.5" />
+      <rect x="8" y="26" width="14" height="14" rx="2" fill="currentColor" opacity="0.3" />
+      <rect x="26" y="26" width="14" height="14" rx="2" fill="currentColor" opacity="0.7" />
     </svg>
   )
 }
 
-function FlipCard({
+function Card({
   card,
   index,
+  scrollYProgress,
 }: {
-  card: ServiceCard
+  card: ServiceCardData
   index: number
+  scrollYProgress: MotionValue<number>
 }) {
-  const cardRef = useRef<HTMLDivElement>(null)
+  // Phase 1 (0–0.35): Fan → straighten
+  // Phase 2 (0.35–0.8): Flip to back, staggered per card
+  const fanRotations = [-12, 0, 12]
+  const fanOffsets = [-60, 0, 60] // horizontal pixel offset when fanned
+  const spreadPositions = [-110, 0, 110] // % offset when spread into row
 
-  const { scrollYProgress } = useScroll({
-    target: cardRef,
-    offset: ['start end', 'center center'],
-  })
+  // Fan rotation → 0
+  const rotate = useTransform(
+    scrollYProgress,
+    [0, 0.3],
+    [fanRotations[index], 0]
+  )
 
-  // Stagger each card's flip slightly
-  const flipStart = index * 0.08
-  const flipEnd = 0.5 + index * 0.08
+  // Fan horizontal offset → spread into columns
+  const x = useTransform(
+    scrollYProgress,
+    [0, 0.3],
+    [`${fanOffsets[index]}px`, `${spreadPositions[index]}%`]
+  )
 
-  // Start at 180 (showing back) → flip to 0 (showing front)
+  // Flip (staggered per card index)
+  const flipStart = 0.35 + index * 0.08
+  const flipEnd = 0.6 + index * 0.08
+
   const rotateY = useTransform(
     scrollYProgress,
     [flipStart, flipEnd],
-    [180, 0]
+    [0, 180]
   )
 
-  // Front (colored) starts hidden, becomes visible as card flips to 0
+  // Opacity crossfade at the 90° mark
+  const midFlip = (flipStart + flipEnd) / 2
+
   const frontOpacity = useTransform(
     scrollYProgress,
-    [flipStart, (flipStart + flipEnd) / 2, flipEnd],
-    [0, 0, 1]
+    [flipStart, midFlip - 0.01, midFlip, flipEnd],
+    [1, 1, 0, 0]
   )
 
-  // Back (service list) starts visible, hides as card flips
   const backOpacity = useTransform(
     scrollYProgress,
-    [flipStart, (flipStart + flipEnd) / 2, flipEnd],
-    [1, 1, 0]
+    [flipStart, midFlip, midFlip + 0.01, flipEnd],
+    [0, 0, 1, 1]
   )
 
+  // Scale: start slightly smaller when fanned, grow to full
+  const scale = useTransform(scrollYProgress, [0, 0.3], [0.9, 1])
+
+  // Z-index: left card on top when fanned
+  const zIndex = 3 - index
+
   return (
-    <div ref={cardRef} className="h-[420px] md:h-[480px]" style={{ perspective: 1200 }}>
+    <motion.div
+      className="absolute left-1/2 top-1/2 h-[380px] w-[280px] md:h-[440px] md:w-[320px]"
+      style={{
+        x,
+        rotate,
+        scale,
+        marginLeft: '-140px',
+        marginTop: '-220px',
+        zIndex,
+        perspective: 1200,
+      }}
+    >
       <motion.div
         className="relative h-full w-full"
         style={{
@@ -121,25 +140,48 @@ function FlipCard({
           transformStyle: 'preserve-3d',
         }}
       >
-        {/* Front Face — Colored with title + icon (visible after flip) */}
+        {/* Front Face — Colored */}
         <motion.div
-          className="absolute inset-0 flex flex-col items-center justify-center gap-8 rounded-[var(--radius-lg)] p-8"
+          className="absolute inset-0 flex flex-col justify-between overflow-hidden rounded-2xl p-6"
           style={{
             backgroundColor: card.color,
             backfaceVisibility: 'hidden',
             opacity: frontOpacity,
           }}
         >
-          <PlaceholderIcon color="rgba(255,255,255,0.9)" />
-          <h3 className="text-center font-display text-[clamp(1.6rem,2.5vw,2.2rem)] font-bold leading-tight text-white">
-            {card.title}
-          </h3>
-          <div className="mt-2 h-[3px] w-12 rounded-full bg-white/30" />
+          <div className="flex items-start justify-between">
+            <span className="text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-white/80">
+              {card.title}
+            </span>
+            <span className="text-white/60">
+              <PlaceholderIcon />
+            </span>
+          </div>
+
+          <div className="flex flex-col items-center gap-4 py-8">
+            <div className="text-white/90">
+              <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                <rect x="12" y="12" width="24" height="24" rx="3" fill="currentColor" />
+                <rect x="44" y="12" width="24" height="24" rx="3" fill="currentColor" opacity="0.6" />
+                <rect x="12" y="44" width="24" height="24" rx="3" fill="currentColor" opacity="0.4" />
+                <rect x="44" y="44" width="24" height="24" rx="3" fill="currentColor" opacity="0.8" />
+              </svg>
+            </div>
+          </div>
+
+          <div className="flex items-end justify-between">
+            <span className="text-[0.6rem] uppercase tracking-wider text-white/50">
+              0{index + 1}
+            </span>
+            <span className="text-[0.6rem] uppercase tracking-wider text-white/50">
+              {card.title.split(' ').pop()}
+            </span>
+          </div>
         </motion.div>
 
-        {/* Back Face — Service list with line separators (visible initially) */}
+        {/* Back Face — Service list */}
         <motion.div
-          className="absolute inset-0 flex flex-col justify-between rounded-[var(--radius-lg)] border border-border bg-bg-card p-8"
+          className="absolute inset-0 flex flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.08] bg-[#161616] p-6"
           style={{
             backfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)',
@@ -147,19 +189,23 @@ function FlipCard({
           }}
         >
           <div>
-            <span
-              className="mb-6 inline-block rounded-[var(--radius-pill)] px-4 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.15em] text-white"
-              style={{ backgroundColor: card.color }}
-            >
-              {card.title}
-            </span>
+            <div className="mb-6 flex items-start justify-between">
+              <span className="text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-white/60">
+                {card.title}
+              </span>
+              <span className="text-white/30">
+                <PlaceholderIcon />
+              </span>
+            </div>
 
-            <div className="mt-6 flex flex-col">
+            <div className="flex flex-col">
               {card.services.map((service, i) => (
                 <div
                   key={service}
-                  className={`flex items-center py-3.5 text-[0.95rem] text-text-secondary transition-colors duration-200 hover:text-white ${
-                    i < card.services.length - 1 ? 'border-b border-border' : ''
+                  className={`py-3 text-[0.85rem] text-white/70 ${
+                    i < card.services.length - 1
+                      ? 'border-b border-white/[0.06]'
+                      : ''
                   }`}
                 >
                   {service}
@@ -168,41 +214,50 @@ function FlipCard({
             </div>
           </div>
 
-          <div
-            className="mt-6 flex h-10 w-10 items-center justify-center rounded-full border transition-all duration-[0.4s] hover:scale-110"
-            style={{ borderColor: card.color }}
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M3 8h10M9 4l4 4-4 4"
-                stroke={card.color}
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+          <div className="flex items-end justify-between">
+            <span className="text-white/20">
+              <PlaceholderIcon />
+            </span>
+            <span className="rotate-180 text-[0.6rem] uppercase tracking-wider text-white/30">
+              {card.title}
+            </span>
           </div>
         </motion.div>
       </motion.div>
-    </div>
+    </motion.div>
   )
 }
 
 export default function ServiceCards() {
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ['start start', 'end end'],
+  })
+
   return (
-    <section className="px-[var(--gutter)] py-[var(--space-2xl)]">
-      <ScrollReveal>
-        <div className="mb-[var(--space-xl)]">
+    <section ref={containerRef} className="relative h-[300vh]">
+      {/* Sticky inner — stays pinned while we scroll through 300vh */}
+      <div className="sticky top-0 flex h-screen flex-col overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-[var(--gutter)] pt-[var(--space-lg)]">
           <h2 className="text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-secondary">
             What We Do
           </h2>
         </div>
-      </ScrollReveal>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        {cards.map((card, i) => (
-          <FlipCard key={card.title} card={card} index={i} />
-        ))}
+        {/* Cards area */}
+        <div className="relative flex-1">
+          {cards.map((card, i) => (
+            <Card
+              key={card.title}
+              card={card}
+              index={i}
+              scrollYProgress={scrollYProgress}
+            />
+          ))}
+        </div>
       </div>
     </section>
   )
