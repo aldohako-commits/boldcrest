@@ -32,6 +32,7 @@ export default function SelectedWorks({ projects }: SelectedWorksProps) {
       <div className="w-full">
         {/* Section Header */}
         <ScrollReveal>
+          <div className="mb-4 h-px bg-border" />
           <div className="mb-[var(--space-xl)] flex items-center justify-between">
             <h2 className="text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-secondary">
               Selected Works

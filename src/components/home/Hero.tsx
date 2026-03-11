@@ -47,9 +47,26 @@ function Word({
   const dotAfter =
     (effect === 'perceptions' || effect === 'unseen') && isLastInLine
 
+  let hoverClasses = ''
+
+  switch (effect) {
+    case 'perceptions':
+      hoverClasses =
+        'transition-all duration-[0.4s] hover:skew-x-[-12deg] hover:text-transparent'
+      break
+    case 'bold':
+      hoverClasses =
+        'transition-all duration-[0.35s] hover:uppercase hover:font-black hover:tracking-[0.02em]'
+      break
+    case 'unseen':
+      hoverClasses =
+        'transition-all duration-[0.6s] hover:opacity-0 hover:blur-[12px] hover:translate-y-[10px] hover:scale-95'
+      break
+  }
+
   return (
     <motion.span
-      className="relative inline-block cursor-default"
+      className={`relative inline-block cursor-default ${hoverClasses}`}
       initial={{ opacity: 0, y: '100%' }}
       animate={{ opacity: 1, y: 0 }}
       transition={{
@@ -57,6 +74,33 @@ function Word({
         delay,
         ease: [0.16, 1, 0.3, 1],
       }}
+      style={
+        effect === 'perceptions'
+          ? {
+              WebkitTextStroke: '0px transparent' as never,
+              transitionTimingFunction: 'var(--ease-out-expo)',
+            }
+          : effect === 'unseen' || effect === 'bold'
+            ? { transitionTimingFunction: 'var(--ease-out-expo)' }
+            : undefined
+      }
+      onMouseEnter={
+        effect === 'perceptions'
+          ? (e) => {
+              const el = e.currentTarget as HTMLElement
+              ;(el.style as unknown as Record<string, string>).webkitTextStroke = '1.5px white'
+            }
+          : undefined
+      }
+      onMouseLeave={
+        effect === 'perceptions'
+          ? (e) => {
+              const el = e.currentTarget as HTMLElement
+              ;(el.style as unknown as Record<string, string>).webkitTextStroke = '0px transparent'
+              el.style.color = ''
+            }
+          : undefined
+      }
     >
       {text}
       {dotAfter && <span className="text-accent">.</span>}
