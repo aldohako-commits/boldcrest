@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BoldCrest — Design Playground</title>
+<style>
+  /* ── Reset ─────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── Design Tokens (editable) ──────────────────────── */
+  :root {
+    --bg: #0a0a0a;
+    --bg-elevated: #111111;
+    --bg-card: #161616;
+    --bg-card-hover: #1a1a1a;
+    --surface: #1e1e1e;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.15);
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255,255,255,0.55);
+    --text-tertiary: rgba(255,255,255,0.3);
+    --accent: #e63228;
+    --accent-hover: #ff3d32;
+    --accent-glow: rgba(230,50,40,0.15);
+
+    --brand-red: #DA291C;
+    --brand-yellow: #f9b311;
+    --brand-blue: #004c95;
+    --footer-bg: #EDEDED;
+
+    --space-xs: 0.5rem;
+    --space-sm: 1rem;
+    --space-md: 1.5rem;
+    --space-lg: 2.5rem;
+    --space-xl: 4rem;
+    --space-2xl: 6rem;
+    --space-3xl: 10rem;
+
+    --max-width: 1400px;
+    --gutter: clamp(1.5rem, 4vw, 4rem);
+
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-pill: 100px;
+
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+    --duration-fast: 0.2s;
+    --duration-normal: 0.4s;
+    --duration-slow: 0.8s;
+
+    /* playground-specific */
+    --pg-sidebar: 320px;
+    --pg-bg: #0d0d0d;
+    --pg-panel: #151515;
+    --pg-border: rgba(255,255,255,0.06);
+    --pg-text: rgba(255,255,255,0.85);
+    --pg-text-dim: rgba(255,255,255,0.4);
+    --pg-accent: #e63228;
+  }
+
+  html { font-size: 16px; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--pg-bg);
+    color: var(--pg-text);
+    line-height: 1.5;
+    min-height: 100vh;
+    display: flex;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Layout ────────────────────────────────────────── */
+  .sidebar {
+    width: var(--pg-sidebar);
+    min-width: var(--pg-sidebar);
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+    background: var(--pg-panel);
+    border-right: 1px solid var(--pg-border);
+    padding: 24px 20px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+  .canvas {
+    flex: 1;
+    padding: 48px var(--gutter);
+    overflow-x: hidden;
+  }
+
+  /* ── Sidebar elements ──────────────────────────────── */
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--pg-border);
+  }
+  .logo-area svg { width: 28px; height: 28px; }
+  .logo-area svg path { fill: #fff; }
+  .logo-area h1 { font-size: 14px; font-weight: 600; letter-spacing: 0.04em; }
+  .logo-area span { font-size: 10px; color: var(--pg-text-dim); text-transform: uppercase; letter-spacing: 0.12em; }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--pg-text-dim);
+    margin: 24px 0 12px;
+  }
+  .section-label:first-of-type { margin-top: 0; }
+
+  .token-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    gap: 8px;
+  }
+  .token-row label {
+    font-size: 12px;
+    color: var(--pg-text);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Color input */
+  .color-input {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .color-input input[type="color"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--pg-border);
+    border-radius: 6px;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+  }
+  .color-input input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+  .color-input input[type="color"]::-webkit-color-swatch { border-radius: 3px; border: none; }
+  .color-input .hex {
+    font-size: 11px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--pg-text-dim);
+    width: 64px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--pg-border);
+    border-radius: 4px;
+    padding: 3px 6px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .color-input .hex:focus { border-color: var(--pg-accent); }
+
+  /* Range input */
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--pg-accent);
+    cursor: pointer;
+    border: 2px solid var(--pg-bg);
+  }
+
+  .range-row { display: flex; flex-direction: column; gap: 4px; padding: 4px 0; }
+  .range-row .range-header { display: flex; justify-content: space-between; align-items: center; }
+  .range-row label { font-size: 12px; color: var(--pg-text); }
+  .range-row .range-value {
+    font-size: 11px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--pg-text-dim);
+  }
+
+  /* Select */
+  select {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--pg-border);
+    border-radius: 4px;
+    color: var(--pg-text);
+    font-size: 12px;
+    padding: 4px 8px;
+    outline: none;
+    cursor: pointer;
+  }
+  select:focus { border-color: var(--pg-accent); }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 8px; margin-top: 16px; }
+  .btn {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-radius: 6px;
+    border: 1px solid var(--pg-border);
+    background: rgba(255,255,255,0.04);
+    color: var(--pg-text);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
+  .btn--accent { background: var(--pg-accent); border-color: var(--pg-accent); color: #fff; }
+  .btn--accent:hover { background: #ff3d32; }
+
+  /* ── Canvas Sections ───────────────────────────────── */
+  .preview-section {
+    max-width: 1100px;
+    margin: 0 auto 64px;
+  }
+  .preview-section h2 {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--pg-text-dim);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .preview-section h2::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--pg-border);
+  }
+
+  /* ── Color Palette Preview ─────────────────────────── */
+  .palette-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  .palette-swatch {
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--pg-border);
+    background: var(--pg-panel);
+  }
+  .palette-swatch .swatch-color {
+    height: 72px;
+    transition: background-color 0.3s;
+  }
+  .palette-swatch .swatch-info {
+    padding: 10px 12px;
+  }
+  .palette-swatch .swatch-name {
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .palette-swatch .swatch-value {
+    font-size: 10px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--pg-text-dim);
+  }
+
+  /* ── Typography Preview ────────────────────────────── */
+  .type-specimen {
+    background: var(--bg);
+    border-radius: 12px;
+    border: 1px solid var(--pg-border);
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .type-row {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+  }
+  .type-label {
+    width: 80px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+  }
+  .type-sample { color: var(--text-primary); transition: all 0.3s; }
+  .type-display { font-size: clamp(2rem, 5vw, 4.5rem); font-weight: 700; line-height: 1.05; letter-spacing: -0.03em; }
+  .type-h1 { font-size: clamp(1.8rem, 3.5vw, 3rem); font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; }
+  .type-h2 { font-size: clamp(1.2rem, 2vw, 1.8rem); font-weight: 600; line-height: 1.2; }
+  .type-body { font-size: 1rem; line-height: 1.6; color: var(--text-secondary); max-width: 560px; }
+  .type-caption { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-tertiary); }
+
+  /* ── Component Previews ────────────────────────────── */
+  .component-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+  .component-card {
+    background: var(--bg);
+    border: 1px solid var(--pg-border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .component-card .card-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--pg-text-dim);
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--pg-border);
+    background: var(--pg-panel);
+  }
+  .component-card .card-body {
+    padding: 32px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    justify-content: center;
+    min-height: 140px;
+  }
+
+  /* Button components */
+  .cta-button {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(255,255,255,0.25);
+    background: #000;
+    padding: 0.7rem 1.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.5s var(--ease-out-quart);
+    text-decoration: none;
+    position: relative;
+  }
+  .cta-button:hover { border-color: rgba(255,255,255,0.6); color: #fff; }
+
+  .inline-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(255,255,255,0.25);
+    background: #000;
+    padding: 0.5em 1em;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.5s var(--ease-out-quart);
+    text-decoration: none;
+  }
+  .inline-button:hover { border-color: rgba(255,255,255,0.6); color: #fff; }
+  .inline-button svg { transition: transform 0.5s var(--ease-out-quart); }
+  .inline-button:hover svg { transform: translateX(3px); }
+
+  /* Magnetic trail layers (decorative) */
+  .magnetic-demo {
+    position: relative;
+    display: inline-flex;
+  }
+  .magnetic-demo .trail {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    border: 1.5px solid transparent;
+    transition: opacity 0.3s, transform 0.45s var(--ease-out-quart);
+    opacity: 0;
+  }
+  .magnetic-demo:hover .trail { opacity: 1; }
+  .magnetic-demo:hover .trail-red { transform: translate(-4px, -3px); }
+  .magnetic-demo:hover .trail-yellow { transform: translate(2px, 4px); }
+  .magnetic-demo:hover .trail-blue { transform: translate(5px, -2px); }
+  .trail-red { border-color: var(--brand-red); }
+  .trail-yellow { border-color: var(--brand-yellow); }
+  .trail-blue { border-color: var(--brand-blue); }
+
+  /* Service cards */
+  .service-card {
+    border-radius: var(--radius-lg);
+    padding: 28px 24px;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: background 0.3s;
+    flex: 1;
+    min-width: 140px;
+  }
+  .service-card .sc-num { font-size: 11px; font-weight: 600; opacity: 0.6; margin-bottom: 8px; }
+  .service-card .sc-title { font-size: 18px; font-weight: 700; line-height: 1.2; }
+
+  /* Nav preview */
+  .nav-preview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: rgba(10,10,10,0.85);
+    backdrop-filter: blur(20px);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    width: 100%;
+  }
+  .nav-preview .nav-logo { display: flex; align-items: center; gap: 8px; }
+  .nav-preview .nav-logo svg { width: 24px; height: 24px; }
+  .nav-preview .nav-logo svg path { fill: #fff; }
+  .nav-preview .nav-links { display: flex; gap: 24px; }
+  .nav-preview .nav-links a {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  .nav-preview .nav-links a:hover { color: #fff; }
+
+  /* Footer preview */
+  .footer-preview {
+    background: var(--footer-bg);
+    border-radius: 12px;
+    padding: 32px 28px;
+    color: #000;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    transition: background-color 0.3s;
+  }
+  .footer-preview .fp-top { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .footer-preview .fp-copy { font-size: 12px; color: rgba(0,0,0,0.45); }
+  .footer-preview .fp-links { font-size: 12px; color: rgba(0,0,0,0.55); }
+  .footer-preview .fp-links a { color: inherit; text-decoration: none; display: block; margin: 2px 0; }
+  .footer-preview .fp-links a:hover { color: #000; }
+  .footer-preview .fp-wordmark {
+    font-size: clamp(2rem, 6vw, 4rem);
+    font-weight: 700;
+    line-height: 0.85;
+    color: #000;
+    margin-top: auto;
+  }
+
+  /* ── Spacing Visualization ─────────────────────────── */
+  .spacing-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 6px 0;
+  }
+  .spacing-label {
+    width: 70px;
+    font-size: 11px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--pg-text-dim);
+    flex-shrink: 0;
+  }
+  .spacing-bar {
+    height: 24px;
+    border-radius: 4px;
+    background: var(--accent);
+    opacity: 0.5;
+    transition: width 0.5s var(--ease-out-expo), background 0.3s;
+  }
+  .spacing-bar:hover { opacity: 0.8; }
+  .spacing-val {
+    font-size: 10px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--pg-text-dim);
+  }
+
+  /* ── Radius Preview ────────────────────────────────── */
+  .radius-grid {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .radius-box {
+    width: 80px;
+    height: 80px;
+    background: var(--accent);
+    opacity: 0.6;
+    transition: border-radius 0.5s var(--ease-out-expo), background 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .radius-box:hover { opacity: 0.9; }
+
+  /* ── Easing Preview ────────────────────────────────── */
+  .easing-grid { display: flex; flex-direction: column; gap: 12px; }
+  .easing-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 0;
+  }
+  .easing-name {
+    width: 120px;
+    font-size: 11px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--pg-text-dim);
+    flex-shrink: 0;
+  }
+  .easing-track {
+    flex: 1;
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    position: relative;
+  }
+  .easing-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    transition: background 0.3s;
+  }
+  .easing-row:hover .easing-dot { left: calc(100% - 16px); }
+  .ease-expo .easing-dot { transition: left 1s var(--ease-out-expo), background 0.3s; }
+  .ease-quart .easing-dot { transition: left 1s var(--ease-out-quart), background 0.3s; }
+  .ease-inout .easing-dot { transition: left 1s var(--ease-in-out), background 0.3s; }
+
+  /* ── Export Modal ──────────────────────────────────── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--pg-panel);
+    border: 1px solid var(--pg-border);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 640px;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--pg-border);
+  }
+  .modal-header h3 { font-size: 14px; font-weight: 600; }
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--pg-text-dim);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px;
+  }
+  .modal-close:hover { color: #fff; }
+  .modal-body {
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .modal-body pre {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--pg-text);
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .modal-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--pg-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  /* ── Toast ─────────────────────────────────────────── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--pg-accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: var(--radius-pill);
+    transition: transform 0.4s var(--ease-out-expo);
+    z-index: 2000;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ── Responsive ────────────────────────────────────── */
+  @media (max-width: 768px) {
+    body { flex-direction: column; }
+    .sidebar {
+      width: 100%;
+      min-width: 100%;
+      height: auto;
+      position: relative;
+      max-height: 50vh;
+    }
+    .canvas { padding: 32px 16px; }
+    .component-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SIDEBAR                                            -->
+<!-- ═══════════════════════════════════════════════════ -->
+<aside class="sidebar">
+  <div class="logo-area">
+    <svg viewBox="0 0 384.09 384"><path d="M321.01,81.6v-2.75c-.93-.36-1.75-.71-2.59-.99-8.55-2.85-17.11-5.71-25.67-8.52-26.48-8.7-52.96-17.4-79.43-26.11h0s-2.56-.84-2.56-.84l-11.78-3.92-6.23-2.08-2.65.89s0,0,0,0c-2.13.72-4.26,1.43-6.39,2.14h0s-14.07,4.73-14.07,4.73h-.02c-27.79,9.32-55.59,18.64-83.38,27.95-6.55,2.19-13.08,4.42-19.69,6.66v2.61c0,45.43.01,90.86,0,136.28,0,13.38,2.79,26.12,8.44,38.25,8.64,18.55,22.04,33.2,37.91,45.71,22.54,17.77,47.81,30.42,74.74,39.82,1.51.53,6.13,2.14,6.13,2.14l5.03-1.78c.5-.17,1-.34,1.51-.52,1.29-.45,2.58-.91,3.87-1.38,14.85-5.43,29.16-12.08,42.9-19.98,18.41-10.59,35.35-23.05,49.24-39.32,16.32-19.11,24.99-40.88,24.78-66.35-.37-44.22-.1-88.44-.1-132.66ZM297.55,238.3c-17.69-24.61-35.31-49.27-52.91-73.95-6.98-9.78-15.27-9.84-22.23-.1-15.56,21.78-31.08,43.6-46.75,65.3-5.93,8.2-13.86,8.15-19.82.08-4.45-6.01-8.72-12.16-13.05-18.25-7.01-9.85-15.04-9.91-22.15-.04-8.87,12.31-17.56,24.76-26.56,36.98-.39-.78-.78-1.57-1.15-2.36-4.8-10.3-7.17-21.12-7.17-32.48.02-38.57,0-77.15,0-115.72v-2.22c5.61-1.9,11.16-3.79,16.72-5.65,21.05-7.06,42.1-14.11,63.15-21.17h0s25.8-8.61,25.8-8.61l1.47-.49,108.92,35.99v2.33c0,37.55-.23,75.1.09,112.65.08,9.86-1.41,19.06-4.36,27.7Z"/></svg>
+    <div><h1>BoldCrest</h1><span>Design Playground</span></div>
+  </div>
+
+  <!-- Colors -->
+  <div class="section-label">Colors</div>
+
+  <div class="token-row">
+    <label>Background</label>
+    <div class="color-input">
+      <input type="color" data-var="--bg" value="#0a0a0a">
+      <input class="hex" data-var="--bg" value="#0a0a0a">
+    </div>
+  </div>
+  <div class="token-row">
+    <label>Elevated</label>
+    <div class="color-input">
+      <input type="color" data-var="--bg-elevated" value="#111111">
+      <input class="hex" data-var="--bg-elevated" value="#111111">
+    </div>
+  </div>
+  <div class="token-row">
+    <label>Card</label>
+    <div class="color-input">
+      <input type="color" data-var="--bg-card" value="#161616">
+      <input class="hex" data-var="--bg-card" value="#161616">
+    </div>
+  </div>
+  <div class="token-row">
+    <label>Accent</label>
+    <div class="color-input">
+      <input type="color" data-var="--accent" value="#e63228">
+      <input class="hex" data-var="--accent" value="#e63228">
+    </div>
+  </div>
+  <div class="token-row">
+    <label>Accent Hover</label>
+    <div class="color-input">
+      <input type="color" data-var="--accent-hover" value="#ff3d32">
+      <input class="hex" data-var="--accent-hover" value="#ff3d32">
+    </div>
+  </div>
+
+  <div class="section-label">Brand Colors</div>
+  <div class="token-row">
+    <label>Red</label>
+    <div class="color-input">
+      <input type="color" data-var="--brand-red" value="#DA291C">
+      <input class="hex" data-var="--brand-red" value="#DA291C">
+    </div>
+  </div>
+  <div class="token-row">
+    <label>Yellow</label>
+    <div class="color-input">
+      <input type="color" data-var="--brand-yellow" value="#f9b311">
+      <input class="hex" data-var="--brand-yellow" value="#f9b311">
+    </div>
+  </div>
+  <div class="token-row">
+    <label>Blue</label>
+    <div class="color-input">
+      <input type="color" data-var="--brand-blue" value="#004c95">
+      <input class="hex" data-var="--brand-blue" value="#004c95">
+    </div>
+  </div>
+  <div class="token-row">
+    <label>Footer BG</label>
+    <div class="color-input">
+      <input type="color" data-var="--footer-bg" value="#EDEDED">
+      <input class="hex" data-var="--footer-bg" value="#EDEDED">
+    </div>
+  </div>
+
+  <div class="section-label">Layout</div>
+  <div class="range-row">
+    <div class="range-header"><label>Max Width</label><span class="range-value" id="maxw-val">1400px</span></div>
+    <input type="range" min="900" max="1800" value="1400" id="maxw-range">
+  </div>
+  <div class="range-row">
+    <div class="range-header"><label>Gutter</label><span class="range-value" id="gutter-val">4vw</span></div>
+    <input type="range" min="1" max="8" step="0.5" value="4" id="gutter-range">
+  </div>
+
+  <div class="section-label">Radius</div>
+  <div class="range-row">
+    <div class="range-header"><label>Small</label><span class="range-value" id="rsm-val">4px</span></div>
+    <input type="range" min="0" max="20" value="4" id="rsm-range">
+  </div>
+  <div class="range-row">
+    <div class="range-header"><label>Medium</label><span class="range-value" id="rmd-val">8px</span></div>
+    <input type="range" min="0" max="30" value="8" id="rmd-range">
+  </div>
+  <div class="range-row">
+    <div class="range-header"><label>Large</label><span class="range-value" id="rlg-val">12px</span></div>
+    <input type="range" min="0" max="40" value="12" id="rlg-range">
+  </div>
+  <div class="range-row">
+    <div class="range-header"><label>Pill</label><span class="range-value" id="rpill-val">100px</span></div>
+    <input type="range" min="10" max="200" value="100" id="rpill-range">
+  </div>
+
+  <div class="section-label">Typography</div>
+  <div class="range-row">
+    <div class="range-header"><label>Display Weight</label><span class="range-value" id="fw-val">700</span></div>
+    <input type="range" min="300" max="900" step="100" value="700" id="fw-range">
+  </div>
+  <div class="range-row">
+    <div class="range-header"><label>Letter Spacing</label><span class="range-value" id="ls-val">-0.03em</span></div>
+    <input type="range" min="-6" max="2" step="0.5" value="-3" id="ls-range">
+  </div>
+
+  <div class="btn-row">
+    <button class="btn" onclick="resetAll()">Reset</button>
+    <button class="btn btn--accent" onclick="exportCSS()">Export CSS</button>
+  </div>
+</aside>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- CANVAS                                             -->
+<!-- ═══════════════════════════════════════════════════ -->
+<main class="canvas">
+
+  <!-- Color Palette -->
+  <section class="preview-section">
+    <h2>Color Palette</h2>
+    <div class="palette-grid" id="palette-grid"></div>
+  </section>
+
+  <!-- Typography -->
+  <section class="preview-section">
+    <h2>Typography</h2>
+    <div class="type-specimen" id="type-specimen">
+      <div class="type-row">
+        <span class="type-label">Display</span>
+        <span class="type-sample type-display" id="type-display">BoldCrest</span>
+      </div>
+      <div class="type-row">
+        <span class="type-label">Heading 1</span>
+        <span class="type-sample type-h1">We do many things very well.</span>
+      </div>
+      <div class="type-row">
+        <span class="type-label">Heading 2</span>
+        <span class="type-sample type-h2">Brand Development &amp; Strategy</span>
+      </div>
+      <div class="type-row">
+        <span class="type-label">Body</span>
+        <span class="type-sample type-body">We craft bold brand identities and digital experiences that push boundaries and create lasting impact for ambitious companies worldwide.</span>
+      </div>
+      <div class="type-row">
+        <span class="type-label">Caption</span>
+        <span class="type-sample type-caption">Selected Works &mdash; 2024</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Components: Navigation -->
+  <section class="preview-section">
+    <h2>Navigation</h2>
+    <div class="component-card">
+      <div class="card-label">Header Bar</div>
+      <div class="card-body" style="background: var(--bg); padding: 24px;">
+        <div class="nav-preview">
+          <div class="nav-logo">
+            <svg viewBox="0 0 384.09 384"><path d="M321.01,81.6v-2.75c-.93-.36-1.75-.71-2.59-.99-8.55-2.85-17.11-5.71-25.67-8.52-26.48-8.7-52.96-17.4-79.43-26.11h0s-2.56-.84-2.56-.84l-11.78-3.92-6.23-2.08-2.65.89s0,0,0,0c-2.13.72-4.26,1.43-6.39,2.14h0s-14.07,4.73-14.07,4.73h-.02c-27.79,9.32-55.59,18.64-83.38,27.95-6.55,2.19-13.08,4.42-19.69,6.66v2.61c0,45.43.01,90.86,0,136.28,0,13.38,2.79,26.12,8.44,38.25,8.64,18.55,22.04,33.2,37.91,45.71,22.54,17.77,47.81,30.42,74.74,39.82,1.51.53,6.13,2.14,6.13,2.14l5.03-1.78c.5-.17,1-.34,1.51-.52,1.29-.45,2.58-.91,3.87-1.38,14.85-5.43,29.16-12.08,42.9-19.98,18.41-10.59,35.35-23.05,49.24-39.32,16.32-19.11,24.99-40.88,24.78-66.35-.37-44.22-.1-88.44-.1-132.66ZM297.55,238.3c-17.69-24.61-35.31-49.27-52.91-73.95-6.98-9.78-15.27-9.84-22.23-.1-15.56,21.78-31.08,43.6-46.75,65.3-5.93,8.2-13.86,8.15-19.82.08-4.45-6.01-8.72-12.16-13.05-18.25-7.01-9.85-15.04-9.91-22.15-.04-8.87,12.31-17.56,24.76-26.56,36.98-.39-.78-.78-1.57-1.15-2.36-4.8-10.3-7.17-21.12-7.17-32.48.02-38.57,0-77.15,0-115.72v-2.22c5.61-1.9,11.16-3.79,16.72-5.65,21.05-7.06,42.1-14.11,63.15-21.17h0s25.8-8.61,25.8-8.61l1.47-.49,108.92,35.99v2.33c0,37.55-.23,75.1.09,112.65.08,9.86-1.41,19.06-4.36,27.7Z"/></svg>
+          </div>
+          <div class="nav-links">
+            <a href="#">Work</a>
+            <a href="#">Services</a>
+            <a href="#">People</a>
+            <a href="#">Contact</a>
+          </div>
+          <div class="magnetic-demo">
+            <span class="cta-button">
+              Start a Project
+              <span class="trail trail-red" style="border-radius: var(--radius-pill);"></span>
+              <span class="trail trail-yellow" style="border-radius: var(--radius-pill);"></span>
+              <span class="trail trail-blue" style="border-radius: var(--radius-pill);"></span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Components: Buttons -->
+  <section class="preview-section">
+    <h2>Buttons</h2>
+    <div class="component-grid">
+      <div class="component-card">
+        <div class="card-label">CTA Button</div>
+        <div class="card-body">
+          <div class="magnetic-demo" style="border-radius: var(--radius-pill);">
+            <span class="cta-button">Start a Project</span>
+            <span class="trail trail-red" style="border-radius: var(--radius-pill);"></span>
+            <span class="trail trail-yellow" style="border-radius: var(--radius-pill);"></span>
+            <span class="trail trail-blue" style="border-radius: var(--radius-pill);"></span>
+          </div>
+        </div>
+      </div>
+      <div class="component-card">
+        <div class="card-label">Inline Button</div>
+        <div class="card-body">
+          <div class="magnetic-demo" style="border-radius: var(--radius-pill);">
+            <span class="inline-button">
+              View All Work
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="trail trail-red" style="border-radius: var(--radius-pill);"></span>
+            <span class="trail trail-yellow" style="border-radius: var(--radius-pill);"></span>
+            <span class="trail trail-blue" style="border-radius: var(--radius-pill);"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Components: Service Cards -->
+  <section class="preview-section">
+    <h2>Service Cards</h2>
+    <div class="component-grid" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="component-card" style="border: none;">
+        <div class="service-card" style="background: var(--brand-red); color: #fff;">
+          <div class="sc-num">01</div>
+          <div class="sc-title">Brand<br>Development</div>
+        </div>
+      </div>
+      <div class="component-card" style="border: none;">
+        <div class="service-card" style="background: var(--brand-yellow); color: #000;">
+          <div class="sc-num">02</div>
+          <div class="sc-title">Still &amp;<br>Motion</div>
+        </div>
+      </div>
+      <div class="component-card" style="border: none;">
+        <div class="service-card" style="background: var(--brand-blue); color: #fff;">
+          <div class="sc-num">03</div>
+          <div class="sc-title">Communi-<br>cations</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer Preview -->
+  <section class="preview-section">
+    <h2>Footer</h2>
+    <div class="footer-preview" id="footer-preview">
+      <div class="fp-top">
+        <div class="fp-copy">&copy; 2026 BoldCrest</div>
+        <div class="fp-links">
+          <strong style="color: rgba(0,0,0,0.85);">Talk to us or ask us anything.</strong>
+          <a href="#">&rarr; info@boldcrest.com</a>
+          <a href="#">&rarr; Contact Us</a>
+        </div>
+        <div class="fp-links">
+          <a href="#">&rarr; LinkedIn</a>
+          <a href="#">&rarr; Instagram</a>
+          <a href="#">&rarr; Behance</a>
+        </div>
+      </div>
+      <div class="fp-wordmark">BoldCrest</div>
+    </div>
+  </section>
+
+  <!-- Spacing -->
+  <section class="preview-section">
+    <h2>Spacing Scale</h2>
+    <div id="spacing-vis"></div>
+  </section>
+
+  <!-- Radius -->
+  <section class="preview-section">
+    <h2>Border Radius</h2>
+    <div class="radius-grid" id="radius-grid"></div>
+  </section>
+
+  <!-- Easing -->
+  <section class="preview-section">
+    <h2>Easing Curves</h2>
+    <div class="easing-grid">
+      <div class="easing-row ease-expo">
+        <span class="easing-name">ease-out-expo</span>
+        <div class="easing-track"><div class="easing-dot"></div></div>
+      </div>
+      <div class="easing-row ease-quart">
+        <span class="easing-name">ease-out-quart</span>
+        <div class="easing-track"><div class="easing-dot"></div></div>
+      </div>
+      <div class="easing-row ease-inout">
+        <span class="easing-name">ease-in-out</span>
+        <div class="easing-track"><div class="easing-dot"></div></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- EXPORT MODAL                                       -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="export-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Export CSS Variables</h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <pre id="export-code"></pre>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Close</button>
+      <button class="btn btn--accent" onclick="copyCSS()">Copy to Clipboard</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Copied to clipboard</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCRIPT                                             -->
+<!-- ═══════════════════════════════════════════════════ -->
+<script>
+const root = document.documentElement;
+
+/* ── Defaults for Reset ──────────────────────────── */
+const DEFAULTS = {
+  '--bg': '#0a0a0a',
+  '--bg-elevated': '#111111',
+  '--bg-card': '#161616',
+  '--bg-card-hover': '#1a1a1a',
+  '--accent': '#e63228',
+  '--accent-hover': '#ff3d32',
+  '--brand-red': '#DA291C',
+  '--brand-yellow': '#f9b311',
+  '--brand-blue': '#004c95',
+  '--footer-bg': '#EDEDED',
+  '--max-width': '1400px',
+  '--gutter': 'clamp(1.5rem, 4vw, 4rem)',
+  '--radius-sm': '4px',
+  '--radius-md': '8px',
+  '--radius-lg': '12px',
+  '--radius-pill': '100px',
+};
+
+/* ── Color Inputs ────────────────────────────────── */
+document.querySelectorAll('input[type="color"]').forEach(input => {
+  input.addEventListener('input', e => {
+    const varName = e.target.dataset.var;
+    root.style.setProperty(varName, e.target.value);
+    const hex = e.target.parentElement.querySelector('.hex');
+    if (hex) hex.value = e.target.value;
+    renderPalette();
+  });
+});
+
+document.querySelectorAll('.hex').forEach(input => {
+  input.addEventListener('change', e => {
+    const varName = e.target.dataset.var;
+    let val = e.target.value.trim();
+    if (!val.startsWith('#')) val = '#' + val;
+    root.style.setProperty(varName, val);
+    const picker = e.target.parentElement.querySelector('input[type="color"]');
+    if (picker) picker.value = val;
+    renderPalette();
+  });
+});
+
+/* ── Range Controls ──────────────────────────────── */
+const ranges = [
+  { id: 'maxw-range', valId: 'maxw-val', cssVar: '--max-width', unit: 'px' },
+  { id: 'gutter-range', valId: 'gutter-val', cssVar: '--gutter', unit: 'vw', template: v => `clamp(1.5rem, ${v}vw, ${v}rem)` },
+  { id: 'rsm-range', valId: 'rsm-val', cssVar: '--radius-sm', unit: 'px' },
+  { id: 'rmd-range', valId: 'rmd-val', cssVar: '--radius-md', unit: 'px' },
+  { id: 'rlg-range', valId: 'rlg-val', cssVar: '--radius-lg', unit: 'px' },
+  { id: 'rpill-range', valId: 'rpill-val', cssVar: '--radius-pill', unit: 'px' },
+  { id: 'fw-range', valId: 'fw-val', target: 'fontWeight' },
+  { id: 'ls-range', valId: 'ls-val', target: 'letterSpacing', unit: 'em', multiplier: 0.01 },
+];
+
+ranges.forEach(({ id, valId, cssVar, unit, template, target, multiplier }) => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('input', () => {
+    const v = parseFloat(el.value);
+    if (target === 'fontWeight') {
+      document.getElementById('type-display').style.fontWeight = v;
+      document.getElementById(valId).textContent = v;
+    } else if (target === 'letterSpacing') {
+      const em = v * (multiplier || 1);
+      document.getElementById('type-display').style.letterSpacing = em + 'em';
+      document.getElementById(valId).textContent = em.toFixed(2) + 'em';
+    } else if (template) {
+      root.style.setProperty(cssVar, template(v));
+      document.getElementById(valId).textContent = v + (unit || '');
+    } else {
+      root.style.setProperty(cssVar, v + (unit || ''));
+      document.getElementById(valId).textContent = v + (unit || '');
+    }
+    renderRadius();
+  });
+});
+
+/* ── Palette Render ──────────────────────────────── */
+const PALETTE = [
+  { name: 'Background', var: '--bg' },
+  { name: 'Elevated', var: '--bg-elevated' },
+  { name: 'Card', var: '--bg-card' },
+  { name: 'Accent', var: '--accent' },
+  { name: 'Accent Hover', var: '--accent-hover' },
+  { name: 'Brand Red', var: '--brand-red' },
+  { name: 'Brand Yellow', var: '--brand-yellow' },
+  { name: 'Brand Blue', var: '--brand-blue' },
+  { name: 'Footer BG', var: '--footer-bg' },
+];
+
+function renderPalette() {
+  const grid = document.getElementById('palette-grid');
+  grid.innerHTML = PALETTE.map(p => {
+    const val = getComputedStyle(root).getPropertyValue(p.var).trim();
+    return `<div class="palette-swatch">
+      <div class="swatch-color" style="background:var(${p.var})"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">${p.name}</div>
+        <div class="swatch-value">${p.var}<br>${val}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Spacing Render ──────────────────────────────── */
+const SPACING = [
+  { name: '--space-xs', val: '0.5rem', px: 8 },
+  { name: '--space-sm', val: '1rem', px: 16 },
+  { name: '--space-md', val: '1.5rem', px: 24 },
+  { name: '--space-lg', val: '2.5rem', px: 40 },
+  { name: '--space-xl', val: '4rem', px: 64 },
+  { name: '--space-2xl', val: '6rem', px: 96 },
+  { name: '--space-3xl', val: '10rem', px: 160 },
+];
+
+function renderSpacing() {
+  const el = document.getElementById('spacing-vis');
+  const maxPx = 160;
+  el.innerHTML = SPACING.map(s => `
+    <div class="spacing-row">
+      <span class="spacing-label">${s.name.replace('--space-', '')}</span>
+      <div class="spacing-bar" style="width:${(s.px / maxPx) * 100}%"></div>
+      <span class="spacing-val">${s.val} (${s.px}px)</span>
+    </div>
+  `).join('');
+}
+
+/* ── Radius Render ───────────────────────────────── */
+function renderRadius() {
+  const grid = document.getElementById('radius-grid');
+  const radii = [
+    { name: 'sm', var: '--radius-sm' },
+    { name: 'md', var: '--radius-md' },
+    { name: 'lg', var: '--radius-lg' },
+    { name: 'pill', var: '--radius-pill' },
+  ];
+  grid.innerHTML = radii.map(r => {
+    const val = getComputedStyle(root).getPropertyValue(r.var).trim();
+    return `<div class="radius-box" style="border-radius:var(${r.var})">${r.name}<br>${val}</div>`;
+  }).join('');
+}
+
+/* ── Export ───────────────────────────────────────── */
+function exportCSS() {
+  const vars = [
+    '--bg', '--bg-elevated', '--bg-card', '--bg-card-hover',
+    '--accent', '--accent-hover',
+    '--brand-red', '--brand-yellow', '--brand-blue',
+    '--footer-bg',
+    '--radius-sm', '--radius-md', '--radius-lg', '--radius-pill',
+    '--max-width', '--gutter',
+    '--space-xs', '--space-sm', '--space-md', '--space-lg',
+    '--space-xl', '--space-2xl', '--space-3xl',
+  ];
+
+  let css = ':root {\n';
+  vars.forEach(v => {
+    const val = getComputedStyle(root).getPropertyValue(v).trim();
+    css += `  ${v}: ${val};\n`;
+  });
+  css += '}';
+
+  document.getElementById('export-code').textContent = css;
+  document.getElementById('export-modal').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('export-modal').classList.remove('active');
+}
+
+function copyCSS() {
+  const text = document.getElementById('export-code').textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard'));
+  closeModal();
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+/* ── Reset ────────────────────────────────────────── */
+function resetAll() {
+  Object.entries(DEFAULTS).forEach(([k, v]) => root.style.setProperty(k, v));
+
+  // Reset color inputs
+  document.querySelectorAll('input[type="color"]').forEach(input => {
+    const def = DEFAULTS[input.dataset.var];
+    if (def) {
+      input.value = def;
+      const hex = input.parentElement.querySelector('.hex');
+      if (hex) hex.value = def;
+    }
+  });
+
+  // Reset ranges
+  document.getElementById('maxw-range').value = 1400;
+  document.getElementById('maxw-val').textContent = '1400px';
+  document.getElementById('gutter-range').value = 4;
+  document.getElementById('gutter-val').textContent = '4vw';
+  document.getElementById('rsm-range').value = 4;
+  document.getElementById('rsm-val').textContent = '4px';
+  document.getElementById('rmd-range').value = 8;
+  document.getElementById('rmd-val').textContent = '8px';
+  document.getElementById('rlg-range').value = 12;
+  document.getElementById('rlg-val').textContent = '12px';
+  document.getElementById('rpill-range').value = 100;
+  document.getElementById('rpill-val').textContent = '100px';
+  document.getElementById('fw-range').value = 700;
+  document.getElementById('fw-val').textContent = '700';
+  document.getElementById('ls-range').value = -3;
+  document.getElementById('ls-val').textContent = '-0.03em';
+
+  document.getElementById('type-display').style.fontWeight = 700;
+  document.getElementById('type-display').style.letterSpacing = '-0.03em';
+
+  renderPalette();
+  renderRadius();
+  showToast('Reset to defaults');
+}
+
+/* ── Close modal on overlay click ────────────────── */
+document.getElementById('export-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+/* ── Init ─────────────────────────────────────────── */
+renderPalette();
+renderSpacing();
+renderRadius();
+</script>
+</body>
+</html>
