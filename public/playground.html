@@ -3,1219 +3,1210 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BoldCrest — Design Playground</title>
+<title>BoldCrest — Page Editor</title>
 <style>
-  /* ── Reset ─────────────────────────────────────────── */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ── Design Tokens (editable) ──────────────────────── */
-  :root {
-    --bg: #0a0a0a;
-    --bg-elevated: #111111;
-    --bg-card: #161616;
-    --bg-card-hover: #1a1a1a;
-    --surface: #1e1e1e;
-    --border: rgba(255,255,255,0.08);
-    --border-hover: rgba(255,255,255,0.15);
-    --text-primary: #ffffff;
-    --text-secondary: rgba(255,255,255,0.55);
-    --text-tertiary: rgba(255,255,255,0.3);
-    --accent: #e63228;
-    --accent-hover: #ff3d32;
-    --accent-glow: rgba(230,50,40,0.15);
+:root {
+  --bg: #0a0a0a; --bg-elevated: #111111; --bg-card: #161616;
+  --accent: #e63228; --accent-hover: #ff3d32;
+  --brand-red: #DA291C; --brand-yellow: #f9b311; --brand-blue: #004c95;
+  --footer-bg: #EDEDED;
+  --max-width: 1400px; --gutter: clamp(1.5rem, 4vw, 4rem);
+  --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px; --radius-pill: 100px;
+  --space-xs: 0.5rem; --space-sm: 1rem; --space-md: 1.5rem;
+  --space-lg: 2.5rem; --space-xl: 4rem; --space-2xl: 6rem; --space-3xl: 10rem;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
-    --brand-red: #DA291C;
-    --brand-yellow: #f9b311;
-    --brand-blue: #004c95;
-    --footer-bg: #EDEDED;
+  --ed-bg: #0d0d0d; --ed-panel: #151515; --ed-border: rgba(255,255,255,0.06);
+  --ed-text: rgba(255,255,255,0.85); --ed-dim: rgba(255,255,255,0.4);
+  --ed-accent: #e63228;
+}
 
-    --space-xs: 0.5rem;
-    --space-sm: 1rem;
-    --space-md: 1.5rem;
-    --space-lg: 2.5rem;
-    --space-xl: 4rem;
-    --space-2xl: 6rem;
-    --space-3xl: 10rem;
+html { font-size: 16px; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--ed-bg); color: var(--ed-text);
+  line-height: 1.5; height: 100vh; display: flex; flex-direction: column;
+  -webkit-font-smoothing: antialiased; overflow: hidden;
+}
 
-    --max-width: 1400px;
-    --gutter: clamp(1.5rem, 4vw, 4rem);
+/* ── Top Bar ───────────────────────────────────── */
+.topbar {
+  height: 48px; min-height: 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px; background: var(--ed-panel);
+  border-bottom: 1px solid var(--ed-border); gap: 12px; z-index: 10;
+}
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.topbar-left svg { width: 22px; height: 22px; }
+.topbar-left svg path { fill: #fff; }
+.topbar-left h1 { font-size: 13px; font-weight: 600; letter-spacing: 0.03em; }
+.topbar-left span { font-size: 9px; color: var(--ed-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-left: 4px; }
+.topbar-right { display: flex; gap: 6px; }
 
-    --radius-sm: 4px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --radius-pill: 100px;
+/* ── Buttons ───────────────────────────────────── */
+.btn {
+  padding: 6px 14px; font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  border-radius: 6px; border: 1px solid var(--ed-border);
+  background: rgba(255,255,255,0.04); color: var(--ed-text);
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
+.btn--accent { background: var(--ed-accent); border-color: var(--ed-accent); color: #fff; }
+.btn--accent:hover { background: #ff3d32; }
+.btn--ghost { border: none; background: none; color: var(--ed-dim); }
+.btn--ghost:hover { color: #fff; }
+.btn--sm { padding: 4px 10px; font-size: 10px; }
+.btn--danger { color: #ff4444; }
+.btn--danger:hover { background: rgba(255,68,68,0.1); }
 
-    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-    --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
-    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+/* ── Main Layout ───────────────────────────────── */
+.editor { display: flex; flex: 1; overflow: hidden; }
 
-    --duration-fast: 0.2s;
-    --duration-normal: 0.4s;
-    --duration-slow: 0.8s;
+/* ── Left Sidebar ──────────────────────────────── */
+.sidebar {
+  width: 240px; min-width: 240px; display: flex; flex-direction: column;
+  background: var(--ed-panel); border-right: 1px solid var(--ed-border);
+  overflow: hidden;
+}
+.sidebar-section { padding: 12px; }
+.sidebar-section + .sidebar-section { border-top: 1px solid var(--ed-border); }
+.sidebar-label {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.14em; color: var(--ed-dim); margin-bottom: 8px;
+}
 
-    /* playground-specific */
-    --pg-sidebar: 320px;
-    --pg-bg: #0d0d0d;
-    --pg-panel: #151515;
-    --pg-border: rgba(255,255,255,0.06);
-    --pg-text: rgba(255,255,255,0.85);
-    --pg-text-dim: rgba(255,255,255,0.4);
-    --pg-accent: #e63228;
-  }
+/* Page list */
+.page-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 10px; border-radius: 6px; cursor: pointer;
+  font-size: 12px; font-weight: 500; color: var(--ed-dim);
+  transition: all 0.15s; margin-bottom: 2px;
+}
+.page-item:hover { background: rgba(255,255,255,0.04); color: var(--ed-text); }
+.page-item.active { background: rgba(230,50,40,0.12); color: #fff; }
+.page-item .page-path { font-size: 9px; font-family: monospace; opacity: 0.5; }
+.page-item .page-delete {
+  opacity: 0; background: none; border: none; color: var(--ed-dim);
+  cursor: pointer; font-size: 14px; padding: 0 4px; transition: opacity 0.15s;
+}
+.page-item:hover .page-delete { opacity: 1; }
+.page-item .page-delete:hover { color: #ff4444; }
 
-  html { font-size: 16px; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    background: var(--pg-bg);
-    color: var(--pg-text);
-    line-height: 1.5;
-    min-height: 100vh;
-    display: flex;
-    -webkit-font-smoothing: antialiased;
-  }
+/* Section Library */
+.library-scroll { overflow-y: auto; flex: 1; padding: 0 12px 12px; }
+.lib-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; border-radius: 6px; cursor: grab;
+  font-size: 11px; font-weight: 500; color: var(--ed-dim);
+  transition: all 0.15s; margin-bottom: 2px; border: 1px solid transparent;
+}
+.lib-item:hover { background: rgba(255,255,255,0.04); color: var(--ed-text); border-color: var(--ed-border); }
+.lib-item:active { cursor: grabbing; }
+.lib-icon {
+  width: 28px; height: 20px; border-radius: 3px; display: flex;
+  align-items: center; justify-content: center; font-size: 10px;
+  background: rgba(255,255,255,0.06); color: var(--ed-dim); flex-shrink: 0;
+}
 
-  /* ── Layout ────────────────────────────────────────── */
-  .sidebar {
-    width: var(--pg-sidebar);
-    min-width: var(--pg-sidebar);
-    height: 100vh;
-    position: sticky;
-    top: 0;
-    overflow-y: auto;
-    background: var(--pg-panel);
-    border-right: 1px solid var(--pg-border);
-    padding: 24px 20px;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.1) transparent;
-  }
-  .sidebar::-webkit-scrollbar { width: 4px; }
-  .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+/* ── Canvas ────────────────────────────────────── */
+.canvas {
+  flex: 1; overflow-y: auto; padding: 24px; display: flex;
+  flex-direction: column; align-items: center; gap: 8px;
+  background: var(--ed-bg);
+}
+.canvas-empty {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  color: var(--ed-dim); font-size: 13px; opacity: 0.5;
+}
 
-  .canvas {
-    flex: 1;
-    padding: 48px var(--gutter);
-    overflow-x: hidden;
-  }
+/* Section Card */
+.section-card {
+  width: 100%; max-width: 800px; border-radius: 10px;
+  border: 1px solid var(--ed-border); background: var(--ed-panel);
+  overflow: hidden; cursor: pointer; transition: all 0.2s;
+  position: relative;
+}
+.section-card:hover { border-color: rgba(255,255,255,0.12); }
+.section-card.selected { border-color: var(--ed-accent); box-shadow: 0 0 0 1px var(--ed-accent); }
+.section-card.drag-over { border-color: var(--ed-accent); border-style: dashed; }
+.section-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px; background: rgba(255,255,255,0.02);
+  border-bottom: 1px solid var(--ed-border);
+}
+.section-card-header .sc-left { display: flex; align-items: center; gap: 8px; }
+.sc-drag {
+  cursor: grab; color: var(--ed-dim); font-size: 14px; padding: 2px;
+  user-select: none; line-height: 1;
+}
+.sc-drag:active { cursor: grabbing; }
+.sc-name { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+.sc-type { font-size: 9px; color: var(--ed-dim); font-family: monospace; }
+.section-card-header .sc-right { display: flex; align-items: center; gap: 4px; }
+.sc-menu-btn {
+  background: none; border: none; color: var(--ed-dim); cursor: pointer;
+  font-size: 16px; padding: 2px 6px; border-radius: 4px; transition: all 0.15s;
+}
+.sc-menu-btn:hover { background: rgba(255,255,255,0.06); color: var(--ed-text); }
 
-  /* ── Sidebar elements ──────────────────────────────── */
-  .logo-area {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 28px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--pg-border);
-  }
-  .logo-area svg { width: 28px; height: 28px; }
-  .logo-area svg path { fill: #fff; }
-  .logo-area h1 { font-size: 14px; font-weight: 600; letter-spacing: 0.04em; }
-  .logo-area span { font-size: 10px; color: var(--pg-text-dim); text-transform: uppercase; letter-spacing: 0.12em; }
+/* Section Preview */
+.section-preview { padding: 16px; min-height: 60px; }
 
-  .section-label {
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: var(--pg-text-dim);
-    margin: 24px 0 12px;
-  }
-  .section-label:first-of-type { margin-top: 0; }
+/* Mini previews per type */
+.mini-hero { text-align: left; }
+.mini-hero .mh-heading { font-size: 18px; font-weight: 700; line-height: 1.1; color: rgba(255,255,255,0.55); max-width: 400px; }
+.mini-hero .mh-sub { font-size: 11px; color: var(--ed-accent); margin-top: 6px; }
 
-  .token-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 0;
-    gap: 8px;
-  }
-  .token-row label {
-    font-size: 12px;
-    color: var(--pg-text);
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
+.mini-works { display: flex; gap: 6px; }
+.mini-works .mw-item { flex: 1; height: 50px; border-radius: 4px; background: var(--bg-card); }
 
-  /* Color input */
-  .color-input {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .color-input input[type="color"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 28px;
-    height: 28px;
-    border: 2px solid var(--pg-border);
-    border-radius: 6px;
-    background: none;
-    cursor: pointer;
-    padding: 0;
-  }
-  .color-input input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
-  .color-input input[type="color"]::-webkit-color-swatch { border-radius: 3px; border: none; }
-  .color-input .hex {
-    font-size: 11px;
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    color: var(--pg-text-dim);
-    width: 64px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--pg-border);
-    border-radius: 4px;
-    padding: 3px 6px;
-    text-align: center;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .color-input .hex:focus { border-color: var(--pg-accent); }
+.mini-wedo .mw-text { font-size: 16px; font-weight: 700; line-height: 1.2; color: rgba(255,255,255,0.5); }
+.mini-wedo .mw-btn { display: inline-block; margin-top: 8px; font-size: 9px; padding: 4px 12px; border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; color: var(--ed-dim); }
 
-  /* Range input */
-  input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 4px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 2px;
-    outline: none;
-  }
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: var(--pg-accent);
-    cursor: pointer;
-    border: 2px solid var(--pg-bg);
-  }
+.mini-clients { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.mini-clients .mc-item { height: 28px; border-radius: 3px; background: rgba(255,255,255,0.04); border: 1px solid var(--ed-border); }
 
-  .range-row { display: flex; flex-direction: column; gap: 4px; padding: 4px 0; }
-  .range-row .range-header { display: flex; justify-content: space-between; align-items: center; }
-  .range-row label { font-size: 12px; color: var(--pg-text); }
-  .range-row .range-value {
-    font-size: 11px;
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    color: var(--pg-text-dim);
-  }
+.mini-services { display: flex; gap: 6px; }
+.mini-services .ms-card { flex: 1; height: 60px; border-radius: 6px; padding: 8px; display: flex; flex-direction: column; justify-content: flex-end; }
+.mini-services .ms-card span { font-size: 9px; font-weight: 700; line-height: 1.1; }
 
-  /* Select */
-  select {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--pg-border);
-    border-radius: 4px;
-    color: var(--pg-text);
-    font-size: 12px;
-    padding: 4px 8px;
-    outline: none;
-    cursor: pointer;
-  }
-  select:focus { border-color: var(--pg-accent); }
+.mini-workhero .mwh-heading { font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.55); }
+.mini-workhero .mwh-filters { display: flex; gap: 6px; margin-top: 8px; }
+.mini-workhero .mwh-pill { padding: 3px 10px; border-radius: 20px; border: 1px solid var(--ed-border); font-size: 9px; color: var(--ed-dim); }
 
-  /* Buttons */
-  .btn-row { display: flex; gap: 8px; margin-top: 16px; }
-  .btn {
-    flex: 1;
-    padding: 8px 12px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    border-radius: 6px;
-    border: 1px solid var(--pg-border);
-    background: rgba(255,255,255,0.04);
-    color: var(--pg-text);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
-  .btn--accent { background: var(--pg-accent); border-color: var(--pg-accent); color: #fff; }
-  .btn--accent:hover { background: #ff3d32; }
+.mini-projectgrid { display: flex; flex-direction: column; gap: 6px; }
+.mini-projectgrid .mpg-item { height: 40px; border-radius: 4px; background: var(--bg-card); }
 
-  /* ── Canvas Sections ───────────────────────────────── */
-  .preview-section {
-    max-width: 1100px;
-    margin: 0 auto 64px;
-  }
-  .preview-section h2 {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: var(--pg-text-dim);
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .preview-section h2::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--pg-border);
-  }
+.mini-serviceshero .msh-h { font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.6); }
+.mini-serviceshero .msh-sub { font-size: 10px; color: var(--ed-accent); margin-top: 4px; }
 
-  /* ── Color Palette Preview ─────────────────────────── */
-  .palette-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 12px;
-  }
-  .palette-swatch {
-    border-radius: 10px;
-    overflow: hidden;
-    border: 1px solid var(--pg-border);
-    background: var(--pg-panel);
-  }
-  .palette-swatch .swatch-color {
-    height: 72px;
-    transition: background-color 0.3s;
-  }
-  .palette-swatch .swatch-info {
-    padding: 10px 12px;
-  }
-  .palette-swatch .swatch-name {
-    font-size: 12px;
-    font-weight: 500;
-    margin-bottom: 2px;
-  }
-  .palette-swatch .swatch-value {
-    font-size: 10px;
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    color: var(--pg-text-dim);
-  }
+.mini-accordion { display: flex; flex-direction: column; gap: 4px; }
+.mini-accordion .ma-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; border: 1px solid var(--ed-border); border-radius: 4px; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.5); }
+.mini-accordion .ma-icon { font-size: 14px; color: var(--ed-dim); }
 
-  /* ── Typography Preview ────────────────────────────── */
-  .type-specimen {
-    background: var(--bg);
-    border-radius: 12px;
-    border: 1px solid var(--pg-border);
-    padding: 40px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-  .type-row {
-    display: flex;
-    align-items: baseline;
-    gap: 20px;
-  }
-  .type-label {
-    width: 80px;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--text-tertiary);
-    flex-shrink: 0;
-  }
-  .type-sample { color: var(--text-primary); transition: all 0.3s; }
-  .type-display { font-size: clamp(2rem, 5vw, 4.5rem); font-weight: 700; line-height: 1.05; letter-spacing: -0.03em; }
-  .type-h1 { font-size: clamp(1.8rem, 3.5vw, 3rem); font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; }
-  .type-h2 { font-size: clamp(1.2rem, 2vw, 1.8rem); font-weight: 600; line-height: 1.2; }
-  .type-body { font-size: 1rem; line-height: 1.6; color: var(--text-secondary); max-width: 560px; }
-  .type-caption { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-tertiary); }
+.mini-contacthero .mch-h { font-size: 20px; font-weight: 700; color: rgba(255,255,255,0.6); }
 
-  /* ── Component Previews ────────────────────────────── */
-  .component-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 20px;
-  }
-  .component-card {
-    background: var(--bg);
-    border: 1px solid var(--pg-border);
-    border-radius: 12px;
-    overflow: hidden;
-  }
-  .component-card .card-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--pg-text-dim);
-    padding: 12px 20px;
-    border-bottom: 1px solid var(--pg-border);
-    background: var(--pg-panel);
-  }
-  .component-card .card-body {
-    padding: 32px 24px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    align-items: center;
-    justify-content: center;
-    min-height: 140px;
-  }
+.mini-contactform { display: flex; gap: 12px; }
+.mini-contactform .mcf-left { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.mini-contactform .mcf-field { height: 20px; border-radius: 3px; border: 1px solid var(--ed-border); background: rgba(255,255,255,0.02); }
+.mini-contactform .mcf-btn { height: 22px; border-radius: 4px; background: var(--ed-accent); width: 80px; margin-top: 4px; }
+.mini-contactform .mcf-right { width: 100px; font-size: 9px; color: var(--ed-dim); }
 
-  /* Button components */
-  .cta-button {
-    display: inline-flex;
-    align-items: center;
-    border-radius: var(--radius-pill);
-    border: 1px solid rgba(255,255,255,0.25);
-    background: #000;
-    padding: 0.7rem 1.5rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.5s var(--ease-out-quart);
-    text-decoration: none;
-    position: relative;
-  }
-  .cta-button:hover { border-color: rgba(255,255,255,0.6); color: #fff; }
+.mini-peoplehero .mph-h { font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.55); line-height: 1.15; }
 
-  .inline-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    border-radius: var(--radius-pill);
-    border: 1px solid rgba(255,255,255,0.25);
-    background: #000;
-    padding: 0.5em 1em;
-    font-size: 0.65rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.5s var(--ease-out-quart);
-    text-decoration: none;
-  }
-  .inline-button:hover { border-color: rgba(255,255,255,0.6); color: #fff; }
-  .inline-button svg { transition: transform 0.5s var(--ease-out-quart); }
-  .inline-button:hover svg { transform: translateX(3px); }
+.mini-values { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.mini-values .mv-heading { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.5); line-height: 1.2; }
+.mini-values .mv-body { font-size: 9px; color: var(--ed-dim); line-height: 1.4; }
 
-  /* Magnetic trail layers (decorative) */
-  .magnetic-demo {
-    position: relative;
-    display: inline-flex;
-  }
-  .magnetic-demo .trail {
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    border: 1.5px solid transparent;
-    transition: opacity 0.3s, transform 0.45s var(--ease-out-quart);
-    opacity: 0;
-  }
-  .magnetic-demo:hover .trail { opacity: 1; }
-  .magnetic-demo:hover .trail-red { transform: translate(-4px, -3px); }
-  .magnetic-demo:hover .trail-yellow { transform: translate(2px, 4px); }
-  .magnetic-demo:hover .trail-blue { transform: translate(5px, -2px); }
-  .trail-red { border-color: var(--brand-red); }
-  .trail-yellow { border-color: var(--brand-yellow); }
-  .trail-blue { border-color: var(--brand-blue); }
+.mini-process { display: flex; flex-direction: column; gap: 4px; }
+.mini-process .mp-step { display: flex; align-items: center; gap: 10px; padding: 4px 0; border-bottom: 1px solid var(--ed-border); }
+.mini-process .mp-num { font-size: 9px; color: var(--ed-dim); font-family: monospace; width: 20px; }
+.mini-process .mp-title { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.5); }
 
-  /* Service cards */
-  .service-card {
-    border-radius: var(--radius-lg);
-    padding: 28px 24px;
-    min-height: 160px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    transition: background 0.3s;
-    flex: 1;
-    min-width: 140px;
-  }
-  .service-card .sc-num { font-size: 11px; font-weight: 600; opacity: 0.6; margin-bottom: 8px; }
-  .service-card .sc-title { font-size: 18px; font-weight: 700; line-height: 1.2; }
+.mini-teamgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.mini-teamgrid .mt-item { aspect-ratio: 3/4; border-radius: 4px; background: var(--bg-card); display: flex; align-items: center; justify-content: center; }
+.mini-teamgrid .mt-item svg { width: 16px; height: 16px; color: var(--ed-dim); opacity: 0.3; }
 
-  /* Nav preview */
-  .nav-preview {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 24px;
-    background: rgba(10,10,10,0.85);
-    backdrop-filter: blur(20px);
-    border-radius: var(--radius-pill);
-    border: 1px solid var(--border);
-    width: 100%;
-  }
-  .nav-preview .nav-logo { display: flex; align-items: center; gap: 8px; }
-  .nav-preview .nav-logo svg { width: 24px; height: 24px; }
-  .nav-preview .nav-logo svg path { fill: #fff; }
-  .nav-preview .nav-links { display: flex; gap: 24px; }
-  .nav-preview .nav-links a {
-    font-size: 12px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-secondary);
-    text-decoration: none;
-    transition: color 0.3s;
-  }
-  .nav-preview .nav-links a:hover { color: #fff; }
+.mini-cta { text-align: center; }
+.mini-cta .mc-heading { font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.5); }
+.mini-cta .mc-btn { display: inline-block; margin-top: 8px; padding: 6px 18px; border-radius: 20px; background: var(--ed-accent); color: #fff; font-size: 10px; font-weight: 600; }
 
-  /* Footer preview */
-  .footer-preview {
-    background: var(--footer-bg);
-    border-radius: 12px;
-    padding: 32px 28px;
-    color: #000;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-    transition: background-color 0.3s;
-  }
-  .footer-preview .fp-top { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
-  .footer-preview .fp-copy { font-size: 12px; color: rgba(0,0,0,0.45); }
-  .footer-preview .fp-links { font-size: 12px; color: rgba(0,0,0,0.55); }
-  .footer-preview .fp-links a { color: inherit; text-decoration: none; display: block; margin: 2px 0; }
-  .footer-preview .fp-links a:hover { color: #000; }
-  .footer-preview .fp-wordmark {
-    font-size: clamp(2rem, 6vw, 4rem);
-    font-weight: 700;
-    line-height: 0.85;
-    color: #000;
-    margin-top: auto;
-  }
+.mini-text .mt-body { font-size: 11px; color: var(--ed-dim); line-height: 1.5; max-width: 500px; }
 
-  /* ── Spacing Visualization ─────────────────────────── */
-  .spacing-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 6px 0;
-  }
-  .spacing-label {
-    width: 70px;
-    font-size: 11px;
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    color: var(--pg-text-dim);
-    flex-shrink: 0;
-  }
-  .spacing-bar {
-    height: 24px;
-    border-radius: 4px;
-    background: var(--accent);
-    opacity: 0.5;
-    transition: width 0.5s var(--ease-out-expo), background 0.3s;
-  }
-  .spacing-bar:hover { opacity: 0.8; }
-  .spacing-val {
-    font-size: 10px;
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    color: var(--pg-text-dim);
-  }
+/* Add section button */
+.add-section-btn {
+  width: 100%; max-width: 800px; padding: 16px;
+  border: 2px dashed var(--ed-border); border-radius: 10px;
+  background: transparent; color: var(--ed-dim); font-size: 12px;
+  font-weight: 500; cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.add-section-btn:hover { border-color: var(--ed-accent); color: var(--ed-accent); }
 
-  /* ── Radius Preview ────────────────────────────────── */
-  .radius-grid {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
-  .radius-box {
-    width: 80px;
-    height: 80px;
-    background: var(--accent);
-    opacity: 0.6;
-    transition: border-radius 0.5s var(--ease-out-expo), background 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    font-weight: 600;
-    color: #fff;
-  }
-  .radius-box:hover { opacity: 0.9; }
+/* ── Right Panel ───────────────────────────────── */
+.right-panel {
+  width: 320px; min-width: 320px; background: var(--ed-panel);
+  border-left: 1px solid var(--ed-border); display: flex;
+  flex-direction: column; overflow: hidden;
+}
+.right-panel.hidden { display: none; }
+.rp-header {
+  padding: 12px 16px; border-bottom: 1px solid var(--ed-border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.rp-header h3 { font-size: 12px; font-weight: 600; }
+.rp-close { background: none; border: none; color: var(--ed-dim); cursor: pointer; font-size: 16px; padding: 2px; }
+.rp-close:hover { color: #fff; }
+.rp-body { flex: 1; overflow-y: auto; padding: 16px; }
+.rp-body::-webkit-scrollbar { width: 4px; }
+.rp-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
-  /* ── Easing Preview ────────────────────────────────── */
-  .easing-grid { display: flex; flex-direction: column; gap: 12px; }
-  .easing-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 8px 0;
-  }
-  .easing-name {
-    width: 120px;
-    font-size: 11px;
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    color: var(--pg-text-dim);
-    flex-shrink: 0;
-  }
-  .easing-track {
-    flex: 1;
-    height: 4px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 2px;
-    position: relative;
-  }
-  .easing-dot {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--accent);
-    position: absolute;
-    top: 50%;
-    left: 0;
-    transform: translateY(-50%);
-    transition: background 0.3s;
-  }
-  .easing-row:hover .easing-dot { left: calc(100% - 16px); }
-  .ease-expo .easing-dot { transition: left 1s var(--ease-out-expo), background 0.3s; }
-  .ease-quart .easing-dot { transition: left 1s var(--ease-out-quart), background 0.3s; }
-  .ease-inout .easing-dot { transition: left 1s var(--ease-in-out), background 0.3s; }
+.prop-group { margin-bottom: 16px; }
+.prop-label {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--ed-dim); margin-bottom: 6px;
+}
+.prop-input {
+  width: 100%; padding: 7px 10px; border-radius: 6px;
+  border: 1px solid var(--ed-border); background: rgba(255,255,255,0.03);
+  color: var(--ed-text); font-size: 12px; outline: none; transition: border-color 0.15s;
+  font-family: inherit;
+}
+.prop-input:focus { border-color: var(--ed-accent); }
+textarea.prop-input { resize: vertical; min-height: 60px; line-height: 1.5; }
+select.prop-input { cursor: pointer; }
+.prop-color-row { display: flex; gap: 8px; align-items: center; }
+.prop-color-row input[type="color"] {
+  -webkit-appearance: none; appearance: none; width: 32px; height: 32px;
+  border: 2px solid var(--ed-border); border-radius: 6px; background: none;
+  cursor: pointer; padding: 0; flex-shrink: 0;
+}
+.prop-color-row input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+.prop-color-row input[type="color"]::-webkit-color-swatch { border-radius: 3px; border: none; }
+.prop-toggle { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; }
+.prop-toggle label { font-size: 12px; }
+.toggle-switch {
+  position: relative; width: 36px; height: 20px; background: rgba(255,255,255,0.1);
+  border-radius: 10px; cursor: pointer; transition: background 0.2s;
+}
+.toggle-switch.on { background: var(--ed-accent); }
+.toggle-switch::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 16px; height: 16px; border-radius: 50%; background: #fff;
+  transition: transform 0.2s;
+}
+.toggle-switch.on::after { transform: translateX(16px); }
 
-  /* ── Export Modal ──────────────────────────────────── */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(8px);
-    z-index: 1000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-  }
-  .modal-overlay.active { display: flex; }
-  .modal {
-    background: var(--pg-panel);
-    border: 1px solid var(--pg-border);
-    border-radius: 12px;
-    width: 100%;
-    max-width: 640px;
-    max-height: 80vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--pg-border);
-  }
-  .modal-header h3 { font-size: 14px; font-weight: 600; }
-  .modal-close {
-    background: none;
-    border: none;
-    color: var(--pg-text-dim);
-    font-size: 18px;
-    cursor: pointer;
-    padding: 4px;
-  }
-  .modal-close:hover { color: #fff; }
-  .modal-body {
-    padding: 20px;
-    overflow-y: auto;
-  }
-  .modal-body pre {
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    font-size: 12px;
-    line-height: 1.6;
-    color: var(--pg-text);
-    white-space: pre-wrap;
-    word-break: break-all;
-  }
-  .modal-footer {
-    padding: 12px 20px;
-    border-top: 1px solid var(--pg-border);
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-  }
+/* Steps editor */
+.step-editor { border: 1px solid var(--ed-border); border-radius: 6px; padding: 10px; margin-bottom: 6px; }
+.step-editor .step-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.step-editor .step-num { font-size: 10px; font-weight: 700; color: var(--ed-dim); }
+.step-editor .step-del { background: none; border: none; color: var(--ed-dim); cursor: pointer; font-size: 12px; }
+.step-editor .step-del:hover { color: #ff4444; }
+.step-editor input, .step-editor textarea { width: 100%; margin-bottom: 4px; }
 
-  /* ── Toast ─────────────────────────────────────────── */
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: var(--pg-accent);
-    color: #fff;
-    font-size: 13px;
-    font-weight: 500;
-    padding: 10px 20px;
-    border-radius: var(--radius-pill);
-    transition: transform 0.4s var(--ease-out-expo);
-    z-index: 2000;
-    pointer-events: none;
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
+/* ── Context Menu ──────────────────────────────── */
+.ctx-menu {
+  position: fixed; background: var(--ed-panel); border: 1px solid var(--ed-border);
+  border-radius: 8px; padding: 4px; z-index: 100; min-width: 140px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4); display: none;
+}
+.ctx-menu.show { display: block; }
+.ctx-item {
+  display: block; width: 100%; padding: 6px 12px; font-size: 11px;
+  background: none; border: none; color: var(--ed-text); cursor: pointer;
+  text-align: left; border-radius: 4px; transition: background 0.1s;
+}
+.ctx-item:hover { background: rgba(255,255,255,0.06); }
+.ctx-item.danger { color: #ff4444; }
+.ctx-item.danger:hover { background: rgba(255,68,68,0.1); }
+.ctx-sep { height: 1px; background: var(--ed-border); margin: 4px 0; }
 
-  /* ── Responsive ────────────────────────────────────── */
-  @media (max-width: 768px) {
-    body { flex-direction: column; }
-    .sidebar {
-      width: 100%;
-      min-width: 100%;
-      height: auto;
-      position: relative;
-      max-height: 50vh;
-    }
-    .canvas { padding: 32px 16px; }
-    .component-grid { grid-template-columns: 1fr; }
-  }
+/* ── Section Picker Modal ──────────────────────── */
+.picker-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px); z-index: 50; display: none;
+  align-items: center; justify-content: center; padding: 24px;
+}
+.picker-overlay.show { display: flex; }
+.picker {
+  background: var(--ed-panel); border: 1px solid var(--ed-border);
+  border-radius: 12px; width: 100%; max-width: 560px; padding: 20px;
+}
+.picker h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+.picker-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.picker-item {
+  padding: 12px; border-radius: 8px; border: 1px solid var(--ed-border);
+  background: rgba(255,255,255,0.02); cursor: pointer; transition: all 0.15s;
+  text-align: center;
+}
+.picker-item:hover { border-color: var(--ed-accent); background: rgba(230,50,40,0.06); }
+.picker-item .pi-icon { font-size: 20px; margin-bottom: 4px; }
+.picker-item .pi-name { font-size: 11px; font-weight: 600; }
+.picker-item .pi-desc { font-size: 9px; color: var(--ed-dim); margin-top: 2px; }
+
+/* ── Design Tokens Drawer ──────────────────────── */
+.drawer-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  z-index: 40; display: none;
+}
+.drawer-overlay.show { display: block; }
+.drawer {
+  position: fixed; top: 0; right: -360px; width: 360px; height: 100vh;
+  background: var(--ed-panel); border-left: 1px solid var(--ed-border);
+  z-index: 41; transition: right 0.3s var(--ease-out-expo);
+  overflow-y: auto; padding: 20px;
+}
+.drawer.show { right: 0; }
+.drawer h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+.drawer .token-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; }
+.drawer .token-row label { font-size: 11px; color: var(--ed-text); white-space: nowrap; }
+.drawer .color-input { display: flex; align-items: center; gap: 6px; }
+.drawer .color-input input[type="color"] {
+  -webkit-appearance: none; appearance: none; width: 26px; height: 26px;
+  border: 2px solid var(--ed-border); border-radius: 5px; background: none;
+  cursor: pointer; padding: 0;
+}
+.drawer .color-input input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+.drawer .color-input input[type="color"]::-webkit-color-swatch { border-radius: 3px; border: none; }
+.drawer .hex-input {
+  font-size: 10px; font-family: monospace; color: var(--ed-dim);
+  width: 60px; background: rgba(255,255,255,0.04); border: 1px solid var(--ed-border);
+  border-radius: 4px; padding: 3px 6px; text-align: center; outline: none;
+}
+.drawer .hex-input:focus { border-color: var(--ed-accent); }
+.drawer .section-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ed-dim); margin: 16px 0 8px; }
+.drawer .range-row { display: flex; flex-direction: column; gap: 4px; padding: 4px 0; }
+.drawer .range-header { display: flex; justify-content: space-between; }
+.drawer .range-header label { font-size: 11px; }
+.drawer .range-val { font-size: 10px; font-family: monospace; color: var(--ed-dim); }
+.drawer input[type="range"] {
+  -webkit-appearance: none; width: 100%; height: 4px;
+  background: rgba(255,255,255,0.08); border-radius: 2px; outline: none;
+}
+.drawer input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--ed-accent); cursor: pointer; border: 2px solid var(--ed-bg);
+}
+
+/* ── Modal ─────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px); z-index: 60; display: none;
+  align-items: center; justify-content: center; padding: 24px;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--ed-panel); border: 1px solid var(--ed-border);
+  border-radius: 12px; width: 100%; max-width: 700px; max-height: 80vh;
+  overflow: hidden; display: flex; flex-direction: column;
+}
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 18px; border-bottom: 1px solid var(--ed-border);
+}
+.modal-header h3 { font-size: 13px; font-weight: 600; }
+.modal-close { background: none; border: none; color: var(--ed-dim); font-size: 18px; cursor: pointer; }
+.modal-close:hover { color: #fff; }
+.modal-body { padding: 18px; overflow-y: auto; flex: 1; }
+.modal-body pre {
+  font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px;
+  line-height: 1.6; color: var(--ed-text); white-space: pre-wrap; word-break: break-word;
+}
+.modal-footer {
+  padding: 10px 18px; border-top: 1px solid var(--ed-border);
+  display: flex; justify-content: flex-end; gap: 8px;
+}
+
+/* ── Toast ─────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--ed-accent); color: #fff; font-size: 12px; font-weight: 500;
+  padding: 10px 20px; border-radius: 100px; z-index: 200; pointer-events: none;
+  transition: transform 0.4s var(--ease-out-expo);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── New Page Modal ────────────────────────────── */
+.newpage-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 55; display: none; align-items: center; justify-content: center;
+}
+.newpage-overlay.show { display: flex; }
+.newpage-modal { background: var(--ed-panel); border: 1px solid var(--ed-border); border-radius: 12px; padding: 20px; width: 320px; }
+.newpage-modal h3 { font-size: 14px; margin-bottom: 12px; }
+.newpage-modal input { width: 100%; margin-bottom: 8px; }
+.newpage-modal .btn-row { display: flex; gap: 6px; justify-content: flex-end; }
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════ -->
-<!-- SIDEBAR                                            -->
-<!-- ═══════════════════════════════════════════════════ -->
-<aside class="sidebar">
-  <div class="logo-area">
+<!-- ═══ TOP BAR ════════════════════════════════ -->
+<div class="topbar">
+  <div class="topbar-left">
     <svg viewBox="0 0 384.09 384"><path d="M321.01,81.6v-2.75c-.93-.36-1.75-.71-2.59-.99-8.55-2.85-17.11-5.71-25.67-8.52-26.48-8.7-52.96-17.4-79.43-26.11h0s-2.56-.84-2.56-.84l-11.78-3.92-6.23-2.08-2.65.89s0,0,0,0c-2.13.72-4.26,1.43-6.39,2.14h0s-14.07,4.73-14.07,4.73h-.02c-27.79,9.32-55.59,18.64-83.38,27.95-6.55,2.19-13.08,4.42-19.69,6.66v2.61c0,45.43.01,90.86,0,136.28,0,13.38,2.79,26.12,8.44,38.25,8.64,18.55,22.04,33.2,37.91,45.71,22.54,17.77,47.81,30.42,74.74,39.82,1.51.53,6.13,2.14,6.13,2.14l5.03-1.78c.5-.17,1-.34,1.51-.52,1.29-.45,2.58-.91,3.87-1.38,14.85-5.43,29.16-12.08,42.9-19.98,18.41-10.59,35.35-23.05,49.24-39.32,16.32-19.11,24.99-40.88,24.78-66.35-.37-44.22-.1-88.44-.1-132.66ZM297.55,238.3c-17.69-24.61-35.31-49.27-52.91-73.95-6.98-9.78-15.27-9.84-22.23-.1-15.56,21.78-31.08,43.6-46.75,65.3-5.93,8.2-13.86,8.15-19.82.08-4.45-6.01-8.72-12.16-13.05-18.25-7.01-9.85-15.04-9.91-22.15-.04-8.87,12.31-17.56,24.76-26.56,36.98-.39-.78-.78-1.57-1.15-2.36-4.8-10.3-7.17-21.12-7.17-32.48.02-38.57,0-77.15,0-115.72v-2.22c5.61-1.9,11.16-3.79,16.72-5.65,21.05-7.06,42.1-14.11,63.15-21.17h0s25.8-8.61,25.8-8.61l1.47-.49,108.92,35.99v2.33c0,37.55-.23,75.1.09,112.65.08,9.86-1.41,19.06-4.36,27.7Z"/></svg>
-    <div><h1>BoldCrest</h1><span>Design Playground</span></div>
+    <h1>BoldCrest <span>Page Editor</span></h1>
   </div>
+  <div class="topbar-right">
+    <button class="btn" onclick="openDrawer()">Design Tokens</button>
+    <button class="btn btn--accent" onclick="sendToClaude()">Send to Claude</button>
+  </div>
+</div>
 
-  <!-- Colors -->
-  <div class="section-label">Colors</div>
+<!-- ═══ MAIN EDITOR ═══════════════════════════ -->
+<div class="editor">
 
-  <div class="token-row">
-    <label>Background</label>
-    <div class="color-input">
-      <input type="color" data-var="--bg" value="#0a0a0a">
-      <input class="hex" data-var="--bg" value="#0a0a0a">
+  <!-- Left Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Pages</div>
+      <div id="page-list"></div>
+      <button class="btn btn--sm" style="width:100%;margin-top:8px;" onclick="openNewPage()">+ New Page</button>
     </div>
-  </div>
-  <div class="token-row">
-    <label>Elevated</label>
-    <div class="color-input">
-      <input type="color" data-var="--bg-elevated" value="#111111">
-      <input class="hex" data-var="--bg-elevated" value="#111111">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Section Library</div>
     </div>
-  </div>
-  <div class="token-row">
-    <label>Card</label>
-    <div class="color-input">
-      <input type="color" data-var="--bg-card" value="#161616">
-      <input class="hex" data-var="--bg-card" value="#161616">
+    <div class="library-scroll" id="library"></div>
+  </aside>
+
+  <!-- Canvas -->
+  <main class="canvas" id="canvas"></main>
+
+  <!-- Right Panel -->
+  <aside class="right-panel hidden" id="right-panel">
+    <div class="rp-header">
+      <h3 id="rp-title">Properties</h3>
+      <button class="rp-close" onclick="closeRightPanel()">&times;</button>
     </div>
-  </div>
-  <div class="token-row">
-    <label>Accent</label>
-    <div class="color-input">
-      <input type="color" data-var="--accent" value="#e63228">
-      <input class="hex" data-var="--accent" value="#e63228">
-    </div>
-  </div>
-  <div class="token-row">
-    <label>Accent Hover</label>
-    <div class="color-input">
-      <input type="color" data-var="--accent-hover" value="#ff3d32">
-      <input class="hex" data-var="--accent-hover" value="#ff3d32">
-    </div>
-  </div>
+    <div class="rp-body" id="rp-body"></div>
+  </aside>
+</div>
 
-  <div class="section-label">Brand Colors</div>
-  <div class="token-row">
-    <label>Red</label>
-    <div class="color-input">
-      <input type="color" data-var="--brand-red" value="#DA291C">
-      <input class="hex" data-var="--brand-red" value="#DA291C">
-    </div>
+<!-- Context Menu -->
+<div class="ctx-menu" id="ctx-menu"></div>
+
+<!-- Section Picker -->
+<div class="picker-overlay" id="picker-overlay" onclick="if(event.target===this)closePicker()">
+  <div class="picker">
+    <h3>Add Section</h3>
+    <div class="picker-grid" id="picker-grid"></div>
   </div>
-  <div class="token-row">
-    <label>Yellow</label>
-    <div class="color-input">
-      <input type="color" data-var="--brand-yellow" value="#f9b311">
-      <input class="hex" data-var="--brand-yellow" value="#f9b311">
-    </div>
-  </div>
-  <div class="token-row">
-    <label>Blue</label>
-    <div class="color-input">
-      <input type="color" data-var="--brand-blue" value="#004c95">
-      <input class="hex" data-var="--brand-blue" value="#004c95">
-    </div>
-  </div>
-  <div class="token-row">
-    <label>Footer BG</label>
-    <div class="color-input">
-      <input type="color" data-var="--footer-bg" value="#EDEDED">
-      <input class="hex" data-var="--footer-bg" value="#EDEDED">
-    </div>
-  </div>
+</div>
 
-  <div class="section-label">Layout</div>
-  <div class="range-row">
-    <div class="range-header"><label>Max Width</label><span class="range-value" id="maxw-val">1400px</span></div>
-    <input type="range" min="900" max="1800" value="1400" id="maxw-range">
-  </div>
-  <div class="range-row">
-    <div class="range-header"><label>Gutter</label><span class="range-value" id="gutter-val">4vw</span></div>
-    <input type="range" min="1" max="8" step="0.5" value="4" id="gutter-range">
-  </div>
+<!-- Design Tokens Drawer -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer"></div>
 
-  <div class="section-label">Radius</div>
-  <div class="range-row">
-    <div class="range-header"><label>Small</label><span class="range-value" id="rsm-val">4px</span></div>
-    <input type="range" min="0" max="20" value="4" id="rsm-range">
-  </div>
-  <div class="range-row">
-    <div class="range-header"><label>Medium</label><span class="range-value" id="rmd-val">8px</span></div>
-    <input type="range" min="0" max="30" value="8" id="rmd-range">
-  </div>
-  <div class="range-row">
-    <div class="range-header"><label>Large</label><span class="range-value" id="rlg-val">12px</span></div>
-    <input type="range" min="0" max="40" value="12" id="rlg-range">
-  </div>
-  <div class="range-row">
-    <div class="range-header"><label>Pill</label><span class="range-value" id="rpill-val">100px</span></div>
-    <input type="range" min="10" max="200" value="100" id="rpill-range">
-  </div>
-
-  <div class="section-label">Typography</div>
-  <div class="range-row">
-    <div class="range-header"><label>Display Weight</label><span class="range-value" id="fw-val">700</span></div>
-    <input type="range" min="300" max="900" step="100" value="700" id="fw-range">
-  </div>
-  <div class="range-row">
-    <div class="range-header"><label>Letter Spacing</label><span class="range-value" id="ls-val">-0.03em</span></div>
-    <input type="range" min="-6" max="2" step="0.5" value="-3" id="ls-range">
-  </div>
-
-  <div class="btn-row">
-    <button class="btn" onclick="resetAll()">Reset</button>
-    <button class="btn btn--accent" onclick="exportCSS()">Export CSS</button>
-  </div>
-</aside>
-
-<!-- ═══════════════════════════════════════════════════ -->
-<!-- CANVAS                                             -->
-<!-- ═══════════════════════════════════════════════════ -->
-<main class="canvas">
-
-  <!-- Color Palette -->
-  <section class="preview-section">
-    <h2>Color Palette</h2>
-    <div class="palette-grid" id="palette-grid"></div>
-  </section>
-
-  <!-- Typography -->
-  <section class="preview-section">
-    <h2>Typography</h2>
-    <div class="type-specimen" id="type-specimen">
-      <div class="type-row">
-        <span class="type-label">Display</span>
-        <span class="type-sample type-display" id="type-display">BoldCrest</span>
-      </div>
-      <div class="type-row">
-        <span class="type-label">Heading 1</span>
-        <span class="type-sample type-h1">We do many things very well.</span>
-      </div>
-      <div class="type-row">
-        <span class="type-label">Heading 2</span>
-        <span class="type-sample type-h2">Brand Development &amp; Strategy</span>
-      </div>
-      <div class="type-row">
-        <span class="type-label">Body</span>
-        <span class="type-sample type-body">We craft bold brand identities and digital experiences that push boundaries and create lasting impact for ambitious companies worldwide.</span>
-      </div>
-      <div class="type-row">
-        <span class="type-label">Caption</span>
-        <span class="type-sample type-caption">Selected Works &mdash; 2024</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Components: Navigation -->
-  <section class="preview-section">
-    <h2>Navigation</h2>
-    <div class="component-card">
-      <div class="card-label">Header Bar</div>
-      <div class="card-body" style="background: var(--bg); padding: 24px;">
-        <div class="nav-preview">
-          <div class="nav-logo">
-            <svg viewBox="0 0 384.09 384"><path d="M321.01,81.6v-2.75c-.93-.36-1.75-.71-2.59-.99-8.55-2.85-17.11-5.71-25.67-8.52-26.48-8.7-52.96-17.4-79.43-26.11h0s-2.56-.84-2.56-.84l-11.78-3.92-6.23-2.08-2.65.89s0,0,0,0c-2.13.72-4.26,1.43-6.39,2.14h0s-14.07,4.73-14.07,4.73h-.02c-27.79,9.32-55.59,18.64-83.38,27.95-6.55,2.19-13.08,4.42-19.69,6.66v2.61c0,45.43.01,90.86,0,136.28,0,13.38,2.79,26.12,8.44,38.25,8.64,18.55,22.04,33.2,37.91,45.71,22.54,17.77,47.81,30.42,74.74,39.82,1.51.53,6.13,2.14,6.13,2.14l5.03-1.78c.5-.17,1-.34,1.51-.52,1.29-.45,2.58-.91,3.87-1.38,14.85-5.43,29.16-12.08,42.9-19.98,18.41-10.59,35.35-23.05,49.24-39.32,16.32-19.11,24.99-40.88,24.78-66.35-.37-44.22-.1-88.44-.1-132.66ZM297.55,238.3c-17.69-24.61-35.31-49.27-52.91-73.95-6.98-9.78-15.27-9.84-22.23-.1-15.56,21.78-31.08,43.6-46.75,65.3-5.93,8.2-13.86,8.15-19.82.08-4.45-6.01-8.72-12.16-13.05-18.25-7.01-9.85-15.04-9.91-22.15-.04-8.87,12.31-17.56,24.76-26.56,36.98-.39-.78-.78-1.57-1.15-2.36-4.8-10.3-7.17-21.12-7.17-32.48.02-38.57,0-77.15,0-115.72v-2.22c5.61-1.9,11.16-3.79,16.72-5.65,21.05-7.06,42.1-14.11,63.15-21.17h0s25.8-8.61,25.8-8.61l1.47-.49,108.92,35.99v2.33c0,37.55-.23,75.1.09,112.65.08,9.86-1.41,19.06-4.36,27.7Z"/></svg>
-          </div>
-          <div class="nav-links">
-            <a href="#">Work</a>
-            <a href="#">Services</a>
-            <a href="#">People</a>
-            <a href="#">Contact</a>
-          </div>
-          <div class="magnetic-demo">
-            <span class="cta-button">
-              Start a Project
-              <span class="trail trail-red" style="border-radius: var(--radius-pill);"></span>
-              <span class="trail trail-yellow" style="border-radius: var(--radius-pill);"></span>
-              <span class="trail trail-blue" style="border-radius: var(--radius-pill);"></span>
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Components: Buttons -->
-  <section class="preview-section">
-    <h2>Buttons</h2>
-    <div class="component-grid">
-      <div class="component-card">
-        <div class="card-label">CTA Button</div>
-        <div class="card-body">
-          <div class="magnetic-demo" style="border-radius: var(--radius-pill);">
-            <span class="cta-button">Start a Project</span>
-            <span class="trail trail-red" style="border-radius: var(--radius-pill);"></span>
-            <span class="trail trail-yellow" style="border-radius: var(--radius-pill);"></span>
-            <span class="trail trail-blue" style="border-radius: var(--radius-pill);"></span>
-          </div>
-        </div>
-      </div>
-      <div class="component-card">
-        <div class="card-label">Inline Button</div>
-        <div class="card-body">
-          <div class="magnetic-demo" style="border-radius: var(--radius-pill);">
-            <span class="inline-button">
-              View All Work
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </span>
-            <span class="trail trail-red" style="border-radius: var(--radius-pill);"></span>
-            <span class="trail trail-yellow" style="border-radius: var(--radius-pill);"></span>
-            <span class="trail trail-blue" style="border-radius: var(--radius-pill);"></span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Components: Service Cards -->
-  <section class="preview-section">
-    <h2>Service Cards</h2>
-    <div class="component-grid" style="grid-template-columns: repeat(3, 1fr);">
-      <div class="component-card" style="border: none;">
-        <div class="service-card" style="background: var(--brand-red); color: #fff;">
-          <div class="sc-num">01</div>
-          <div class="sc-title">Brand<br>Development</div>
-        </div>
-      </div>
-      <div class="component-card" style="border: none;">
-        <div class="service-card" style="background: var(--brand-yellow); color: #000;">
-          <div class="sc-num">02</div>
-          <div class="sc-title">Still &amp;<br>Motion</div>
-        </div>
-      </div>
-      <div class="component-card" style="border: none;">
-        <div class="service-card" style="background: var(--brand-blue); color: #fff;">
-          <div class="sc-num">03</div>
-          <div class="sc-title">Communi-<br>cations</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer Preview -->
-  <section class="preview-section">
-    <h2>Footer</h2>
-    <div class="footer-preview" id="footer-preview">
-      <div class="fp-top">
-        <div class="fp-copy">&copy; 2026 BoldCrest</div>
-        <div class="fp-links">
-          <strong style="color: rgba(0,0,0,0.85);">Talk to us or ask us anything.</strong>
-          <a href="#">&rarr; info@boldcrest.com</a>
-          <a href="#">&rarr; Contact Us</a>
-        </div>
-        <div class="fp-links">
-          <a href="#">&rarr; LinkedIn</a>
-          <a href="#">&rarr; Instagram</a>
-          <a href="#">&rarr; Behance</a>
-        </div>
-      </div>
-      <div class="fp-wordmark">BoldCrest</div>
-    </div>
-  </section>
-
-  <!-- Spacing -->
-  <section class="preview-section">
-    <h2>Spacing Scale</h2>
-    <div id="spacing-vis"></div>
-  </section>
-
-  <!-- Radius -->
-  <section class="preview-section">
-    <h2>Border Radius</h2>
-    <div class="radius-grid" id="radius-grid"></div>
-  </section>
-
-  <!-- Easing -->
-  <section class="preview-section">
-    <h2>Easing Curves</h2>
-    <div class="easing-grid">
-      <div class="easing-row ease-expo">
-        <span class="easing-name">ease-out-expo</span>
-        <div class="easing-track"><div class="easing-dot"></div></div>
-      </div>
-      <div class="easing-row ease-quart">
-        <span class="easing-name">ease-out-quart</span>
-        <div class="easing-track"><div class="easing-dot"></div></div>
-      </div>
-      <div class="easing-row ease-inout">
-        <span class="easing-name">ease-in-out</span>
-        <div class="easing-track"><div class="easing-dot"></div></div>
-      </div>
-    </div>
-  </section>
-</main>
-
-<!-- ═══════════════════════════════════════════════════ -->
-<!-- EXPORT MODAL                                       -->
-<!-- ═══════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="export-modal">
+<!-- Send to Claude Modal -->
+<div class="modal-overlay" id="send-modal" onclick="if(event.target===this)closeSendModal()">
   <div class="modal">
     <div class="modal-header">
-      <h3>Export CSS Variables</h3>
-      <button class="modal-close" onclick="closeModal()">&times;</button>
+      <h3>Changes for Claude</h3>
+      <button class="modal-close" onclick="closeSendModal()">&times;</button>
     </div>
-    <div class="modal-body">
-      <pre id="export-code"></pre>
-    </div>
+    <div class="modal-body"><pre id="send-code"></pre></div>
     <div class="modal-footer">
-      <button class="btn" onclick="closeModal()">Close</button>
-      <button class="btn btn--accent" onclick="copyCSS()">Copy to Clipboard</button>
+      <button class="btn" onclick="closeSendModal()">Close</button>
+      <button class="btn btn--accent" onclick="copySendCode()">Copy to Clipboard</button>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast">Copied to clipboard</div>
+<!-- New Page Modal -->
+<div class="newpage-overlay" id="newpage-overlay" onclick="if(event.target===this)closeNewPage()">
+  <div class="newpage-modal">
+    <h3>New Page</h3>
+    <input class="prop-input" id="newpage-name" placeholder="Page name (e.g. About)">
+    <input class="prop-input" id="newpage-path" placeholder="Path (e.g. /about)">
+    <div class="btn-row" style="margin-top:12px;">
+      <button class="btn" onclick="closeNewPage()">Cancel</button>
+      <button class="btn btn--accent" onclick="createNewPage()">Create</button>
+    </div>
+  </div>
+</div>
 
-<!-- ═══════════════════════════════════════════════════ -->
-<!-- SCRIPT                                             -->
-<!-- ═══════════════════════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
 <script>
-const root = document.documentElement;
+/* ══════════════════════════════════════════════
+   DATA MODEL
+   ══════════════════════════════════════════════ */
 
-/* ── Defaults for Reset ──────────────────────────── */
-const DEFAULTS = {
-  '--bg': '#0a0a0a',
-  '--bg-elevated': '#111111',
-  '--bg-card': '#161616',
-  '--bg-card-hover': '#1a1a1a',
-  '--accent': '#e63228',
-  '--accent-hover': '#ff3d32',
-  '--brand-red': '#DA291C',
-  '--brand-yellow': '#f9b311',
-  '--brand-blue': '#004c95',
-  '--footer-bg': '#EDEDED',
-  '--max-width': '1400px',
-  '--gutter': 'clamp(1.5rem, 4vw, 4rem)',
-  '--radius-sm': '4px',
-  '--radius-md': '8px',
-  '--radius-lg': '12px',
-  '--radius-pill': '100px',
+const SECTION_TYPES = {
+  hero: { name: 'Hero', icon: 'H', desc: 'Landing hero section', defaults: { heading: 'Build identities and shape perceptions. Go bold or go unseen.', subtitle: 'Creative branding agency', accentColor: '#e63228' }},
+  selectedWorks: { name: 'Selected Works', icon: 'W', desc: 'Featured projects grid', defaults: { count: 6, layout: 'grid' }},
+  weDoSection: { name: 'We Do Section', icon: 'T', desc: 'Large text + button', defaults: { text: 'We do many things very well.', buttonLabel: 'View All Work', buttonHref: '/work' }},
+  selectedClients: { name: 'Clients Grid', icon: 'C', desc: 'Client logos grid', defaults: { columns: 4, showLogos: true }},
+  serviceCards: { name: 'Service Cards', icon: 'S', desc: '3 colored service cards', defaults: { cards: [{ name: 'Brand Development', color: '#DA291C' },{ name: 'Still & Motion', color: '#f9b311' },{ name: 'Communications', color: '#004c95' }]}},
+  workHero: { name: 'Work Hero', icon: 'WH', desc: 'Work page heading + filters', defaults: { heading: 'Our creations, skillfully forged through the years.', showFilters: true }},
+  projectGrid: { name: 'Project Grid', icon: 'PG', desc: 'Stacked project cards', defaults: { layout: 'stacked', columns: 1 }},
+  servicesHero: { name: 'Services Hero', icon: 'SH', desc: 'Services page heading', defaults: { heading: 'Meeting Challenges Head-On.', subtitle: 'Crafting exceptional solutions' }},
+  servicesAccordion: { name: 'Services Accordion', icon: 'SA', desc: 'Expandable service categories', defaults: { categories: ['Brand Dev', 'Still & Motion', 'Communications'], defaultOpen: 0 }},
+  contactHero: { name: 'Contact Hero', icon: 'CH', desc: 'Contact page heading', defaults: { heading: "Let's Talk." }},
+  contactForm: { name: 'Contact Form', icon: 'CF', desc: 'Form + contact info', defaults: { heading: 'Get in touch', email: 'info@boldcrest.com', showSocial: true }},
+  peopleHero: { name: 'People Hero', icon: 'PH', desc: 'People page heading', defaults: { heading: "It's Not About Us, It's About You." }},
+  values: { name: 'Values', icon: 'V', desc: '2-column text block', defaults: { heading: 'Driven by craft, guided by purpose.', body: 'We believe in the power of bold ideas and meticulous execution.' }},
+  process: { name: 'Process', icon: 'P', desc: 'Numbered process steps', defaults: { steps: [{ num: '01', title: 'Discover', desc: 'We immerse ourselves in your world.' },{ num: '02', title: 'Strategize', desc: 'Insights become direction.' },{ num: '03', title: 'Create', desc: 'Ideas take shape.' },{ num: '04', title: 'Deliver', desc: 'We launch, measure, and refine.' }]}},
+  teamGrid: { name: 'Team Grid', icon: 'TG', desc: 'Team member cards', defaults: { columns: 4, showRoles: true }},
+  cta: { name: 'CTA Block', icon: '!', desc: 'Call-to-action section', defaults: { heading: 'Ready to start?', buttonLabel: 'Get in touch', buttonHref: '/contact' }},
+  textBlock: { name: 'Text Block', icon: 'Tx', desc: 'Free-form text section', defaults: { body: 'Add your content here.' }},
 };
 
-/* ── Color Inputs ────────────────────────────────── */
-document.querySelectorAll('input[type="color"]').forEach(input => {
-  input.addEventListener('input', e => {
-    const varName = e.target.dataset.var;
-    root.style.setProperty(varName, e.target.value);
-    const hex = e.target.parentElement.querySelector('.hex');
-    if (hex) hex.value = e.target.value;
-    renderPalette();
-  });
-});
-
-document.querySelectorAll('.hex').forEach(input => {
-  input.addEventListener('change', e => {
-    const varName = e.target.dataset.var;
-    let val = e.target.value.trim();
-    if (!val.startsWith('#')) val = '#' + val;
-    root.style.setProperty(varName, val);
-    const picker = e.target.parentElement.querySelector('input[type="color"]');
-    if (picker) picker.value = val;
-    renderPalette();
-  });
-});
-
-/* ── Range Controls ──────────────────────────────── */
-const ranges = [
-  { id: 'maxw-range', valId: 'maxw-val', cssVar: '--max-width', unit: 'px' },
-  { id: 'gutter-range', valId: 'gutter-val', cssVar: '--gutter', unit: 'vw', template: v => `clamp(1.5rem, ${v}vw, ${v}rem)` },
-  { id: 'rsm-range', valId: 'rsm-val', cssVar: '--radius-sm', unit: 'px' },
-  { id: 'rmd-range', valId: 'rmd-val', cssVar: '--radius-md', unit: 'px' },
-  { id: 'rlg-range', valId: 'rlg-val', cssVar: '--radius-lg', unit: 'px' },
-  { id: 'rpill-range', valId: 'rpill-val', cssVar: '--radius-pill', unit: 'px' },
-  { id: 'fw-range', valId: 'fw-val', target: 'fontWeight' },
-  { id: 'ls-range', valId: 'ls-val', target: 'letterSpacing', unit: 'em', multiplier: 0.01 },
-];
-
-ranges.forEach(({ id, valId, cssVar, unit, template, target, multiplier }) => {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.addEventListener('input', () => {
-    const v = parseFloat(el.value);
-    if (target === 'fontWeight') {
-      document.getElementById('type-display').style.fontWeight = v;
-      document.getElementById(valId).textContent = v;
-    } else if (target === 'letterSpacing') {
-      const em = v * (multiplier || 1);
-      document.getElementById('type-display').style.letterSpacing = em + 'em';
-      document.getElementById(valId).textContent = em.toFixed(2) + 'em';
-    } else if (template) {
-      root.style.setProperty(cssVar, template(v));
-      document.getElementById(valId).textContent = v + (unit || '');
-    } else {
-      root.style.setProperty(cssVar, v + (unit || ''));
-      document.getElementById(valId).textContent = v + (unit || '');
-    }
-    renderRadius();
-  });
-});
-
-/* ── Palette Render ──────────────────────────────── */
-const PALETTE = [
-  { name: 'Background', var: '--bg' },
-  { name: 'Elevated', var: '--bg-elevated' },
-  { name: 'Card', var: '--bg-card' },
-  { name: 'Accent', var: '--accent' },
-  { name: 'Accent Hover', var: '--accent-hover' },
-  { name: 'Brand Red', var: '--brand-red' },
-  { name: 'Brand Yellow', var: '--brand-yellow' },
-  { name: 'Brand Blue', var: '--brand-blue' },
-  { name: 'Footer BG', var: '--footer-bg' },
-];
-
-function renderPalette() {
-  const grid = document.getElementById('palette-grid');
-  grid.innerHTML = PALETTE.map(p => {
-    const val = getComputedStyle(root).getPropertyValue(p.var).trim();
-    return `<div class="palette-swatch">
-      <div class="swatch-color" style="background:var(${p.var})"></div>
-      <div class="swatch-info">
-        <div class="swatch-name">${p.name}</div>
-        <div class="swatch-value">${p.var}<br>${val}</div>
-      </div>
-    </div>`;
-  }).join('');
+function getDefaultPages() {
+  return {
+    home: { name: 'Home', path: '/', sections: [
+      { id: 's1', type: 'hero', props: { ...SECTION_TYPES.hero.defaults } },
+      { id: 's2', type: 'selectedWorks', props: { ...SECTION_TYPES.selectedWorks.defaults } },
+      { id: 's3', type: 'weDoSection', props: { ...SECTION_TYPES.weDoSection.defaults } },
+      { id: 's4', type: 'selectedClients', props: { ...SECTION_TYPES.selectedClients.defaults } },
+      { id: 's5', type: 'serviceCards', props: { ...SECTION_TYPES.serviceCards.defaults } },
+    ]},
+    work: { name: 'Work', path: '/work', sections: [
+      { id: 's6', type: 'workHero', props: { ...SECTION_TYPES.workHero.defaults } },
+      { id: 's7', type: 'projectGrid', props: { ...SECTION_TYPES.projectGrid.defaults } },
+    ]},
+    services: { name: 'Services', path: '/services', sections: [
+      { id: 's8', type: 'servicesHero', props: { ...SECTION_TYPES.servicesHero.defaults } },
+      { id: 's9', type: 'servicesAccordion', props: { ...SECTION_TYPES.servicesAccordion.defaults } },
+    ]},
+    contact: { name: 'Contact', path: '/contact', sections: [
+      { id: 's10', type: 'contactHero', props: { ...SECTION_TYPES.contactHero.defaults } },
+      { id: 's11', type: 'contactForm', props: { ...SECTION_TYPES.contactForm.defaults } },
+    ]},
+    people: { name: 'People', path: '/people', sections: [
+      { id: 's12', type: 'peopleHero', props: { ...SECTION_TYPES.peopleHero.defaults } },
+      { id: 's13', type: 'values', props: { ...SECTION_TYPES.values.defaults } },
+      { id: 's14', type: 'process', props: { ...SECTION_TYPES.process.defaults } },
+      { id: 's15', type: 'teamGrid', props: { ...SECTION_TYPES.teamGrid.defaults } },
+    ]},
+  };
 }
 
-/* ── Spacing Render ──────────────────────────────── */
-const SPACING = [
-  { name: '--space-xs', val: '0.5rem', px: 8 },
-  { name: '--space-sm', val: '1rem', px: 16 },
-  { name: '--space-md', val: '1.5rem', px: 24 },
-  { name: '--space-lg', val: '2.5rem', px: 40 },
-  { name: '--space-xl', val: '4rem', px: 64 },
-  { name: '--space-2xl', val: '6rem', px: 96 },
-  { name: '--space-3xl', val: '10rem', px: 160 },
-];
+let state = { activePage: 'home', selectedSection: null, pages: getDefaultPages(), tokens: {} };
+let originalState = null;
+let idCounter = 100;
 
-function renderSpacing() {
-  const el = document.getElementById('spacing-vis');
-  const maxPx = 160;
-  el.innerHTML = SPACING.map(s => `
-    <div class="spacing-row">
-      <span class="spacing-label">${s.name.replace('--space-', '')}</span>
-      <div class="spacing-bar" style="width:${(s.px / maxPx) * 100}%"></div>
-      <span class="spacing-val">${s.val} (${s.px}px)</span>
+function loadState() {
+  try {
+    const saved = localStorage.getItem('boldcrest-editor');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state = { ...state, ...parsed };
+    }
+  } catch(e) {}
+  originalState = JSON.parse(JSON.stringify(getDefaultPages()));
+}
+
+function saveState() {
+  localStorage.setItem('boldcrest-editor', JSON.stringify({ activePage: state.activePage, pages: state.pages, tokens: state.tokens }));
+}
+
+/* ══════════════════════════════════════════════
+   RENDERING
+   ══════════════════════════════════════════════ */
+
+function render() {
+  renderPageList();
+  renderCanvas();
+  renderLibrary();
+  renderRightPanel();
+  saveState();
+}
+
+function renderPageList() {
+  const el = document.getElementById('page-list');
+  el.innerHTML = Object.entries(state.pages).map(([key, page]) => `
+    <div class="page-item ${state.activePage === key ? 'active' : ''}" onclick="switchPage('${key}')">
+      <div>
+        <div>${page.name}</div>
+        <div class="page-path">${page.path}</div>
+      </div>
+      ${['home','work','services','contact','people'].includes(key) ? '' : `<button class="page-delete" onclick="event.stopPropagation();deletePage('${key}')">&times;</button>`}
     </div>
   `).join('');
 }
 
-/* ── Radius Render ───────────────────────────────── */
-function renderRadius() {
-  const grid = document.getElementById('radius-grid');
-  const radii = [
-    { name: 'sm', var: '--radius-sm' },
-    { name: 'md', var: '--radius-md' },
-    { name: 'lg', var: '--radius-lg' },
-    { name: 'pill', var: '--radius-pill' },
-  ];
-  grid.innerHTML = radii.map(r => {
-    const val = getComputedStyle(root).getPropertyValue(r.var).trim();
-    return `<div class="radius-box" style="border-radius:var(${r.var})">${r.name}<br>${val}</div>`;
-  }).join('');
+function renderCanvas() {
+  const canvas = document.getElementById('canvas');
+  const page = state.pages[state.activePage];
+  if (!page) { canvas.innerHTML = '<div class="canvas-empty">Select a page</div>'; return; }
+
+  if (page.sections.length === 0) {
+    canvas.innerHTML = `<div class="canvas-empty">No sections yet. Add one below.</div>
+      <button class="add-section-btn" onclick="openPicker()">+ Add Section</button>`;
+    return;
+  }
+
+  canvas.innerHTML = page.sections.map((sec, i) => `
+    <div class="section-card ${state.selectedSection === sec.id ? 'selected' : ''}"
+         data-id="${sec.id}" data-index="${i}"
+         draggable="true"
+         onclick="selectSection('${sec.id}')"
+         ondragstart="onDragStart(event)" ondragover="onDragOver(event)"
+         ondragenter="onDragEnter(event)" ondragleave="onDragLeave(event)"
+         ondrop="onDrop(event)" ondragend="onDragEnd(event)">
+      <div class="section-card-header">
+        <div class="sc-left">
+          <span class="sc-drag" title="Drag to reorder">&#x2630;</span>
+          <span class="sc-name">${SECTION_TYPES[sec.type]?.name || sec.type}</span>
+          <span class="sc-type">${sec.type}</span>
+        </div>
+        <div class="sc-right">
+          <button class="sc-menu-btn" onclick="event.stopPropagation();showCtxMenu(event,'${sec.id}')">&#x22EE;</button>
+        </div>
+      </div>
+      <div class="section-preview">${renderMiniPreview(sec)}</div>
+    </div>
+  `).join('') + `<button class="add-section-btn" onclick="openPicker()">+ Add Section</button>`;
 }
 
-/* ── Export ───────────────────────────────────────── */
-function exportCSS() {
-  const vars = [
-    '--bg', '--bg-elevated', '--bg-card', '--bg-card-hover',
-    '--accent', '--accent-hover',
-    '--brand-red', '--brand-yellow', '--brand-blue',
-    '--footer-bg',
-    '--radius-sm', '--radius-md', '--radius-lg', '--radius-pill',
-    '--max-width', '--gutter',
-    '--space-xs', '--space-sm', '--space-md', '--space-lg',
-    '--space-xl', '--space-2xl', '--space-3xl',
-  ];
+function renderMiniPreview(sec) {
+  const p = sec.props;
+  switch(sec.type) {
+    case 'hero': return `<div class="mini-hero"><div class="mh-heading">${esc(p.heading)}</div><div class="mh-sub">${esc(p.subtitle||'')}</div></div>`;
+    case 'selectedWorks': return `<div class="mini-works">${Array(Math.min(p.count||6,6)).fill('<div class="mw-item"></div>').join('')}</div>`;
+    case 'weDoSection': return `<div class="mini-wedo"><div class="mw-text">${esc(p.text)}</div><span class="mw-btn">${esc(p.buttonLabel)} &rarr;</span></div>`;
+    case 'selectedClients': return `<div class="mini-clients">${Array(8).fill('<div class="mc-item"></div>').join('')}</div>`;
+    case 'serviceCards': return `<div class="mini-services">${(p.cards||[]).map((c,i)=>`<div class="ms-card" style="background:${c.color};color:${i===1?'#000':'#fff'}"><span>${esc(c.name)}</span></div>`).join('')}</div>`;
+    case 'workHero': return `<div class="mini-workhero"><div class="mwh-heading">${esc(p.heading)}</div>${p.showFilters?'<div class="mwh-filters"><span class="mwh-pill">Service: All</span><span class="mwh-pill">Industry: All</span></div>':''}</div>`;
+    case 'projectGrid': return `<div class="mini-projectgrid">${Array(3).fill('<div class="mpg-item"></div>').join('')}</div>`;
+    case 'servicesHero': return `<div class="mini-serviceshero"><div class="msh-h">${esc(p.heading)}</div><div class="msh-sub">${esc(p.subtitle||'')}</div></div>`;
+    case 'servicesAccordion': return `<div class="mini-accordion">${(p.categories||[]).map(c=>`<div class="ma-row"><span>${esc(c)}</span><span class="ma-icon">+</span></div>`).join('')}</div>`;
+    case 'contactHero': return `<div class="mini-contacthero"><div class="mch-h">${esc(p.heading)}</div></div>`;
+    case 'contactForm': return `<div class="mini-contactform"><div class="mcf-left"><div class="mcf-field"></div><div class="mcf-field"></div><div class="mcf-field" style="height:40px"></div><div class="mcf-btn"></div></div><div class="mcf-right">${esc(p.email||'')}</div></div>`;
+    case 'peopleHero': return `<div class="mini-peoplehero"><div class="mph-h">${esc(p.heading)}</div></div>`;
+    case 'values': return `<div class="mini-values"><div class="mv-heading">${esc(p.heading)}</div><div class="mv-body">${esc(p.body)}</div></div>`;
+    case 'process': return `<div class="mini-process">${(p.steps||[]).map(s=>`<div class="mp-step"><span class="mp-num">${esc(s.num)}</span><span class="mp-title">${esc(s.title)}</span></div>`).join('')}</div>`;
+    case 'teamGrid': return `<div class="mini-teamgrid">${Array(p.columns||4).fill('<div class="mt-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg></div>').join('')}</div>`;
+    case 'cta': return `<div class="mini-cta"><div class="mc-heading">${esc(p.heading)}</div><span class="mc-btn">${esc(p.buttonLabel)}</span></div>`;
+    case 'textBlock': return `<div class="mini-text"><div class="mt-body">${esc(p.body)}</div></div>`;
+    default: return `<div style="color:var(--ed-dim);font-size:11px;">Unknown section: ${sec.type}</div>`;
+  }
+}
 
-  let css = ':root {\n';
-  vars.forEach(v => {
-    const val = getComputedStyle(root).getPropertyValue(v).trim();
-    css += `  ${v}: ${val};\n`;
+function renderLibrary() {
+  const el = document.getElementById('library');
+  el.innerHTML = Object.entries(SECTION_TYPES).map(([key, t]) => `
+    <div class="lib-item" draggable="true" ondragstart="onLibDragStart(event,'${key}')">
+      <div class="lib-icon">${t.icon}</div>
+      <div>
+        <div style="font-size:11px;font-weight:600;">${t.name}</div>
+        <div style="font-size:9px;color:var(--ed-dim);">${t.desc}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ══════════════════════════════════════════════
+   RIGHT PANEL — Property Editors
+   ══════════════════════════════════════════════ */
+
+function renderRightPanel() {
+  const panel = document.getElementById('right-panel');
+  const body = document.getElementById('rp-body');
+  const title = document.getElementById('rp-title');
+
+  if (!state.selectedSection) { panel.classList.add('hidden'); return; }
+
+  const page = state.pages[state.activePage];
+  const sec = page?.sections.find(s => s.id === state.selectedSection);
+  if (!sec) { panel.classList.add('hidden'); return; }
+
+  panel.classList.remove('hidden');
+  title.textContent = SECTION_TYPES[sec.type]?.name || sec.type;
+  const p = sec.props;
+
+  let html = '';
+
+  switch(sec.type) {
+    case 'hero':
+      html = propTextarea('heading', 'Heading', p.heading) + propInput('subtitle', 'Subtitle', p.subtitle) + propColor('accentColor', 'Accent Color', p.accentColor);
+      break;
+    case 'selectedWorks':
+      html = propSelect('count', 'Project Count', p.count, [{v:3,l:'3'},{v:4,l:'4'},{v:6,l:'6'}]) + propSelect('layout', 'Layout', p.layout, [{v:'grid',l:'Grid'},{v:'stacked',l:'Stacked'}]);
+      break;
+    case 'weDoSection':
+      html = propTextarea('text', 'Main Text', p.text) + propInput('buttonLabel', 'Button Label', p.buttonLabel) + propInput('buttonHref', 'Button URL', p.buttonHref);
+      break;
+    case 'selectedClients':
+      html = propSelect('columns', 'Columns', p.columns, [{v:3,l:'3'},{v:4,l:'4'}]) + propToggle('showLogos', 'Show Logos', p.showLogos);
+      break;
+    case 'serviceCards':
+      html = (p.cards||[]).map((c,i) => `<div class="prop-group"><div class="prop-label">Card ${i+1}</div>` +
+        `<input class="prop-input" value="${esc(c.name)}" onchange="updateCardProp(${i},'name',this.value)" style="margin-bottom:6px;">` +
+        `<div class="prop-color-row"><input type="color" value="${c.color}" onchange="updateCardProp(${i},'color',this.value)"><span style="font-size:11px;color:var(--ed-dim)">${c.color}</span></div></div>`).join('');
+      break;
+    case 'workHero':
+      html = propTextarea('heading', 'Heading', p.heading) + propToggle('showFilters', 'Show Filters', p.showFilters);
+      break;
+    case 'projectGrid':
+      html = propSelect('layout', 'Layout', p.layout, [{v:'stacked',l:'Stacked'},{v:'grid',l:'Grid'}]) + propSelect('columns', 'Columns', p.columns, [{v:1,l:'1'},{v:2,l:'2'}]);
+      break;
+    case 'servicesHero':
+      html = propTextarea('heading', 'Heading', p.heading) + propInput('subtitle', 'Subtitle', p.subtitle);
+      break;
+    case 'servicesAccordion':
+      html = (p.categories||[]).map((c,i) => `<div class="prop-group"><div class="prop-label">Category ${i+1}</div><input class="prop-input" value="${esc(c)}" onchange="updateArrProp('categories',${i},this.value)"></div>`).join('') +
+        propSelect('defaultOpen', 'Default Open', p.defaultOpen, [{v:0,l:'First'},{v:1,l:'Second'},{v:2,l:'Third'},{v:-1,l:'None'}]);
+      break;
+    case 'contactHero':
+      html = propInput('heading', 'Heading', p.heading);
+      break;
+    case 'contactForm':
+      html = propInput('heading', 'Heading', p.heading) + propInput('email', 'Email', p.email) + propToggle('showSocial', 'Show Social Links', p.showSocial);
+      break;
+    case 'peopleHero':
+      html = propTextarea('heading', 'Heading', p.heading);
+      break;
+    case 'values':
+      html = propTextarea('heading', 'Heading', p.heading) + propTextarea('body', 'Body Text', p.body);
+      break;
+    case 'process':
+      html = (p.steps||[]).map((s,i) => `<div class="step-editor"><div class="step-head"><span class="step-num">Step ${i+1}</span><button class="step-del" onclick="removeStep(${i})">&times;</button></div>` +
+        `<input class="prop-input" value="${esc(s.num)}" placeholder="Number" onchange="updateStepProp(${i},'num',this.value)">` +
+        `<input class="prop-input" value="${esc(s.title)}" placeholder="Title" onchange="updateStepProp(${i},'title',this.value)">` +
+        `<textarea class="prop-input" rows="2" onchange="updateStepProp(${i},'desc',this.value)">${esc(s.desc)}</textarea></div>`).join('') +
+        `<button class="btn btn--sm" onclick="addStep()" style="width:100%;margin-top:4px;">+ Add Step</button>`;
+      break;
+    case 'teamGrid':
+      html = propSelect('columns', 'Columns', p.columns, [{v:3,l:'3'},{v:4,l:'4'}]) + propToggle('showRoles', 'Show Roles', p.showRoles);
+      break;
+    case 'cta':
+      html = propInput('heading', 'Heading', p.heading) + propInput('buttonLabel', 'Button Label', p.buttonLabel) + propInput('buttonHref', 'Button URL', p.buttonHref);
+      break;
+    case 'textBlock':
+      html = propTextarea('body', 'Content', p.body);
+      break;
+  }
+
+  body.innerHTML = html;
+}
+
+function propInput(key, label, value) {
+  return `<div class="prop-group"><div class="prop-label">${label}</div><input class="prop-input" value="${esc(value||'')}" onchange="updateProp('${key}',this.value)"></div>`;
+}
+function propTextarea(key, label, value) {
+  return `<div class="prop-group"><div class="prop-label">${label}</div><textarea class="prop-input" rows="3" onchange="updateProp('${key}',this.value)">${esc(value||'')}</textarea></div>`;
+}
+function propSelect(key, label, value, options) {
+  return `<div class="prop-group"><div class="prop-label">${label}</div><select class="prop-input" onchange="updateProp('${key}',this.value)">${options.map(o=>`<option value="${o.v}" ${String(value)===String(o.v)?'selected':''}>${o.l}</option>`).join('')}</select></div>`;
+}
+function propColor(key, label, value) {
+  return `<div class="prop-group"><div class="prop-label">${label}</div><div class="prop-color-row"><input type="color" value="${value||'#e63228'}" onchange="updateProp('${key}',this.value)"><input class="prop-input" style="flex:1" value="${esc(value||'')}" onchange="updateProp('${key}',this.value)"></div></div>`;
+}
+function propToggle(key, label, value) {
+  return `<div class="prop-group"><div class="prop-toggle"><label>${label}</label><div class="toggle-switch ${value?'on':''}" onclick="updateProp('${key}',${!value})"></div></div></div>`;
+}
+
+/* ══════════════════════════════════════════════
+   ACTIONS
+   ══════════════════════════════════════════════ */
+
+function switchPage(key) {
+  state.activePage = key;
+  state.selectedSection = null;
+  render();
+}
+
+function selectSection(id) {
+  state.selectedSection = id;
+  render();
+}
+
+function closeRightPanel() {
+  state.selectedSection = null;
+  render();
+}
+
+function updateProp(key, value) {
+  const page = state.pages[state.activePage];
+  const sec = page?.sections.find(s => s.id === state.selectedSection);
+  if (!sec) return;
+  // Handle numeric values
+  if (value === 'true') value = true;
+  else if (value === 'false') value = false;
+  else if (!isNaN(value) && value !== '' && typeof sec.props[key] === 'number') value = Number(value);
+  sec.props[key] = value;
+  render();
+}
+
+function updateCardProp(idx, key, value) {
+  const sec = getSelectedSection();
+  if (!sec || !sec.props.cards) return;
+  sec.props.cards[idx][key] = value;
+  render();
+}
+
+function updateArrProp(arrKey, idx, value) {
+  const sec = getSelectedSection();
+  if (!sec) return;
+  sec.props[arrKey][idx] = value;
+  render();
+}
+
+function updateStepProp(idx, key, value) {
+  const sec = getSelectedSection();
+  if (!sec || !sec.props.steps) return;
+  sec.props.steps[idx][key] = value;
+  render();
+}
+
+function addStep() {
+  const sec = getSelectedSection();
+  if (!sec || !sec.props.steps) return;
+  const n = sec.props.steps.length + 1;
+  sec.props.steps.push({ num: String(n).padStart(2,'0'), title: 'New Step', desc: 'Description here.' });
+  render();
+}
+
+function removeStep(idx) {
+  const sec = getSelectedSection();
+  if (!sec || !sec.props.steps) return;
+  sec.props.steps.splice(idx, 1);
+  render();
+}
+
+function getSelectedSection() {
+  const page = state.pages[state.activePage];
+  return page?.sections.find(s => s.id === state.selectedSection);
+}
+
+function addSection(type) {
+  const page = state.pages[state.activePage];
+  if (!page) return;
+  const t = SECTION_TYPES[type];
+  if (!t) return;
+  page.sections.push({ id: 's' + (++idCounter), type, props: JSON.parse(JSON.stringify(t.defaults)) });
+  closePicker();
+  render();
+  toast(`Added ${t.name}`);
+}
+
+function duplicateSection(id) {
+  const page = state.pages[state.activePage];
+  const idx = page.sections.findIndex(s => s.id === id);
+  if (idx === -1) return;
+  const clone = JSON.parse(JSON.stringify(page.sections[idx]));
+  clone.id = 's' + (++idCounter);
+  page.sections.splice(idx + 1, 0, clone);
+  render();
+  toast('Duplicated');
+}
+
+function deleteSection(id) {
+  const page = state.pages[state.activePage];
+  page.sections = page.sections.filter(s => s.id !== id);
+  if (state.selectedSection === id) state.selectedSection = null;
+  render();
+  toast('Removed');
+}
+
+function moveSection(id, dir) {
+  const page = state.pages[state.activePage];
+  const idx = page.sections.findIndex(s => s.id === id);
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= page.sections.length) return;
+  [page.sections[idx], page.sections[newIdx]] = [page.sections[newIdx], page.sections[idx]];
+  render();
+}
+
+/* ── Page management ── */
+function openNewPage() { document.getElementById('newpage-overlay').classList.add('show'); document.getElementById('newpage-name').focus(); }
+function closeNewPage() { document.getElementById('newpage-overlay').classList.remove('show'); }
+function createNewPage() {
+  const name = document.getElementById('newpage-name').value.trim();
+  let path = document.getElementById('newpage-path').value.trim();
+  if (!name) return;
+  if (!path) path = '/' + name.toLowerCase().replace(/\s+/g,'-');
+  const key = name.toLowerCase().replace(/\s+/g,'-');
+  state.pages[key] = { name, path, sections: [] };
+  state.activePage = key;
+  state.selectedSection = null;
+  closeNewPage();
+  document.getElementById('newpage-name').value = '';
+  document.getElementById('newpage-path').value = '';
+  render();
+  toast(`Created "${name}"`);
+}
+
+function deletePage(key) {
+  if (!confirm(`Delete page "${state.pages[key].name}"?`)) return;
+  delete state.pages[key];
+  if (state.activePage === key) { state.activePage = Object.keys(state.pages)[0]; state.selectedSection = null; }
+  render();
+  toast('Page deleted');
+}
+
+/* ── Context menu ── */
+function showCtxMenu(e, id) {
+  e.preventDefault();
+  const menu = document.getElementById('ctx-menu');
+  const page = state.pages[state.activePage];
+  const idx = page.sections.findIndex(s => s.id === id);
+  menu.innerHTML = `
+    <button class="ctx-item" onclick="moveSection('${id}',-1);hideCtxMenu()">Move Up</button>
+    <button class="ctx-item" onclick="moveSection('${id}',1);hideCtxMenu()">Move Down</button>
+    <div class="ctx-sep"></div>
+    <button class="ctx-item" onclick="duplicateSection('${id}');hideCtxMenu()">Duplicate</button>
+    <div class="ctx-sep"></div>
+    <button class="ctx-item danger" onclick="deleteSection('${id}');hideCtxMenu()">Delete</button>
+  `;
+  menu.style.left = e.clientX + 'px';
+  menu.style.top = e.clientY + 'px';
+  menu.classList.add('show');
+  setTimeout(() => document.addEventListener('click', hideCtxMenu, { once: true }), 10);
+}
+
+function hideCtxMenu() { document.getElementById('ctx-menu').classList.remove('show'); }
+
+/* ── Section picker ── */
+function openPicker() {
+  const grid = document.getElementById('picker-grid');
+  grid.innerHTML = Object.entries(SECTION_TYPES).map(([key, t]) => `
+    <div class="picker-item" onclick="addSection('${key}')">
+      <div class="pi-icon">${t.icon}</div>
+      <div class="pi-name">${t.name}</div>
+      <div class="pi-desc">${t.desc}</div>
+    </div>
+  `).join('');
+  document.getElementById('picker-overlay').classList.add('show');
+}
+function closePicker() { document.getElementById('picker-overlay').classList.remove('show'); }
+
+/* ══════════════════════════════════════════════
+   DRAG & DROP
+   ══════════════════════════════════════════════ */
+
+let dragId = null;
+let dragLibType = null;
+
+function onDragStart(e) {
+  dragId = e.currentTarget.dataset.id;
+  dragLibType = null;
+  e.dataTransfer.effectAllowed = 'move';
+  e.currentTarget.style.opacity = '0.4';
+}
+
+function onLibDragStart(e, type) {
+  dragLibType = type;
+  dragId = null;
+  e.dataTransfer.effectAllowed = 'copy';
+}
+
+function onDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = dragId ? 'move' : 'copy'; }
+function onDragEnter(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function onDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+
+function onDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const targetId = e.currentTarget.dataset.id;
+  const page = state.pages[state.activePage];
+  const targetIdx = page.sections.findIndex(s => s.id === targetId);
+
+  if (dragId && dragId !== targetId) {
+    const fromIdx = page.sections.findIndex(s => s.id === dragId);
+    const [moved] = page.sections.splice(fromIdx, 1);
+    const insertIdx = targetIdx > fromIdx ? targetIdx : targetIdx;
+    page.sections.splice(insertIdx, 0, moved);
+    render();
+  } else if (dragLibType) {
+    const t = SECTION_TYPES[dragLibType];
+    if (t) {
+      const newSec = { id: 's' + (++idCounter), type: dragLibType, props: JSON.parse(JSON.stringify(t.defaults)) };
+      page.sections.splice(targetIdx, 0, newSec);
+      render();
+      toast(`Added ${t.name}`);
+    }
+  }
+}
+
+function onDragEnd(e) {
+  e.currentTarget.style.opacity = '1';
+  dragId = null;
+  dragLibType = null;
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+}
+
+/* ══════════════════════════════════════════════
+   DESIGN TOKENS DRAWER
+   ══════════════════════════════════════════════ */
+
+const TOKEN_DEFAULTS = {
+  '--bg': '#0a0a0a', '--bg-elevated': '#111111', '--bg-card': '#161616',
+  '--accent': '#e63228', '--accent-hover': '#ff3d32',
+  '--brand-red': '#DA291C', '--brand-yellow': '#f9b311', '--brand-blue': '#004c95',
+  '--footer-bg': '#EDEDED',
+  '--max-width': '1400px', '--gutter': 'clamp(1.5rem, 4vw, 4rem)',
+  '--radius-sm': '4px', '--radius-md': '8px', '--radius-lg': '12px', '--radius-pill': '100px',
+};
+
+const COLOR_TOKENS = [
+  ['Background', '--bg'], ['Elevated', '--bg-elevated'], ['Card', '--bg-card'],
+  ['Accent', '--accent'], ['Accent Hover', '--accent-hover'],
+  ['Brand Red', '--brand-red'], ['Brand Yellow', '--brand-yellow'], ['Brand Blue', '--brand-blue'],
+  ['Footer BG', '--footer-bg'],
+];
+
+function openDrawer() {
+  renderDrawer();
+  document.getElementById('drawer-overlay').classList.add('show');
+  document.getElementById('drawer').classList.add('show');
+}
+function closeDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('show');
+  document.getElementById('drawer').classList.remove('show');
+}
+
+function renderDrawer() {
+  const d = document.getElementById('drawer');
+  let html = '<h3>Design Tokens</h3><div class="section-label">Colors</div>';
+  COLOR_TOKENS.forEach(([label, varName]) => {
+    const val = state.tokens[varName] || TOKEN_DEFAULTS[varName];
+    html += `<div class="token-row"><label>${label}</label><div class="color-input">
+      <input type="color" value="${val}" onchange="setToken('${varName}',this.value);renderDrawer();">
+      <input class="hex-input" value="${val}" onchange="setToken('${varName}',this.value);renderDrawer();">
+    </div></div>`;
   });
-  css += '}';
 
-  document.getElementById('export-code').textContent = css;
-  document.getElementById('export-modal').classList.add('active');
+  html += '<div class="section-label">Layout</div>';
+  const mw = parseInt(state.tokens['--max-width'] || '1400');
+  html += `<div class="range-row"><div class="range-header"><label>Max Width</label><span class="range-val">${mw}px</span></div>
+    <input type="range" min="900" max="1800" value="${mw}" oninput="setToken('--max-width',this.value+'px');renderDrawer();"></div>`;
+
+  html += '<div class="section-label">Border Radius</div>';
+  [['Small','--radius-sm',0,20],['Medium','--radius-md',0,30],['Large','--radius-lg',0,40],['Pill','--radius-pill',10,200]].forEach(([l,v,min,max]) => {
+    const rv = parseInt(state.tokens[v] || TOKEN_DEFAULTS[v]);
+    html += `<div class="range-row"><div class="range-header"><label>${l}</label><span class="range-val">${rv}px</span></div>
+      <input type="range" min="${min}" max="${max}" value="${rv}" oninput="setToken('${v}',this.value+'px');renderDrawer();"></div>`;
+  });
+
+  html += `<div style="margin-top:16px;"><button class="btn" onclick="resetTokens();renderDrawer();" style="width:100%;">Reset Tokens</button></div>`;
+  d.innerHTML = html;
 }
 
-function closeModal() {
-  document.getElementById('export-modal').classList.remove('active');
+function setToken(varName, value) {
+  state.tokens[varName] = value;
+  document.documentElement.style.setProperty(varName, value);
+  saveState();
 }
 
-function copyCSS() {
-  const text = document.getElementById('export-code').textContent;
-  navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard'));
-  closeModal();
+function resetTokens() {
+  state.tokens = {};
+  Object.entries(TOKEN_DEFAULTS).forEach(([k,v]) => document.documentElement.style.setProperty(k, v));
+  saveState();
+  toast('Tokens reset');
 }
 
-function showToast(msg) {
-  const toast = document.getElementById('toast');
-  toast.textContent = msg;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2000);
-}
+/* ══════════════════════════════════════════════
+   SEND TO CLAUDE — Diff Generator
+   ══════════════════════════════════════════════ */
 
-/* ── Reset ────────────────────────────────────────── */
-function resetAll() {
-  Object.entries(DEFAULTS).forEach(([k, v]) => root.style.setProperty(k, v));
+function sendToClaude() {
+  const changes = [];
 
-  // Reset color inputs
-  document.querySelectorAll('input[type="color"]').forEach(input => {
-    const def = DEFAULTS[input.dataset.var];
-    if (def) {
-      input.value = def;
-      const hex = input.parentElement.querySelector('.hex');
-      if (hex) hex.value = def;
+  // Token changes
+  const tokenChanges = [];
+  Object.entries(state.tokens).forEach(([k,v]) => {
+    if (TOKEN_DEFAULTS[k] && TOKEN_DEFAULTS[k] !== v) {
+      tokenChanges.push(`- ${k}: ${TOKEN_DEFAULTS[k]} → ${v}`);
+    }
+  });
+  if (tokenChanges.length) {
+    changes.push('### Design Tokens Changed\n' + tokenChanges.join('\n'));
+  }
+
+  // Page changes
+  const defaultPages = getDefaultPages();
+  Object.entries(state.pages).forEach(([key, page]) => {
+    const orig = defaultPages[key];
+    const pageChanges = [];
+
+    if (!orig) {
+      // New page
+      pageChanges.push(`- **New page** "${page.name}" at ${page.path}`);
+      page.sections.forEach(sec => {
+        const t = SECTION_TYPES[sec.type];
+        pageChanges.push(`- Section: ${t?.name || sec.type}`);
+        Object.entries(sec.props).forEach(([pk, pv]) => {
+          pageChanges.push(`  - ${pk}: ${JSON.stringify(pv)}`);
+        });
+      });
+    } else {
+      // Check section order
+      const origOrder = orig.sections.map(s => s.type);
+      const curOrder = page.sections.map(s => s.type);
+      if (JSON.stringify(origOrder) !== JSON.stringify(curOrder)) {
+        pageChanges.push(`- Sections order: ${curOrder.map(t => SECTION_TYPES[t]?.name || t).join(', ')}`);
+      }
+
+      // Check added sections
+      const origIds = new Set(orig.sections.map(s => s.id));
+      page.sections.forEach(sec => {
+        if (!origIds.has(sec.id)) {
+          const t = SECTION_TYPES[sec.type];
+          pageChanges.push(`- **Added** section: ${t?.name || sec.type}`);
+          Object.entries(sec.props).forEach(([pk, pv]) => {
+            if (typeof pv !== 'object') pageChanges.push(`  - ${pk}: ${JSON.stringify(pv)}`);
+          });
+        }
+      });
+
+      // Check removed sections
+      const curIds = new Set(page.sections.map(s => s.id));
+      orig.sections.forEach(sec => {
+        if (!curIds.has(sec.id)) {
+          pageChanges.push(`- **Removed** section: ${SECTION_TYPES[sec.type]?.name || sec.type}`);
+        }
+      });
+
+      // Check prop changes on existing sections
+      page.sections.forEach(sec => {
+        const origSec = orig.sections.find(s => s.id === sec.id);
+        if (!origSec) return;
+        const propDiffs = [];
+        Object.entries(sec.props).forEach(([pk, pv]) => {
+          const ov = origSec.props[pk];
+          if (JSON.stringify(pv) !== JSON.stringify(ov)) {
+            propDiffs.push(`  - ${pk}: ${JSON.stringify(ov)} → ${JSON.stringify(pv)}`);
+          }
+        });
+        if (propDiffs.length) {
+          pageChanges.push(`- Section "${SECTION_TYPES[sec.type]?.name}" props changed:\n${propDiffs.join('\n')}`);
+        }
+      });
+    }
+
+    if (pageChanges.length) {
+      changes.push(`### Page: ${page.name} (${page.path})\n${pageChanges.join('\n')}`);
     }
   });
 
-  // Reset ranges
-  document.getElementById('maxw-range').value = 1400;
-  document.getElementById('maxw-val').textContent = '1400px';
-  document.getElementById('gutter-range').value = 4;
-  document.getElementById('gutter-val').textContent = '4vw';
-  document.getElementById('rsm-range').value = 4;
-  document.getElementById('rsm-val').textContent = '4px';
-  document.getElementById('rmd-range').value = 8;
-  document.getElementById('rmd-val').textContent = '8px';
-  document.getElementById('rlg-range').value = 12;
-  document.getElementById('rlg-val').textContent = '12px';
-  document.getElementById('rpill-range').value = 100;
-  document.getElementById('rpill-val').textContent = '100px';
-  document.getElementById('fw-range').value = 700;
-  document.getElementById('fw-val').textContent = '700';
-  document.getElementById('ls-range').value = -3;
-  document.getElementById('ls-val').textContent = '-0.03em';
+  // Check deleted pages
+  Object.keys(defaultPages).forEach(key => {
+    if (!state.pages[key]) {
+      changes.push(`### Page: ${defaultPages[key].name} (${defaultPages[key].path})\n- **Deleted** entire page`);
+    }
+  });
 
-  document.getElementById('type-display').style.fontWeight = 700;
-  document.getElementById('type-display').style.letterSpacing = '-0.03em';
+  let output;
+  if (changes.length === 0) {
+    output = 'No changes detected from the default configuration.';
+  } else {
+    output = `## BoldCrest Playground Changes\n\n${changes.join('\n\n')}\n\nPlease implement these changes in the codebase.`;
+  }
 
-  renderPalette();
-  renderRadius();
-  showToast('Reset to defaults');
+  document.getElementById('send-code').textContent = output;
+  document.getElementById('send-modal').classList.add('show');
 }
 
-/* ── Close modal on overlay click ────────────────── */
-document.getElementById('export-modal').addEventListener('click', e => {
-  if (e.target === e.currentTarget) closeModal();
-});
+function closeSendModal() { document.getElementById('send-modal').classList.remove('show'); }
+function copySendCode() {
+  const text = document.getElementById('send-code').textContent;
+  navigator.clipboard.writeText(text).then(() => { toast('Copied to clipboard'); closeSendModal(); });
+}
 
-/* ── Init ─────────────────────────────────────────── */
-renderPalette();
-renderSpacing();
-renderRadius();
+/* ══════════════════════════════════════════════
+   UTILS
+   ══════════════════════════════════════════════ */
+
+function esc(str) { if (!str) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+/* ── Init ── */
+loadState();
+// Restore tokens
+Object.entries(state.tokens).forEach(([k,v]) => document.documentElement.style.setProperty(k, v));
+render();
 </script>
 </body>
 </html>
