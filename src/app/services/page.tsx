@@ -6,11 +6,11 @@ import ServicesPageClient from './ServicesPageClient'
 export const metadata: Metadata = {
   title: 'Services',
   description:
-    'Meeting challenges head-on. Crafting exceptional solutions across Brand Dev, Still & Motion, and Communications.',
+    'What gets us out of bed. Brand development, still & motion, and communications — three disciplines, one obsession.',
   openGraph: {
     title: 'Services — BoldCrest',
     description:
-      'Meeting challenges head-on. Crafting exceptional solutions across Brand Dev, Still & Motion, and Communications.',
+      'What gets us out of bed. Brand development, still & motion, and communications — three disciplines, one obsession.',
     images: [{ url: '/og-image.png', width: 1200, height: 630 }],
   },
 }

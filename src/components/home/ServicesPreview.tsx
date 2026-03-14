@@ -87,7 +87,7 @@ export default function ServicesPreview() {
 
                 {/* Arrow */}
                 <div
-                  className="mt-[var(--space-lg)] flex h-10 w-10 items-center justify-center rounded-full border border-border transition-all duration-[0.4s] group-hover:rotate-[-45deg] group-hover:border-accent group-hover:bg-accent"
+                  className="mt-[var(--space-lg)] flex h-10 w-10 items-center justify-center rounded-full border border-white/25 transition-all duration-[0.5s] group-hover:rotate-[-45deg] group-hover:border-white/60"
                   style={{
                     transitionTimingFunction: 'var(--ease-out-expo)',
                   }}

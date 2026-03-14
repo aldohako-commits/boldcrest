@@ -3,6 +3,7 @@ import { sanityFetch } from '@/sanity/lib/live'
 import {
   featuredProjectsQuery,
   allPartnersQuery,
+  allTeamMembersQuery,
   siteSettingsQuery,
 } from '@/sanity/lib/queries'
 
@@ -15,16 +16,22 @@ const SelectedClients = dynamic(
 const ServiceCards = dynamic(
   () => import('@/components/home/ServiceCards')
 )
+const BottomSections = dynamic(
+  () => import('@/components/home/BottomSections')
+)
 
 export default async function Home() {
-  const [projectsResult, partnersResult, settingsResult] = await Promise.all([
-    sanityFetch({ query: featuredProjectsQuery }),
-    sanityFetch({ query: allPartnersQuery }),
-    sanityFetch({ query: siteSettingsQuery }),
-  ])
+  const [projectsResult, partnersResult, membersResult, settingsResult] =
+    await Promise.all([
+      sanityFetch({ query: featuredProjectsQuery }),
+      sanityFetch({ query: allPartnersQuery }),
+      sanityFetch({ query: allTeamMembersQuery }),
+      sanityFetch({ query: siteSettingsQuery }),
+    ])
 
   const projects = projectsResult.data ?? []
   const partners = partnersResult.data ?? []
+  const members = membersResult.data ?? []
   const settings = settingsResult.data
 
   return (
@@ -34,6 +41,7 @@ export default async function Home() {
       <WeDoSection />
       <SelectedClients partners={partners} />
       <ServiceCards />
+      <BottomSections members={members} />
     </main>
   )
 }

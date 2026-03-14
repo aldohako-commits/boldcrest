@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { urlFor } from '@/sanity/lib/image'
@@ -31,8 +32,17 @@ interface WorkPageClientProps {
 }
 
 export default function WorkPageClient({ projects }: WorkPageClientProps) {
+  const searchParams = useSearchParams()
   const [serviceFilter, setServiceFilter] = useState('All')
   const [industryFilter, setIndustryFilter] = useState('All')
+
+  // Read query params on mount for deep-linking from Services page
+  useEffect(() => {
+    const service = searchParams.get('service')
+    if (service) setServiceFilter(service)
+    const industry = searchParams.get('industry')
+    if (industry) setIndustryFilter(industry)
+  }, [searchParams])
 
   // Extract unique values for filters
   const allServices = useMemo(() => {
