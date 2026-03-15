@@ -622,9 +622,9 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
               </FadeUp>
 
               <FadeUp delay={0.2} active={active(8)}>
-                <p className="mt-[var(--space-xl)] font-display text-[clamp(2rem,5vw,4rem)] font-bold leading-[1.1]">
-                  <InlineButton href="/contact" label="Let's climb" showArrow /><span className="text-accent">.</span>
-                </p>
+                <div className="mt-[var(--space-xl)]">
+                  <InlineButton href="/contact" label="Let's climb" showArrow />
+                </div>
               </FadeUp>
             </div>
           </div>
