@@ -20,6 +20,7 @@ const ServiceCards = dynamic(
 const BottomSections = dynamic(
   () => import('@/components/home/BottomSections')
 )
+const MorphBlobs = dynamic(() => import('@/components/MorphBlobs'))
 
 export default async function Home() {
   const [projectsResult, partnersResult, membersResult, diaryResult, settingsResult] =
@@ -38,7 +39,8 @@ export default async function Home() {
   const settings = settingsResult.data
 
   return (
-    <main>
+    <main className="relative overflow-x-clip">
+      <MorphBlobs />
       <Hero />
       <SelectedWorks projects={projects} />
       <WeDoSection />
