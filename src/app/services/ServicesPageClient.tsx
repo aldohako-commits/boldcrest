@@ -1,8 +1,9 @@
 'use client'
 
 import { useRef, useState, useEffect, useCallback } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import Link from 'next/link'
+import Image from 'next/image'
 import MagneticBase, { CTAButton } from '@/components/MagneticButton'
 
 interface Service {
@@ -568,6 +569,175 @@ function Testimonials() {
   )
 }
 
+/* ═══════════════════════════════════════════
+   Worked On 200+ — Industries + Client Logos
+═══════════════════════════════════════════ */
+
+const INDUSTRIES = [
+  'Construction',
+  'Fashion',
+  'Finance',
+  'Food & Beverage',
+  'Health & Beauty',
+  'Home & Appliances',
+  'HoReCa',
+  'NGO',
+  'Tech',
+  'Services',
+]
+
+const CLIENT_LOGOS = [
+  { name: 'Hako', src: '/logos/hako.svg' },
+  { name: 'JokaDent', src: '/logos/jokadent.svg' },
+  { name: 'AK Invest', src: '/logos/ak-invest.svg' },
+  { name: 'Magniflex', src: '/logos/magniflex.svg' },
+  { name: 'Palma', src: '/logos/palma.svg' },
+  { name: 'Tepelene', src: '/logos/tepelene.svg' },
+  { name: 'LoriCaffe', src: '/logos/loricaffe.svg' },
+  { name: 'Tirana Home Store', src: '/logos/tirana-home-store.svg' },
+  { name: 'Fentimans', src: '/logos/fentimans.svg' },
+  { name: 'Diamond', src: '/logos/diamond.svg' },
+  { name: 'Akses', src: '/logos/akses.svg' },
+  { name: 'ExpertCloud', src: '/logos/expertcloud.svg' },
+  { name: 'Anmetal', src: '/logos/anmetal.svg' },
+  { name: 'Wienna', src: '/logos/wienna.svg' },
+  { name: 'Baboon', src: '/logos/baboon.svg' },
+  { name: 'Berdica', src: '/logos/berdica.svg' },
+  { name: 'Perfect Fashion', src: '/logos/perfect-fashion.svg' },
+  { name: 'Alisadudaj', src: '/logos/alisadudaj.svg' },
+  { name: 'Matrix', src: '/logos/matrix.svg' },
+  { name: 'Red Bull', src: '/logos/redbull.svg' },
+]
+
+function WorkedOn() {
+  const sectionRef = useRef<HTMLElement>(null)
+  const isInView = useInView(sectionRef, { margin: '-15%', once: true })
+  const counterRef = useRef<HTMLSpanElement>(null)
+  const [count, setCount] = useState(0)
+
+  // Animate counter from 0 → 200
+  useEffect(() => {
+    if (!isInView) return
+    let frame: number
+    const duration = 1800
+    const start = performance.now()
+    const animate = (now: number) => {
+      const elapsed = now - start
+      const progress = Math.min(elapsed / duration, 1)
+      // ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setCount(Math.round(eased * 200))
+      if (progress < 1) frame = requestAnimationFrame(animate)
+    }
+    frame = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(frame)
+  }, [isInView])
+
+  return (
+    <section
+      ref={sectionRef}
+      className="px-[var(--gutter)] py-[var(--space-3xl)]"
+    >
+      <div className="mx-auto max-w-[var(--max-width)]">
+        <div className="grid gap-[var(--space-2xl)] md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:items-start">
+          {/* ── Left: Stat + Industries ── */}
+          <div>
+            <motion.p
+              className="mb-2 text-[0.75rem] font-semibold uppercase tracking-[0.25em] text-text-tertiary"
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.6 }}
+            >
+              Worked On
+            </motion.p>
+
+            <motion.div
+              className="mb-2"
+              initial={{ opacity: 0, y: 30 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <span
+                ref={counterRef}
+                className="font-display text-[clamp(5rem,12vw,9rem)] font-bold leading-[0.9] text-accent"
+              >
+                {count}+
+              </span>
+            </motion.div>
+
+            <motion.p
+              className="mb-[var(--space-xl)] text-[0.8rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              Projects for a variety of industries
+            </motion.p>
+
+            {/* Industry list */}
+            <div className="flex flex-col">
+              {INDUSTRIES.map((industry, i) => (
+                <motion.div
+                  key={industry}
+                  className="group flex items-center justify-between border-t border-border/40 py-3 last:border-b"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={isInView ? { opacity: 1, x: 0 } : {}}
+                  transition={{
+                    duration: 0.5,
+                    delay: 0.4 + i * 0.04,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                >
+                  <span className="text-[0.9rem] font-medium text-text-secondary transition-colors duration-300 group-hover:text-text-primary">
+                    {industry}
+                  </span>
+                  <svg
+                    className="h-3.5 w-3.5 text-text-tertiary/50 transition-all duration-300 group-hover:translate-x-1 group-hover:text-accent"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Right: Client Logos Grid ── */}
+          <div className="grid grid-cols-3 gap-x-[var(--space-lg)] gap-y-[var(--space-xl)] sm:grid-cols-4 lg:grid-cols-5">
+            {CLIENT_LOGOS.map((logo, i) => (
+              <motion.div
+                key={logo.name}
+                className="flex items-center justify-center"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={isInView ? { opacity: 0.5, scale: 1 } : {}}
+                whileHover={{ opacity: 1, scale: 1.08 }}
+                transition={{
+                  duration: 0.5,
+                  delay: 0.3 + i * 0.03,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+              >
+                {/* Placeholder — swap with <Image> when SVGs are added to /public/logos/ */}
+                <div
+                  className="flex h-16 w-full items-center justify-center"
+                  title={logo.name}
+                >
+                  <span className="text-center font-display text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-text-secondary">
+                    {logo.name}
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export default function ServicesPageClient({
   categories,
 }: ServicesPageClientProps) {
@@ -644,6 +814,9 @@ export default function ServicesPageClient({
 
       {/* ── Testimonials ── */}
       <Testimonials />
+
+      {/* ── Worked On 200+ ── */}
+      <WorkedOn />
     </main>
   )
 }
