@@ -81,34 +81,33 @@ export default function Footer() {
     if (!spacer) return
 
     let fired = false
-    const fire = () => {
-      if (fired) return
-      fired = true
-      setVisible(true)
-      cleanup()
-    }
 
-    // Method 1: IntersectionObserver (handles smooth/natural scrolling)
     const observer = new IntersectionObserver(
       ([entry]) => { if (entry.isIntersecting) fire() },
       { threshold: 0 },
     )
     observer.observe(spacer)
 
-    // Method 2: Scroll listener (handles instant jumps)
     const onScroll = () => {
       const rect = spacer.getBoundingClientRect()
       if (rect.top < window.innerHeight && rect.bottom > 0) fire()
     }
     window.addEventListener('scroll', onScroll, { passive: true })
 
-    // Check immediately in case we're already scrolled there
-    onScroll()
-
-    const cleanup = () => {
+    function cleanup() {
       observer.disconnect()
       window.removeEventListener('scroll', onScroll)
     }
+
+    function fire() {
+      if (fired) return
+      fired = true
+      setVisible(true)
+      cleanup()
+    }
+
+    // Check immediately in case we're already scrolled there
+    onScroll()
 
     return cleanup
   }, [])
