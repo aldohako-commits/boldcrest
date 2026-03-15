@@ -100,6 +100,17 @@ export const allTeamMembersQuery = defineQuery(
   }`
 )
 
+export const latestDiaryPostsQuery = defineQuery(
+  `*[_type == "diaryPost"] | order(publishedAt desc) [0...4] {
+    _id,
+    title,
+    slug,
+    excerpt,
+    category,
+    publishedAt
+  }`
+)
+
 export const siteSettingsQuery = defineQuery(
   `*[_type == "siteSettings"][0] {
     heroSubtitle,

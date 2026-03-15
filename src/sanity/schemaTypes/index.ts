@@ -5,7 +5,8 @@ import { service } from './service'
 import { teamMember } from './teamMember'
 import { partner } from './partner'
 import { siteSettings } from './siteSettings'
+import { diaryPost } from './diaryPost'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
-  types: [project, service, teamMember, partner, siteSettings],
+  types: [project, service, teamMember, partner, siteSettings, diaryPost],
 }

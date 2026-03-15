@@ -4,6 +4,7 @@ import {
   featuredProjectsQuery,
   allPartnersQuery,
   allTeamMembersQuery,
+  latestDiaryPostsQuery,
   siteSettingsQuery,
 } from '@/sanity/lib/queries'
 
@@ -21,17 +22,19 @@ const BottomSections = dynamic(
 )
 
 export default async function Home() {
-  const [projectsResult, partnersResult, membersResult, settingsResult] =
+  const [projectsResult, partnersResult, membersResult, diaryResult, settingsResult] =
     await Promise.all([
       sanityFetch({ query: featuredProjectsQuery }),
       sanityFetch({ query: allPartnersQuery }),
       sanityFetch({ query: allTeamMembersQuery }),
+      sanityFetch({ query: latestDiaryPostsQuery }),
       sanityFetch({ query: siteSettingsQuery }),
     ])
 
   const projects = projectsResult.data ?? []
   const partners = partnersResult.data ?? []
   const members = membersResult.data ?? []
+  const diaryPosts = diaryResult.data ?? []
   const settings = settingsResult.data
 
   return (
@@ -41,7 +44,7 @@ export default async function Home() {
       <WeDoSection />
       <SelectedClients partners={partners} />
       <ServiceCards />
-      <BottomSections members={members} />
+      <BottomSections members={members} diaryPosts={diaryPosts} />
     </main>
   )
 }
