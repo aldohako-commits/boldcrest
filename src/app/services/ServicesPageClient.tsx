@@ -809,14 +809,11 @@ export default function ServicesPageClient({
       {/* ── Horizontal Scroll Capabilities ── */}
       <HorizontalCapabilities categories={categories} />
 
-      {/* ── Sliding Gallery ── */}
-      <SlidingGallery />
+      {/* ── Worked On 200+ ── */}
+      <WorkedOn />
 
       {/* ── Testimonials ── */}
       <Testimonials />
-
-      {/* ── Worked On 200+ ── */}
-      <WorkedOn />
     </main>
   )
 }

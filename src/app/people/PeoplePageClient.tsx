@@ -147,8 +147,19 @@ function FadeUp({ children, delay = 0, active, className = '' }: {
 /* ══════════════════════════════════════════════════════
    TOTAL SECTIONS = 9
 ══════════════════════════════════════════════════════ */
-const TOTAL_SECTIONS = 9
+const TOTAL_SECTIONS = 10
 const TRANSITION_DURATION = 700
+
+const galleryImages = [
+  { width: 330, color: '#DA291C' },
+  { width: 500, color: '#f9b311' },
+  { width: 350, color: '#004c95' },
+  { width: 420, color: '#DA291C' },
+  { width: 460, color: '#f9b311' },
+  { width: 380, color: '#004c95' },
+  { width: 440, color: '#DA291C' },
+  { width: 360, color: '#f9b311' },
+]
 
 export default function PeoplePageClient({ members }: PeoplePageClientProps) {
   const [current, setCurrent] = useState(0)
@@ -386,7 +397,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
         {/* ═══════════════════════════════════════════
             3. THE NAME
         ═══════════════════════════════════════════ */}
-        <section className="flex h-[100dvh] items-center bg-bg-elevated px-[var(--gutter)]">
+        <section className="flex h-[100dvh] items-center px-[var(--gutter)]">
           <div className="mx-auto w-full max-w-[var(--max-width)]">
             <div className="mb-[var(--space-xl)]">
               <BigStatement text="The name was chosen with intention." active={active(3)} />
@@ -565,7 +576,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
         {/* ═══════════════════════════════════════════
             7. THE WORK PHILOSOPHY
         ═══════════════════════════════════════════ */}
-        <section className="flex h-[100dvh] items-center bg-bg-elevated px-[var(--gutter)]">
+        <section className="flex h-[100dvh] items-center px-[var(--gutter)]">
           <div className="mx-auto w-full max-w-[var(--max-width)]">
             <div className="mx-auto max-w-[700px] text-center">
               <FadeUp active={active(7)}>
@@ -598,7 +609,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
         </section>
 
         {/* ═══════════════════════════════════════════
-            8. CLOSING — Let's climb
+            8. CLOSING TEXT — First part
         ═══════════════════════════════════════════ */}
         <section className="flex h-[100dvh] items-center px-[var(--gutter)]">
           <div className="mx-auto w-full max-w-[var(--max-width)]">
@@ -608,21 +619,58 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
                   If you&apos;ve read this far, we hope you felt something. A small warmth. A little confidence. Maybe a smile at the chaos of two kids building something real in a country still figuring out what &ldquo;brand&rdquo; means.
                 </p>
               </FadeUp>
+            </div>
 
-              <FadeUp delay={0.1} active={active(8)}>
-                <p className="mt-[var(--space-md)] text-[1rem] leading-[1.85] text-text-secondary">
+            {/* Sliding Gallery */}
+            <FadeUp delay={0.2} active={active(8)}>
+              <div className="relative mt-[var(--space-xl)] overflow-hidden">
+                <div className="flex animate-[marquee_40s_linear_infinite] gap-3">
+                  {[...galleryImages, ...galleryImages].map((img, i) => (
+                    <div
+                      key={i}
+                      className="relative shrink-0 overflow-hidden rounded-xl"
+                      style={{ width: `${img.width}px`, height: '320px' }}
+                    >
+                      <div
+                        className="absolute inset-0"
+                        style={{ background: `linear-gradient(135deg, ${img.color}15 0%, ${img.color}08 100%)` }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" className="text-white/8">
+                          <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1" />
+                          <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+                          <path d="M3 16l5-5 4 4 3-3 6 6" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+                        </svg>
+                      </div>
+                      <div className="absolute right-0 bottom-0 left-0 h-[1px] opacity-20" style={{ backgroundColor: img.color }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </FadeUp>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════
+            9. CLOSING — Let's climb
+        ═══════════════════════════════════════════ */}
+        <section className="flex h-[100dvh] items-center px-[var(--gutter)]">
+          <div className="mx-auto w-full max-w-[var(--max-width)]">
+            <div className="mx-auto max-w-[650px]">
+              <FadeUp active={active(9)}>
+                <p className="text-[1rem] leading-[1.85] text-text-secondary">
                   We&apos;re still figuring things out too. We always will be.
                 </p>
               </FadeUp>
 
-              <FadeUp delay={0.15} active={active(8)}>
+              <FadeUp delay={0.1} active={active(9)}>
                 <p className="mt-[var(--space-md)] text-[1rem] leading-[1.85] text-text-secondary">
                   But your project — your brand, your idea, your mountain — is in the safest hands we know how to offer.
                 </p>
               </FadeUp>
 
-              <FadeUp delay={0.2} active={active(8)}>
-                <div className="mt-[var(--space-xl)]">
+              <FadeUp delay={0.2} active={active(9)}>
+                <div className="mt-[var(--space-xl)]" style={{ fontSize: 'clamp(3rem,8vw,6rem)' }}>
                   <InlineButton href="/contact" label="Let's climb" showArrow />
                 </div>
               </FadeUp>
