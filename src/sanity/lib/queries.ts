@@ -107,6 +107,19 @@ export const latestDiaryPostsQuery = defineQuery(
     slug,
     excerpt,
     category,
+    coverImage,
+    publishedAt
+  }`
+)
+
+export const allDiaryPostsQuery = defineQuery(
+  `*[_type == "diaryPost"] | order(publishedAt desc) {
+    _id,
+    title,
+    slug,
+    excerpt,
+    category,
+    coverImage,
     publishedAt
   }`
 )

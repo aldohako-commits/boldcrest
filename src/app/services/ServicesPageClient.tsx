@@ -234,7 +234,7 @@ function HorizontalCapabilities({
   const x = useTransform(scrollYProgress, [0, 1], ['0%', '-75%'])
 
   return (
-    <section ref={containerRef} className="relative h-[300vh]">
+    <section ref={containerRef} className="relative h-[200vh]">
       <div className="sticky top-0 h-screen overflow-hidden">
         {/* Label */}
         <div className="flex items-center px-[var(--gutter)] pt-8 pb-6">
@@ -355,7 +355,7 @@ function HorizontalCapabilities({
                 meet you there.
               </p>
               <MagneticBase
-                href="/contact"
+                href="/start-a-new-project"
                 className="inline-flex w-fit items-center gap-3 rounded-[var(--radius-pill)] border border-white/30 px-6 py-3 text-[0.8rem] font-semibold uppercase tracking-[0.1em] text-white transition-all duration-[0.5s] hover:border-white/60"
                 style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
               >

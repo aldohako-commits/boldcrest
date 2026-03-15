@@ -1,43 +1,142 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
-import { usePathname } from 'next/navigation'
+import {
+  createContext,
+  useContext,
+  useCallback,
+  useRef,
+  useState,
+  useEffect,
+  type ReactNode,
+} from 'react'
+import { useRouter, usePathname } from 'next/navigation'
 
-export default function PageTransition({
+const TransitionContext = createContext<{
+  isTransitioning: boolean
+}>({ isTransitioning: false })
+
+export function usePageTransition() {
+  return useContext(TransitionContext)
+}
+
+export default function PageTransitionProvider({
   children,
 }: {
-  children: React.ReactNode
+  children: ReactNode
 }) {
+  const router = useRouter()
   const pathname = usePathname()
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const transitioning = useRef(false)
+  const prevPathname = useRef(pathname)
+
+  const navigate = useCallback(
+    (href: string) => {
+      if (href === pathname || transitioning.current) return
+
+      transitioning.current = true
+      setIsTransitioning(true)
+
+      const overlay = overlayRef.current
+      if (!overlay) return
+
+      // Reset & show
+      overlay.style.display = 'block'
+      overlay.style.transformOrigin = 'bottom'
+      overlay.style.transform = 'scaleY(0)'
+      overlay.style.transition = 'none'
+
+      // Force reflow, then animate wipe-in
+      void overlay.offsetHeight
+      overlay.style.transition =
+        'transform 0.5s cubic-bezier(0.77, 0, 0.175, 1)'
+      overlay.style.transform = 'scaleY(1)'
+
+      // After wipe covers screen, navigate
+      setTimeout(() => {
+        window.scrollTo(0, 0)
+        router.push(href)
+      }, 520)
+    },
+    [pathname, router],
+  )
+
+  // When pathname changes after a transition, wipe the overlay out
+  useEffect(() => {
+    if (pathname === prevPathname.current) return
+    prevPathname.current = pathname
+
+    if (!transitioning.current) return
+
+    const overlay = overlayRef.current
+    if (!overlay) return
+
+    // Small delay so the new page renders behind the overlay
+    const t1 = setTimeout(() => {
+      overlay.style.transformOrigin = 'top'
+      overlay.style.transition =
+        'transform 0.5s cubic-bezier(0.77, 0, 0.175, 1)'
+      overlay.style.transform = 'scaleY(0)'
+
+      const t2 = setTimeout(() => {
+        overlay.style.display = 'none'
+        transitioning.current = false
+        setIsTransitioning(false)
+      }, 520)
+
+      return () => clearTimeout(t2)
+    }, 150)
+
+    return () => clearTimeout(t1)
+  }, [pathname])
+
+  // Intercept clicks on internal links
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const anchor = (e.target as HTMLElement).closest('a')
+      if (!anchor) return
+
+      const href = anchor.getAttribute('href')
+      if (
+        !href ||
+        href.startsWith('#') ||
+        href.startsWith('http') ||
+        href.startsWith('mailto:') ||
+        href.startsWith('tel:')
+      )
+        return
+      if (anchor.target === '_blank') return
+      if (e.metaKey || e.ctrlKey || e.shiftKey) return
+      // Skip studio links
+      if (href.startsWith('/studio')) return
+
+      e.preventDefault()
+      navigate(href)
+    }
+
+    document.addEventListener('click', handleClick)
+    return () => document.removeEventListener('click', handleClick)
+  }, [navigate])
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div key={pathname}>
-        {/* Entering overlay — scales Y from bottom */}
-        <motion.div
-          className="fixed inset-0 z-[9999] origin-bottom bg-accent"
-          initial={{ scaleY: 1 }}
-          animate={{ scaleY: 0 }}
-          exit={{ scaleY: 1 }}
-          transition={{
-            duration: 0.5,
-            ease: [0.65, 0, 0.35, 1],
-          }}
-          style={{ transformOrigin: 'top' }}
-        />
-        {/* Exiting overlay — scales Y from top */}
-        <motion.div
-          className="fixed inset-0 z-[9999] origin-top bg-accent"
-          initial={{ scaleY: 1 }}
-          animate={{ scaleY: 0 }}
-          transition={{
-            duration: 0.5,
-            ease: [0.65, 0, 0.35, 1],
-            delay: 0.1,
-          }}
-        />
-        {children}
-      </motion.div>
-    </AnimatePresence>
+    <TransitionContext.Provider value={{ isTransitioning }}>
+      {children}
+      {/* Transition overlay */}
+      <div
+        ref={overlayRef}
+        aria-hidden
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9999,
+          backgroundColor: '#0a0a0a',
+          transform: 'scaleY(0)',
+          transformOrigin: 'bottom',
+          display: 'none',
+          pointerEvents: 'none',
+        }}
+      />
+    </TransitionContext.Provider>
   )
 }

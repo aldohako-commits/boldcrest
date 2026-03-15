@@ -7,6 +7,7 @@ const navLinks = [
   { href: '/work', label: 'Work' },
   { href: '/services', label: 'Services' },
   { href: '/people', label: 'People' },
+  { href: '/diary', label: 'Diary' },
   { href: '/contact', label: 'Contact' },
 ]
 
@@ -58,7 +59,7 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
             }}
           >
             <Link
-              href="/contact"
+              href="/start-a-new-project"
               onClick={onClose}
               className="mt-8 inline-flex rounded-[var(--radius-pill)] bg-accent px-8 py-4 text-[1rem] font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:bg-accent-hover"
             >

@@ -19,6 +19,12 @@ export const diaryPost = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: 'coverImage',
+      title: 'Cover Image',
+      type: 'image',
+      options: { hotspot: true },
+    }),
+    defineField({
       name: 'excerpt',
       title: 'Excerpt',
       type: 'text',

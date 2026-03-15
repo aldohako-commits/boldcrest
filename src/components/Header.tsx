@@ -10,6 +10,7 @@ const navLinks = [
   { href: '/work', label: 'Work' },
   { href: '/services', label: 'Services' },
   { href: '/people', label: 'People' },
+  { href: '/diary', label: 'Diary' },
   { href: '/contact', label: 'Contact' },
 ]
 
@@ -126,7 +127,7 @@ export default function Header() {
 
           {/* CTA Button — text slide + magnetic trailing outlines */}
           <CTAButton
-            href="/contact"
+            href="/start-a-new-project"
             label="Start a Project"
             className="hidden md:inline-flex"
           />

@@ -75,8 +75,8 @@ export default function WorkPageClient({ projects }: WorkPageClientProps) {
       {/* Hero */}
       <section className="relative px-[var(--gutter)] pt-40 pb-[var(--space-2xl)]">
         <div className="mx-auto max-w-[var(--max-width)]">
-          <h1 className="max-w-[700px] font-display text-[clamp(2.5rem,6vw,5rem)] font-bold leading-[1.1] text-text-secondary">
-            Our creations, skillfully forged through the years
+          <h1 className="max-w-[700px] font-display text-[clamp(2.5rem,6vw,5rem)] font-bold leading-[1.1] text-white">
+            Bold Builds Brands
             <span className="text-accent">.</span>
           </h1>
 
@@ -151,14 +151,14 @@ export default function WorkPageClient({ projects }: WorkPageClientProps) {
       <section className="px-[var(--gutter)] pb-[var(--space-3xl)] pt-[var(--space-xl)]">
         <div className="mx-auto max-w-[var(--max-width)]">
           <ScrollRevealStagger
-            className="flex flex-col gap-8"
-            staggerDelay={0.12}
+            className="grid grid-cols-1 gap-6 md:grid-cols-2"
+            staggerDelay={0.1}
           >
             {filtered.map((project) => (
               <ScrollRevealItem key={project._id}>
                 <Link
                   href={`/work/${project.slug?.current}`}
-                  className="group relative block aspect-[16/9] overflow-hidden rounded-[var(--radius-lg)] bg-bg-card max-md:aspect-[4/3]"
+                  className="group relative block aspect-[4/3] overflow-hidden rounded-[var(--radius-lg)] bg-bg-card"
                 >
                   {/* Thumbnail */}
                   {project.thumbnailType === 'video' && project.thumbnailVideo ? (

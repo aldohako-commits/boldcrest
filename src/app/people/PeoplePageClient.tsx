@@ -671,7 +671,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
 
               <FadeUp delay={0.2} active={active(9)}>
                 <div className="mt-[var(--space-xl)]" style={{ fontSize: 'clamp(3rem,8vw,6rem)' }}>
-                  <InlineButton href="/contact" label="Let's climb" showArrow />
+                  <InlineButton href="/start-a-new-project" label="Let's climb" showArrow />
                 </div>
               </FadeUp>
             </div>
