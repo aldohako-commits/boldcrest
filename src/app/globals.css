@@ -93,6 +93,13 @@ body {
   padding: 0;
 }
 
+/* Ensure page sections stack above morph blobs */
+main > section,
+main > div:not([aria-hidden]) {
+  position: relative;
+  z-index: 1;
+}
+
 a {
   color: inherit;
   text-decoration: none;
