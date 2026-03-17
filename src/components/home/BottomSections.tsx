@@ -208,13 +208,23 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
 
 /* ── 1. Services CTA ── */
 function ServicesCTA() {
+  const ref = useRef<HTMLDivElement>(null)
+  const isInView = useInView(ref, { once: true, margin: '-100px' })
+
   return (
-    <section className="px-[var(--gutter)] pb-[var(--space-lg)] pt-[var(--space-lg)]">
-      <p className="font-display text-[clamp(2.8rem,6vw,6rem)] font-bold leading-[1.05] tracking-[-0.03em]">
-        <WordReveal text="Three disciplines." />{' '}
-        <InlineButton href="/services" label="Explore All" />{' '}
-        <span className="whitespace-nowrap"><WordReveal text="One obsession." /></span>
-      </p>
+    <section ref={ref} className="px-[var(--gutter)] pb-[var(--space-lg)] pt-0">
+      <motion.div
+        className="text-center"
+        initial={{ opacity: 0, y: 40 }}
+        animate={isInView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <p className="font-display text-[clamp(2.8rem,6vw,6rem)] font-bold leading-[1.05] tracking-[-0.03em]">
+          <WordReveal text="Three disciplines." />{' '}
+          <InlineButton href="/services" label="Explore All" />{' '}
+          <span className="whitespace-nowrap"><WordReveal text="One obsession." /></span>
+        </p>
+      </motion.div>
     </section>
   )
 }
@@ -321,7 +331,7 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
   }, [totalPages])
 
   return (
-    <section ref={sectionRef} className="px-[var(--gutter)] pt-[var(--space-3xl)] pb-[var(--space-3xl)]">
+    <section ref={sectionRef} className="px-[var(--gutter)] pt-[var(--space-3xl)] pb-[var(--space-3xl)] min-h-[80vh]">
       <div className="mx-auto max-w-[var(--max-width)]">
         {/* Big statement */}
         <motion.h2

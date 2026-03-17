@@ -20,9 +20,9 @@ export function usePageTransition() {
 }
 
 /* ── Timing (ms) ── */
-const WIPE_IN = 800      // overlay slides up to cover the screen
-const HOLD = 400          // pause while fully covered (new page loads)
-const WIPE_OUT = 800      // overlay slides away to reveal new page
+const WIPE_IN = 1200     // overlay slides up to cover the screen
+const HOLD = 600          // pause while fully covered (new page loads)
+const WIPE_OUT = 1000     // overlay slides away to reveal new page
 const EASE = 'cubic-bezier(0.77, 0, 0.175, 1)'
 
 export default function PageTransitionProvider({

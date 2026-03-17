@@ -147,8 +147,8 @@ export default function WorkPageClient({ projects }: WorkPageClientProps) {
       </section>
 
       {/* ── Project Grid — Full Width, 2 Columns ── */}
-      <section className="px-[var(--gutter)] pb-[var(--space-3xl)]">
-        <div className="grid grid-cols-1 gap-x-8 gap-y-16 md:grid-cols-2">
+      <section className="pb-[var(--space-3xl)]">
+        <div className="grid grid-cols-1 md:grid-cols-2">
           {filtered.map((project, i) => (
             <motion.div
               key={project._id}
@@ -162,8 +162,8 @@ export default function WorkPageClient({ projects }: WorkPageClientProps) {
                 href={`/work/${project.slug?.current}`}
                 className="group block"
               >
-                {/* Thumbnail */}
-                <div className="relative aspect-[16/10] overflow-hidden rounded-t-lg bg-bg-card">
+                {/* Thumbnail — full bleed, tall aspect */}
+                <div className="relative aspect-[4/3] overflow-hidden bg-bg-card">
                   {project.thumbnailType === 'video' && project.thumbnailVideo ? (
                     <iframe
                       src={`https://player.vimeo.com/video/${project.thumbnailVideo.match(/vimeo\.com\/(\d+)/)?.[1]}?background=1&autoplay=1&loop=1&muted=1`}
@@ -177,7 +177,7 @@ export default function WorkPageClient({ projects }: WorkPageClientProps) {
                       loader={sanityImageLoader}
                       src={urlFor(project.thumbnail)
                         .width(1400)
-                        .height(875)
+                        .height(1050)
                         .url()}
                       alt={project.name}
                       fill
@@ -191,16 +191,18 @@ export default function WorkPageClient({ projects }: WorkPageClientProps) {
                       <div className="h-[60px] w-[60px] rounded-full border-2 border-text-tertiary" />
                     </div>
                   )}
+
+                  {/* Overlay gradient on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                 </div>
 
-                {/* Project Info — Below Image */}
-                <div className="mt-5">
-                  {/* Name: Bold — Project Name */}
+                {/* Project Info — Client Name - Tagline */}
+                <div className="px-6 py-5 md:px-8">
                   <h3 className="font-display text-[0.85rem] font-bold uppercase tracking-[0.08em] text-white transition-colors duration-300 group-hover:text-accent">
-                    Bold — {project.name}
+                    {project.client || project.name}
                     {project.tagline && (
-                      <span className="ml-2 font-normal text-text-secondary">
-                        {project.tagline}
+                      <span className="ml-1 font-normal text-text-secondary">
+                        {' '}— {project.tagline}
                       </span>
                     )}
                   </h3>

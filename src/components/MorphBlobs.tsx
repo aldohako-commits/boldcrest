@@ -109,7 +109,7 @@ function ScrollBlob({ config }: { config: BlobConfig }) {
       animate={
         isInView
           ? {
-              scale: [0.75, 1.2, 0.8],
+              scale: [0.6, 1.35, 0.65],
               opacity: hovered ? hoverOpacity : baseOpacity,
             }
           : { scale: 0.5, opacity: 0 }
