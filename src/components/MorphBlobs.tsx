@@ -56,7 +56,6 @@ export const BLOB_PATHS = {
   e1: 'M200,5C280,20,350,80,380,160C410,240,400,340,350,410C300,480,210,520,130,500C50,480,-10,400,0,310C10,220,60,140,120,80C180,20,120,-10,200,5Z',
   e2: 'M220,15C300,40,360,110,380,190C400,270,380,360,330,430C280,500,190,530,110,500C30,470,-20,380,0,290C20,200,70,120,140,70C210,20,140,-10,220,15Z',
 
-  // New extra path pairs for more variety
   f1: 'M300,30C360,60,410,130,420,210C430,290,400,370,340,430C280,490,200,520,120,500C40,480,-10,410,0,320C10,230,60,150,130,90C200,30,240,0,300,30Z',
   f2: 'M280,20C350,50,400,120,420,200C440,280,420,360,360,420C300,480,220,510,140,490C60,470,-10,390,0,300C10,210,50,130,120,80C190,30,210,-10,280,20Z',
 
@@ -90,8 +89,8 @@ function ScrollBlob({ config }: { config: BlobConfig }) {
   )
   const rotate = useTransform(scrollYProgress, [0, 1], [-5, 5])
 
-  const baseOpacity = config.opacity ?? 0.12
-  const hoverOpacity = Math.min(baseOpacity * 2.5, 0.45)
+  const baseOpacity = config.opacity ?? 0.18
+  const hoverOpacity = Math.min(baseOpacity * 3, 0.55)
 
   return (
     <motion.div
@@ -103,7 +102,6 @@ function ScrollBlob({ config }: { config: BlobConfig }) {
         height: config.size,
         zIndex: 0,
         rotate,
-        pointerEvents: 'auto',
         cursor: 'default',
       }}
       onMouseEnter={() => setHovered(true)}
@@ -147,7 +145,7 @@ function ScrollBlob({ config }: { config: BlobConfig }) {
 export function PageMorphBlobs({ blobs }: { blobs: BlobConfig[] }) {
   return (
     <div
-      className="pointer-events-none absolute inset-0"
+      className="absolute inset-0 overflow-visible"
       style={{ zIndex: 0 }}
       aria-hidden="true"
     >
@@ -158,67 +156,67 @@ export function PageMorphBlobs({ blobs }: { blobs: BlobConfig[] }) {
   )
 }
 
-/* ── Homepage blobs (expanded — 10 blobs) ── */
+/* ── Homepage blobs (10 blobs, boosted opacity) ── */
 const HOME_BLOBS: BlobConfig[] = [
   // Hero area — red top right
   {
     pathA: BLOB_PATHS.a1, pathB: BLOB_PATHS.a2,
-    color: '#DA291C', size: 700, blur: 60, opacity: 0.15,
-    style: { top: '-100px', right: '-100px' },
+    color: '#DA291C', size: 700, blur: 60, opacity: 0.22,
+    style: { top: '-50px', right: '0px' },
   },
-  // Hero area — yellow top left (NEW)
+  // Hero area — yellow top left
   {
     pathA: BLOB_PATHS.f1, pathB: BLOB_PATHS.f2,
-    color: '#f9b311', size: 500, blur: 55, opacity: 0.08,
-    style: { top: '200px', left: '-150px' },
+    color: '#f9b311', size: 500, blur: 55, opacity: 0.15,
+    style: { top: '200px', left: '0px' },
   },
-  // Selected Works — blue center-right (NEW)
+  // Selected Works — blue center-right
   {
     pathA: BLOB_PATHS.g1, pathB: BLOB_PATHS.g2,
-    color: '#004c95', size: 450, blur: 50, opacity: 0.1,
+    color: '#004c95', size: 450, blur: 50, opacity: 0.18,
     style: { top: '800px', right: '10%' },
   },
   // We Do section — yellow left
   {
     pathA: BLOB_PATHS.b1, pathB: BLOB_PATHS.b2,
-    color: '#f9b311', size: 550, blur: 50, opacity: 0.1,
-    style: { top: '1400px', left: '-80px' },
+    color: '#f9b311', size: 550, blur: 50, opacity: 0.16,
+    style: { top: '1400px', left: '0px' },
   },
-  // Mid-page — red center-left (NEW)
+  // Mid-page — red center-left
   {
     pathA: BLOB_PATHS.d1, pathB: BLOB_PATHS.d2,
-    color: '#DA291C', size: 400, blur: 45, opacity: 0.08,
+    color: '#DA291C', size: 400, blur: 45, opacity: 0.14,
     style: { top: '2000px', left: '15%' },
   },
   // Partners — blue right
   {
     pathA: BLOB_PATHS.c1, pathB: BLOB_PATHS.c2,
-    color: '#004c95', size: 600, blur: 55, opacity: 0.15,
-    style: { top: '2800px', right: '-80px' },
+    color: '#004c95', size: 600, blur: 55, opacity: 0.2,
+    style: { top: '2800px', right: '0px' },
   },
-  // Testimonials area — yellow right (NEW)
+  // Testimonials area — yellow right
   {
     pathA: BLOB_PATHS.e1, pathB: BLOB_PATHS.e2,
-    color: '#f9b311', size: 480, blur: 50, opacity: 0.09,
-    style: { top: '3600px', right: '-60px' },
+    color: '#f9b311', size: 480, blur: 50, opacity: 0.15,
+    style: { top: '3600px', right: '0px' },
   },
   // Lower page — red left
   {
     pathA: BLOB_PATHS.d1, pathB: BLOB_PATHS.d2,
-    color: '#DA291C', size: 500, blur: 45, opacity: 0.1,
-    style: { top: '4200px', left: '-60px' },
+    color: '#DA291C', size: 500, blur: 45, opacity: 0.16,
+    style: { top: '4200px', left: '0px' },
   },
   // Diary section — yellow right
   {
     pathA: BLOB_PATHS.e1, pathB: BLOB_PATHS.e2,
-    color: '#f9b311', size: 550, blur: 50, opacity: 0.12,
-    style: { top: '5200px', right: '-80px' },
+    color: '#f9b311', size: 550, blur: 50, opacity: 0.18,
+    style: { top: '5200px', right: '0px' },
   },
   // Bottom — blue left
   {
     pathA: BLOB_PATHS.a1, pathB: BLOB_PATHS.a2,
-    color: '#004c95', size: 600, blur: 55, opacity: 0.13,
-    style: { top: '6400px', left: '-100px' },
+    color: '#004c95', size: 600, blur: 55, opacity: 0.18,
+    style: { top: '6400px', left: '0px' },
   },
 ]
 
@@ -231,114 +229,114 @@ export default function MorphBlobs() {
 export const WORK_BLOBS: BlobConfig[] = [
   {
     pathA: BLOB_PATHS.c1, pathB: BLOB_PATHS.c2,
-    color: '#DA291C', size: 600, blur: 55, opacity: 0.12,
-    style: { top: '-50px', right: '-120px' },
+    color: '#DA291C', size: 600, blur: 55, opacity: 0.2,
+    style: { top: '-50px', right: '0px' },
   },
   {
     pathA: BLOB_PATHS.f1, pathB: BLOB_PATHS.f2,
-    color: '#004c95', size: 500, blur: 50, opacity: 0.1,
-    style: { top: '800px', left: '-100px' },
+    color: '#004c95', size: 500, blur: 50, opacity: 0.16,
+    style: { top: '800px', left: '0px' },
   },
   {
     pathA: BLOB_PATHS.b1, pathB: BLOB_PATHS.b2,
-    color: '#f9b311', size: 450, blur: 50, opacity: 0.09,
-    style: { top: '1800px', right: '-80px' },
+    color: '#f9b311', size: 450, blur: 50, opacity: 0.15,
+    style: { top: '1800px', right: '0px' },
   },
   {
     pathA: BLOB_PATHS.g1, pathB: BLOB_PATHS.g2,
-    color: '#DA291C', size: 400, blur: 45, opacity: 0.08,
-    style: { top: '3000px', left: '-60px' },
+    color: '#DA291C', size: 400, blur: 45, opacity: 0.14,
+    style: { top: '3000px', left: '0px' },
   },
   {
     pathA: BLOB_PATHS.e1, pathB: BLOB_PATHS.e2,
-    color: '#004c95', size: 500, blur: 50, opacity: 0.1,
-    style: { top: '4200px', right: '-100px' },
+    color: '#004c95', size: 500, blur: 50, opacity: 0.16,
+    style: { top: '4200px', right: '0px' },
   },
 ]
 
 export const SERVICES_BLOBS: BlobConfig[] = [
   {
     pathA: BLOB_PATHS.a1, pathB: BLOB_PATHS.a2,
-    color: '#f9b311', size: 650, blur: 55, opacity: 0.1,
-    style: { top: '-80px', left: '-120px' },
+    color: '#f9b311', size: 650, blur: 55, opacity: 0.16,
+    style: { top: '0px', left: '0px' },
   },
   {
     pathA: BLOB_PATHS.d1, pathB: BLOB_PATHS.d2,
-    color: '#DA291C', size: 550, blur: 50, opacity: 0.12,
-    style: { top: '1200px', right: '-100px' },
+    color: '#DA291C', size: 550, blur: 50, opacity: 0.18,
+    style: { top: '1200px', right: '0px' },
   },
   {
     pathA: BLOB_PATHS.c1, pathB: BLOB_PATHS.c2,
-    color: '#004c95', size: 500, blur: 50, opacity: 0.1,
-    style: { top: '2400px', left: '-80px' },
+    color: '#004c95', size: 500, blur: 50, opacity: 0.16,
+    style: { top: '2400px', left: '0px' },
   },
   {
     pathA: BLOB_PATHS.f1, pathB: BLOB_PATHS.f2,
-    color: '#f9b311', size: 450, blur: 45, opacity: 0.08,
-    style: { top: '3800px', right: '-60px' },
+    color: '#f9b311', size: 450, blur: 45, opacity: 0.14,
+    style: { top: '3800px', right: '0px' },
   },
   {
     pathA: BLOB_PATHS.b1, pathB: BLOB_PATHS.b2,
-    color: '#DA291C', size: 500, blur: 50, opacity: 0.1,
-    style: { top: '5000px', left: '-100px' },
+    color: '#DA291C', size: 500, blur: 50, opacity: 0.16,
+    style: { top: '5000px', left: '0px' },
   },
 ]
 
 export const CONTACT_BLOBS: BlobConfig[] = [
   {
     pathA: BLOB_PATHS.e1, pathB: BLOB_PATHS.e2,
-    color: '#004c95', size: 550, blur: 55, opacity: 0.12,
-    style: { top: '-50px', right: '-100px' },
+    color: '#004c95', size: 550, blur: 55, opacity: 0.18,
+    style: { top: '0px', right: '0px' },
   },
   {
     pathA: BLOB_PATHS.g1, pathB: BLOB_PATHS.g2,
-    color: '#DA291C', size: 400, blur: 45, opacity: 0.08,
-    style: { top: '400px', left: '-80px' },
+    color: '#DA291C', size: 400, blur: 45, opacity: 0.14,
+    style: { top: '400px', left: '0px' },
   },
   {
     pathA: BLOB_PATHS.a1, pathB: BLOB_PATHS.a2,
-    color: '#f9b311', size: 450, blur: 50, opacity: 0.1,
-    style: { top: '800px', right: '-60px' },
+    color: '#f9b311', size: 450, blur: 50, opacity: 0.16,
+    style: { top: '800px', right: '0px' },
   },
 ]
 
 export const DIARY_BLOBS: BlobConfig[] = [
   {
     pathA: BLOB_PATHS.b1, pathB: BLOB_PATHS.b2,
-    color: '#DA291C', size: 600, blur: 55, opacity: 0.12,
-    style: { top: '-80px', right: '-100px' },
+    color: '#DA291C', size: 600, blur: 55, opacity: 0.18,
+    style: { top: '0px', right: '0px' },
   },
   {
     pathA: BLOB_PATHS.c1, pathB: BLOB_PATHS.c2,
-    color: '#f9b311', size: 500, blur: 50, opacity: 0.09,
-    style: { top: '1000px', left: '-100px' },
+    color: '#f9b311', size: 500, blur: 50, opacity: 0.15,
+    style: { top: '1000px', left: '0px' },
   },
   {
     pathA: BLOB_PATHS.f1, pathB: BLOB_PATHS.f2,
-    color: '#004c95', size: 450, blur: 50, opacity: 0.1,
-    style: { top: '2200px', right: '-80px' },
+    color: '#004c95', size: 450, blur: 50, opacity: 0.16,
+    style: { top: '2200px', right: '0px' },
   },
   {
     pathA: BLOB_PATHS.d1, pathB: BLOB_PATHS.d2,
-    color: '#DA291C', size: 400, blur: 45, opacity: 0.08,
-    style: { top: '3400px', left: '-60px' },
+    color: '#DA291C', size: 400, blur: 45, opacity: 0.14,
+    style: { top: '3400px', left: '0px' },
   },
 ]
 
 export const START_PROJECT_BLOBS: BlobConfig[] = [
   {
     pathA: BLOB_PATHS.a1, pathB: BLOB_PATHS.a2,
-    color: '#004c95', size: 600, blur: 55, opacity: 0.12,
-    style: { top: '-60px', left: '-100px' },
+    color: '#004c95', size: 600, blur: 55, opacity: 0.18,
+    style: { top: '0px', left: '0px' },
   },
   {
     pathA: BLOB_PATHS.e1, pathB: BLOB_PATHS.e2,
-    color: '#DA291C', size: 450, blur: 50, opacity: 0.09,
-    style: { top: '500px', right: '-80px' },
+    color: '#DA291C', size: 450, blur: 50, opacity: 0.15,
+    style: { top: '500px', right: '0px' },
   },
   {
     pathA: BLOB_PATHS.g1, pathB: BLOB_PATHS.g2,
-    color: '#f9b311', size: 500, blur: 50, opacity: 0.1,
-    style: { top: '1200px', left: '-60px' },
+    color: '#f9b311', size: 500, blur: 50, opacity: 0.16,
+    style: { top: '1200px', left: '0px' },
   },
 ]
