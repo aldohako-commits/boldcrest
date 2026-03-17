@@ -4,6 +4,7 @@ import { useState, useActionState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { submitContactForm } from './actions'
+import { SubmitButton } from '@/components/MagneticButton'
 
 interface SocialLink {
   platform: string
@@ -243,28 +244,11 @@ export default function ContactPageClient({
                   </div>
 
                   <div className="mt-2">
-                    <button
-                      type="submit"
-                      disabled={isPending}
-                      className="group inline-flex items-center gap-3 text-[1.5rem] font-bold text-white transition-colors duration-300 hover:text-accent disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isPending ? 'Sending...' : 'Send'}
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                        className="transition-transform duration-300 group-hover:translate-x-1"
-                      >
-                        <path
-                          d="M4 10h12M12 6l4 4-4 4"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </button>
+                    <SubmitButton
+                      label="Send"
+                      pendingLabel="Sending..."
+                      isPending={isPending}
+                    />
                   </div>
                 </form>
               )}

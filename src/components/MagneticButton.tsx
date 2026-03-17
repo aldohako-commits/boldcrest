@@ -181,4 +181,113 @@ export function InlineButton({
   )
 }
 
+/* ── Submit Button  (form submit with magnetic trailing lines) ── */
+
+export function SubmitButton({
+  label,
+  pendingLabel = 'Sending...',
+  isPending = false,
+  className = '',
+}: {
+  label: string
+  pendingLabel?: string
+  isPending?: boolean
+  className?: string
+}) {
+  const containerRef = useRef<HTMLButtonElement>(null)
+  const layerRefs = useRef<(HTMLSpanElement | null)[]>([])
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      const el = containerRef.current
+      if (!el) return
+      const rect = el.getBoundingClientRect()
+      const nx = ((e.clientX - rect.left) / rect.width - 0.5) * 2
+      const ny = ((e.clientY - rect.top) / rect.height - 0.5) * 2
+
+      layerRefs.current.forEach((layer, i) => {
+        if (!layer) return
+        const strength = TRAIL_STRENGTHS[i]
+        const dx = nx * MAX_OFFSET * strength
+        const dy = ny * MAX_OFFSET * strength
+        layer.style.opacity = '1'
+        layer.style.transform = `translate(${dx}px, ${dy}px)`
+      })
+    },
+    [],
+  )
+
+  const handleMouseLeave = useCallback(() => {
+    layerRefs.current.forEach((layer) => {
+      if (!layer) return
+      layer.style.opacity = '0'
+      layer.style.transform = 'translate(0px, 0px)'
+    })
+  }, [])
+
+  return (
+    <button
+      ref={containerRef}
+      type="submit"
+      disabled={isPending}
+      className={`group relative inline-flex items-center gap-3 rounded-[var(--radius-pill)] border border-white/25 bg-black px-6 py-[0.7rem] text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-text-secondary transition-all duration-[0.5s] hover:border-white/60 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+      style={{ transitionTimingFunction: CUBIC, backgroundColor: '#000' }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      {TRAIL_COLORS.map((color, i) => (
+        <span
+          key={color}
+          ref={(el) => {
+            layerRefs.current[i] = el
+          }}
+          className="pointer-events-none absolute inset-0 rounded-[inherit]"
+          style={{
+            border: `1.5px solid ${color}`,
+            opacity: 0,
+            transform: 'translate(0px, 0px)',
+            transition: `transform ${0.35 + i * 0.2}s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease`,
+            zIndex: 0,
+          }}
+          aria-hidden
+        />
+      ))}
+
+      <span
+        className="relative z-10 inline-flex overflow-hidden"
+        style={{ height: '1.2em' }}
+      >
+        <span
+          className="flex flex-col transition-transform duration-[0.5s] group-hover:-translate-y-1/2"
+          style={{ transitionTimingFunction: CUBIC }}
+        >
+          <span className="leading-[1.2]">
+            {isPending ? pendingLabel : label}
+          </span>
+          <span className="leading-[1.2]">
+            {isPending ? pendingLabel : label}
+          </span>
+        </span>
+      </span>
+
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 16 16"
+        fill="none"
+        className="relative z-10 transition-transform duration-[0.5s] group-hover:translate-x-1"
+        style={{ transitionTimingFunction: CUBIC }}
+      >
+        <path
+          d="M3 8h10M9 4l4 4-4 4"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </button>
+  )
+}
+
 export default MagneticBase

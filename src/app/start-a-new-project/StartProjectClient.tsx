@@ -2,9 +2,9 @@
 
 import { useState, useActionState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { submitProjectForm } from './actions'
+import { SubmitButton } from '@/components/MagneticButton'
 
 const serviceOptions = [
   { label: 'Branding', value: 'Branding' },
@@ -256,28 +256,11 @@ export default function StartProjectClient() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
               >
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className="group inline-flex items-center gap-3 text-[1.5rem] font-bold text-white transition-colors duration-300 hover:text-accent disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isPending ? 'Sending...' : 'Submit'}
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    className="transition-transform duration-300 group-hover:translate-x-1"
-                  >
-                    <path
-                      d="M4 10h12M12 6l4 4-4 4"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
+                <SubmitButton
+                  label="Submit"
+                  pendingLabel="Sending..."
+                  isPending={isPending}
+                />
               </motion.div>
             </form>
           )}
