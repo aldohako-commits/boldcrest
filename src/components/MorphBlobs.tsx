@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 
 /*
@@ -76,6 +76,7 @@ export interface BlobConfig {
 
 function ScrollBlob({ config }: { config: BlobConfig }) {
   const ref = useRef<HTMLDivElement>(null)
+  const [hovered, setHovered] = useState(false)
   const isInView = useInView(ref, { margin: '-5%', once: false })
 
   const { scrollYProgress } = useScroll({
@@ -89,29 +90,36 @@ function ScrollBlob({ config }: { config: BlobConfig }) {
   )
   const rotate = useTransform(scrollYProgress, [0, 1], [-5, 5])
 
+  const baseOpacity = config.opacity ?? 0.12
+  const hoverOpacity = Math.min(baseOpacity * 2.5, 0.45)
+
   return (
     <motion.div
       ref={ref}
-      className="pointer-events-none absolute"
+      className="absolute"
       style={{
         ...config.style,
         width: config.size,
         height: config.size,
         zIndex: 0,
         rotate,
+        pointerEvents: 'auto',
+        cursor: 'default',
       }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       animate={
         isInView
           ? {
-              scale: [0.9, 1.05, 0.95],
-              opacity: config.opacity ?? 0.12,
+              scale: [0.75, 1.2, 0.8],
+              opacity: hovered ? hoverOpacity : baseOpacity,
             }
-          : { scale: 0.7, opacity: 0 }
+          : { scale: 0.5, opacity: 0 }
       }
       transition={{
-        opacity: { duration: 1.2, ease: 'easeOut' },
+        opacity: { duration: hovered ? 0.4 : 1.2, ease: 'easeOut' },
         scale: {
-          duration: 6,
+          duration: 5,
           repeat: Infinity,
           repeatType: 'mirror',
           ease: 'easeInOut',

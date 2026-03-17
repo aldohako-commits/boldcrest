@@ -209,7 +209,7 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
 /* ── 1. Services CTA ── */
 function ServicesCTA() {
   return (
-    <section className="px-[var(--gutter)] pb-[var(--space-lg)] pt-[var(--space-3xl)]">
+    <section className="px-[var(--gutter)] pb-[var(--space-lg)] pt-[var(--space-lg)]">
       <div className="mx-auto max-w-[var(--max-width)]">
         <p className="font-display text-[clamp(2.8rem,8vw,8rem)] font-bold leading-[1.05] tracking-[-0.03em]">
           <WordReveal text="Three disciplines." />{' '}
@@ -302,10 +302,6 @@ function DiaryCard({ post, index }: { post: DiaryPost; index: number }) {
         </p>
       )}
 
-      {/* Date */}
-      <span className="text-[0.6rem] uppercase tracking-[0.12em] text-white/20">
-        {date}
-      </span>
     </Link>
   )
 }
@@ -327,14 +323,24 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
   }, [totalPages])
 
   return (
-    <section ref={sectionRef} className="px-[var(--gutter)] py-[var(--space-2xl)]">
+    <section ref={sectionRef} className="px-[var(--gutter)] pt-[var(--space-3xl)] pb-[var(--space-3xl)]">
       <div className="mx-auto max-w-[var(--max-width)]">
+        {/* Big statement */}
+        <motion.h2
+          className="mb-[var(--space-2xl)] max-w-[700px] font-display text-[clamp(2rem,5vw,3.5rem)] font-bold leading-[1.15] tracking-[-0.02em]"
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
+          Thoughts, lessons, and the occasional rant<span className="text-accent">.</span>
+        </motion.h2>
+
         {/* Header */}
         <motion.div
           className="mb-[var(--space-xl)] flex items-center justify-between"
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
         >
           <h2 className="text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-secondary">
             The Diary

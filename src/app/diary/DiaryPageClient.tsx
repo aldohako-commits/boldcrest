@@ -213,11 +213,6 @@ export default function DiaryPageClient({ posts }: DiaryPageClientProps) {
                       )}
 
                       <div className="mt-4 flex items-center justify-between">
-                        {post.publishedAt && (
-                          <span className="text-[0.75rem] text-text-tertiary">
-                            {formatDate(post.publishedAt)}
-                          </span>
-                        )}
                         <span className="inline-flex items-center gap-1 text-[0.75rem] font-medium text-text-secondary transition-colors duration-300 group-hover:text-accent">
                           Read
                           <svg

@@ -49,7 +49,6 @@ export default function ProjectSidebar({
       <dl className="flex flex-col gap-[var(--space-md)]">
         {client && metaItem('Client', client)}
         {industry && metaItem('Industry', industry)}
-        {year && metaItem('Year', year)}
         {services && services.length > 0 && metaItem('Services', services)}
       </dl>
     </aside>
