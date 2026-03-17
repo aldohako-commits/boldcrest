@@ -377,19 +377,23 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
   const sectionRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
 
-  // Scroll-driven background transition
+  // Scroll-driven background transition — spans from well before section enters
+  // to partway through, creating a long gradual shift
   const { scrollYProgress } = useScroll({
     target: sectionRef,
-    offset: ['start end', 'start 0.15'],
+    offset: ['start end', 'start start'],
   })
-  const bg = useTransform(scrollYProgress, [0, 1], ['#0a0a0a', '#EDEDED'])
+  const bg = useTransform(scrollYProgress, [0, 0.4, 1], ['#0a0a0a', '#EDEDED', '#EDEDED'])
 
   return (
     <motion.section
       ref={sectionRef}
-      className="relative min-h-screen py-[var(--space-3xl)]"
+      className="relative min-h-screen"
       style={{ backgroundColor: bg }}
     >
+      {/* Gradient fade-in spacer — blends seamlessly from previous section */}
+      <div className="h-[30vh]" />
+
       {/* Header row */}
       <div className="px-[var(--gutter)]">
         <motion.div
@@ -446,6 +450,14 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
           </motion.div>
         ))}
       </div>
+
+      {/* Bottom gradient — transitions back to dark */}
+      <div
+        className="h-[30vh]"
+        style={{
+          background: 'linear-gradient(to bottom, #EDEDED, #0a0a0a)',
+        }}
+      />
     </motion.section>
   )
 }
