@@ -210,13 +210,11 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
 function ServicesCTA() {
   return (
     <section className="px-[var(--gutter)] pb-[var(--space-lg)] pt-[var(--space-lg)]">
-      <div className="mx-auto max-w-[var(--max-width)]">
-        <p className="font-display text-[clamp(2.8rem,8vw,8rem)] font-bold leading-[1.05] tracking-[-0.03em]">
-          <WordReveal text="Three disciplines." />{' '}
-          <InlineButton href="/services" label="Explore All" />{' '}
-          <WordReveal text="One obsession." />
-        </p>
-      </div>
+      <p className="font-display text-[clamp(2.8rem,8vw,8rem)] font-bold leading-[1.05] tracking-[-0.03em]">
+        <WordReveal text="Three disciplines." />{' '}
+        <InlineButton href="/services" label="Explore All" />{' '}
+        <WordReveal text="One obsession." />
+      </p>
     </section>
   )
 }
