@@ -100,9 +100,10 @@ function ScrollBlob({ config }: { config: BlobConfig }) {
         ...config.style,
         width: config.size,
         height: config.size,
-        zIndex: 0,
+        zIndex: 1,
         rotate,
         cursor: 'default',
+        pointerEvents: 'auto',
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -145,8 +146,8 @@ function ScrollBlob({ config }: { config: BlobConfig }) {
 export function PageMorphBlobs({ blobs }: { blobs: BlobConfig[] }) {
   return (
     <div
-      className="absolute inset-0 overflow-visible"
-      style={{ zIndex: 0 }}
+      className="pointer-events-none absolute top-0 left-0 w-full overflow-visible"
+      style={{ zIndex: 1, height: '100%', minHeight: '100vh' }}
       aria-hidden="true"
     >
       {blobs.map((blob, i) => (
