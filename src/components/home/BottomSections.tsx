@@ -273,89 +273,38 @@ const CATEGORY_COLORS: Record<string, string> = {
   Culture: '#f9b311',
 }
 
-function DiaryCard({ post, index }: { post: DiaryPost; index: number }) {
-  const date = post.publishedAt
-    ? new Date(post.publishedAt).toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-      })
-    : ''
-  const color = CATEGORY_COLORS[post.category || ''] || '#DA291C'
-
-  return (
-    <Link href={`/diary/${post.slug.current}`} className="group block">
-      {/* Number + category */}
-      <div className="mb-6 flex items-center gap-4">
-        <span className="font-display text-[0.7rem] tracking-[0.15em] text-text-tertiary">
-          {String(index + 1).padStart(2, '0')}
-        </span>
-        <span
-          className="text-[0.6rem] font-semibold uppercase tracking-[0.15em]"
-          style={{ color }}
-        >
-          {post.category || 'Diary'}
-        </span>
-      </div>
-
-      {/* Title */}
-      <h3 className="mb-4 font-display text-[clamp(1.4rem,2.5vw,2rem)] font-semibold leading-[1.2] text-white transition-colors duration-200 group-hover:text-accent">
-        {post.title}
-      </h3>
-
-      {/* Excerpt */}
-      {post.excerpt && (
-        <p className="mb-6 text-[0.9rem] leading-[1.75] text-text-tertiary">
-          {post.excerpt}
-        </p>
-      )}
-
-    </Link>
-  )
-}
-
 function DiarySection({ posts }: { posts: DiaryPost[] }) {
   const entries = posts.length > 0 ? posts.slice(0, 4) : PLACEHOLDER_POSTS
-  const [page, setPage] = useState(0)
   const sectionRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
-  const totalPages = Math.ceil(entries.length / 2)
 
-  // Auto-advance every 5s
-  useEffect(() => {
-    if (totalPages <= 1) return
-    const timer = setInterval(() => {
-      setPage((prev) => (prev + 1) % totalPages)
-    }, 5000)
-    return () => clearInterval(timer)
-  }, [totalPages])
+  // Scroll-driven background transition
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start end', 'start 0.3'],
+  })
+  const bg = useTransform(scrollYProgress, [0, 1], ['#0a0a0a', '#EDEDED'])
 
   return (
-    <section ref={sectionRef} className="px-[var(--gutter)] pt-[var(--space-3xl)] pb-[var(--space-3xl)] min-h-[80vh]">
-      <div className="mx-auto max-w-[var(--max-width)]">
-        {/* Big statement */}
-        <motion.h2
-          className="mb-[var(--space-2xl)] max-w-[700px] font-display text-[clamp(2rem,5vw,3.5rem)] font-bold leading-[1.15] tracking-[-0.02em]"
+    <motion.section
+      ref={sectionRef}
+      className="relative min-h-screen py-[var(--space-3xl)]"
+      style={{ backgroundColor: bg }}
+    >
+      {/* Header row */}
+      <div className="px-[var(--gutter)]">
+        <motion.div
+          className="flex items-end justify-between pb-[var(--space-xl)]"
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          Thoughts, lessons, and the occasional rant<span className="text-accent">.</span>
-        </motion.h2>
-
-        {/* Header */}
-        <motion.div
-          className="mb-[var(--space-xl)] flex items-center justify-between"
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <h2 className="text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-secondary">
-            The Diary
+          <h2 className="font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[0.95] tracking-[-0.03em] text-[#0a0a0a]">
+            The Diary<span className="text-accent">.</span>
           </h2>
           <Link
             href="/diary"
-            className="group flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-text-secondary transition-all duration-200 hover:gap-3 hover:text-white"
+            className="group mb-2 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-[#0a0a0a]/60 transition-all duration-200 hover:gap-3 hover:text-[#0a0a0a]"
           >
             Read All
             <svg
@@ -376,65 +325,84 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
             </svg>
           </Link>
         </motion.div>
-
-        {/* Top border */}
-        <div className="h-px w-full bg-border" />
-
-        {/* Book-page-flip: right page flips over the left */}
-        <div className="relative grid grid-cols-1 md:grid-cols-2">
-          {/* Left column — incoming page (underneath) */}
-          <div className="py-[var(--space-xl)] md:border-r md:border-border md:pr-[var(--space-lg)]">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`left-${page}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <DiaryCard post={entries[page * 2]} index={page * 2} />
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* Right column — the page that flips */}
-          <div className="relative py-[var(--space-xl)] md:pl-[var(--space-lg)]" style={{ perspective: 1200 }}>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`right-${page}`}
-                initial={{ rotateY: -120, opacity: 0 }}
-                animate={{ rotateY: 0, opacity: 1 }}
-                exit={{ rotateY: -120, opacity: 0 }}
-                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                style={{ transformOrigin: 'left center' }}
-              >
-                {entries[page * 2 + 1] && (
-                  <DiaryCard post={entries[page * 2 + 1]} index={page * 2 + 1} />
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
-
-        {/* Bottom border */}
-        <div className="h-px w-full bg-border" />
-
-        {/* Page indicators + arrow */}
-        {totalPages > 1 && (
-          <div className="mt-5 flex justify-center gap-2">
-            {Array.from({ length: totalPages }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setPage(i)}
-                className={`h-[5px] rounded-full transition-all duration-300 ${
-                  i === page ? 'w-6 bg-accent' : 'w-[5px] bg-white/15'
-                }`}
-              />
-            ))}
-          </div>
-        )}
       </div>
-    </section>
+
+      {/* Full-width divider */}
+      <div className="h-px w-full bg-[#0a0a0a]/10" />
+
+      {/* Full-width post grid — newspaper style */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+        {entries.map((post, i) => {
+          const color = CATEGORY_COLORS[post.category || ''] || '#DA291C'
+          return (
+            <motion.div
+              key={post._id}
+              initial={{ opacity: 0, y: 40 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{
+                duration: 0.7,
+                delay: 0.15 + i * 0.1,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+            >
+              <Link
+                href={`/diary/${post.slug.current}`}
+                className="group block h-full border-r border-[#0a0a0a]/10 px-[var(--gutter)] py-[var(--space-xl)] transition-colors duration-300 hover:bg-[#0a0a0a]/[0.04] last:border-r-0"
+              >
+                {/* Category */}
+                <div className="mb-6 flex items-center gap-3">
+                  <span
+                    className="h-[6px] w-[6px] rounded-full"
+                    style={{ backgroundColor: color }}
+                  />
+                  <span
+                    className="text-[0.6rem] font-semibold uppercase tracking-[0.15em]"
+                    style={{ color }}
+                  >
+                    {post.category || 'Diary'}
+                  </span>
+                </div>
+
+                {/* Title */}
+                <h3 className="mb-4 font-display text-[clamp(1.3rem,2vw,1.7rem)] font-semibold leading-[1.25] text-[#0a0a0a] transition-colors duration-200 group-hover:text-accent">
+                  {post.title}
+                </h3>
+
+                {/* Excerpt */}
+                {post.excerpt && (
+                  <p className="mb-8 line-clamp-3 text-[0.85rem] leading-[1.7] text-[#0a0a0a]/50">
+                    {post.excerpt}
+                  </p>
+                )}
+
+                {/* Read arrow */}
+                <span className="inline-flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-[#0a0a0a]/40 transition-colors duration-200 group-hover:text-accent">
+                  Read
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    className="transition-transform duration-300 group-hover:translate-x-1"
+                  >
+                    <path
+                      d="M3 8h10M9 4l4 4-4 4"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+              </Link>
+            </motion.div>
+          )
+        })}
+      </div>
+
+      {/* Bottom divider */}
+      <div className="h-px w-full bg-[#0a0a0a]/10" />
+    </motion.section>
   )
 }
 
