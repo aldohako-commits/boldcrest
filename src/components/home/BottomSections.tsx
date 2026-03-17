@@ -377,88 +377,80 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
   const sectionRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
 
-  // Scroll-driven background transition — spans from well before section enters
-  // to partway through, creating a long gradual shift
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ['start end', 'start start'],
-  })
-  const bg = useTransform(scrollYProgress, [0, 0.4, 1], ['#0a0a0a', '#EDEDED', '#EDEDED'])
-
   return (
-    <motion.section
-      ref={sectionRef}
-      className="relative min-h-screen"
-      style={{ backgroundColor: bg }}
-    >
-      {/* Gradient fade-in spacer — blends seamlessly from previous section */}
-      <div className="h-[30vh]" />
-
-      {/* Header row */}
-      <div className="px-[var(--gutter)]">
-        <motion.div
-          className="flex items-end justify-between pb-[var(--space-xl)]"
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <h2 className="font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[0.95] tracking-[-0.03em] text-[#0a0a0a]">
-            The Diary<span className="text-accent">.</span>
-          </h2>
-          <Link
-            href="/diary"
-            className="group mb-2 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-[#0a0a0a]/60 transition-all duration-200 hover:gap-3 hover:text-[#0a0a0a]"
-          >
-            See All
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              className="transition-transform duration-[0.4s] group-hover:translate-x-1"
-              style={{ transitionTimingFunction: 'var(--ease-out-expo)' }}
-            >
-              <path
-                d="M3 8h10M9 4l4 4-4 4"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </Link>
-        </motion.div>
-      </div>
-
-      {/* Full-width divider */}
-      <div className="h-px w-full bg-[#0a0a0a]/10" />
-
-      {/* Full-width post grid — newspaper style with images */}
-      <div className="grid grid-cols-1 gap-6 px-[var(--gutter)] py-[var(--space-xl)] md:grid-cols-2 lg:grid-cols-4">
-        {entries.map((post, i) => (
-          <motion.div
-            key={post._id}
-            initial={{ opacity: 0, y: 40 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{
-              duration: 0.7,
-              delay: 0.15 + i * 0.1,
-              ease: [0.16, 1, 0.3, 1],
-            }}
-          >
-            <DiaryCardImage post={post} index={i} />
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Bottom gradient — transitions back to dark */}
+    <div ref={sectionRef} className="relative">
+      {/* Top gradient: dark → light — seamless blend from previous section */}
       <div
-        className="h-[30vh]"
-        style={{
-          background: 'linear-gradient(to bottom, #EDEDED, #0a0a0a)',
-        }}
+        className="h-[45vh] w-full"
+        style={{ background: 'linear-gradient(to bottom, #0a0a0a, #EDEDED)' }}
       />
-    </motion.section>
+
+      {/* Content area with light bg */}
+      <div className="bg-[#EDEDED]">
+        {/* Header row */}
+        <div className="px-[var(--gutter)]">
+          <motion.div
+            className="flex items-end justify-between pb-[var(--space-xl)]"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <h2 className="font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[0.95] tracking-[-0.03em] text-[#0a0a0a]">
+              The Diary<span className="text-accent">.</span>
+            </h2>
+            <Link
+              href="/diary"
+              className="group mb-2 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-[#0a0a0a]/60 transition-all duration-200 hover:gap-3 hover:text-[#0a0a0a]"
+            >
+              See All
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                className="transition-transform duration-[0.4s] group-hover:translate-x-1"
+                style={{ transitionTimingFunction: 'var(--ease-out-expo)' }}
+              >
+                <path
+                  d="M3 8h10M9 4l4 4-4 4"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </Link>
+          </motion.div>
+        </div>
+
+        {/* Full-width divider */}
+        <div className="h-px w-full bg-[#0a0a0a]/10" />
+
+        {/* Full-width post grid — newspaper style with images */}
+        <div className="grid grid-cols-1 gap-6 px-[var(--gutter)] py-[var(--space-xl)] md:grid-cols-2 lg:grid-cols-4">
+          {entries.map((post, i) => (
+            <motion.div
+              key={post._id}
+              initial={{ opacity: 0, y: 40 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{
+                duration: 0.7,
+                delay: 0.15 + i * 0.1,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+            >
+              <DiaryCardImage post={post} index={i} />
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* Bottom gradient: light → dark — seamless blend to next section */}
+      <div
+        className="h-[45vh] w-full"
+        style={{ background: 'linear-gradient(to bottom, #EDEDED, #0a0a0a)' }}
+      />
+    </div>
   )
 }
 
