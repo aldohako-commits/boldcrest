@@ -273,6 +273,105 @@ const CATEGORY_COLORS: Record<string, string> = {
   Culture: '#f9b311',
 }
 
+/* ── Diary card with circle-reveal hover on image ── */
+function DiaryCardImage({ post, index }: { post: DiaryPost; index: number }) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [mouse, setMouse] = useState({ x: 0, y: 0 })
+  const [hovering, setHovering] = useState(false)
+  const color = CATEGORY_COLORS[post.category || ''] || '#DA291C'
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = cardRef.current?.getBoundingClientRect()
+    if (!rect) return
+    setMouse({ x: e.clientX - rect.left, y: e.clientY - rect.top })
+  }
+
+  return (
+    <Link href={`/diary/${post.slug.current}`} className="group block">
+      {/* Image container with circle-reveal hover */}
+      <div
+        ref={cardRef}
+        className="relative aspect-square overflow-hidden rounded-2xl bg-[#1a1a1a]"
+        onMouseMove={handleMouseMove}
+        onMouseEnter={() => setHovering(true)}
+        onMouseLeave={() => setHovering(false)}
+      >
+        {/* Placeholder image */}
+        <div className="flex h-full w-full items-center justify-center">
+          <span className="text-[3rem] font-bold uppercase leading-[1.1] tracking-[-0.02em] text-white/10 text-center px-8">
+            {post.title}
+          </span>
+        </div>
+
+        {/* Circle reveal overlay on hover — "Read More" marquee */}
+        <motion.div
+          className="pointer-events-none absolute flex items-center justify-center overflow-hidden rounded-full"
+          style={{
+            left: mouse.x,
+            top: mouse.y,
+            x: '-50%',
+            y: '-50%',
+            backgroundColor: '#0a0a0a',
+          }}
+          animate={{
+            width: hovering ? 600 : 0,
+            height: hovering ? 600 : 0,
+          }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {/* Marquee text */}
+          <div className="flex shrink-0 animate-[marquee_4s_linear_infinite] items-center gap-8 whitespace-nowrap">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <span
+                key={i}
+                className="text-[1.2rem] font-semibold tracking-[0.1em] text-white"
+              >
+                Read More
+              </span>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Info below image */}
+      <div className="mt-5 px-1">
+        {/* Category pill — neutral by default, colored on hover */}
+        {post.category && (
+          <span
+            className="category-pill mb-3 inline-block rounded-[var(--radius-pill)] border border-[#0a0a0a]/15 px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-[#0a0a0a]/50 transition-all duration-200"
+            onMouseEnter={(e) => {
+              const el = e.currentTarget
+              el.style.backgroundColor = color
+              el.style.borderColor = color
+              el.style.color = '#fff'
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget
+              el.style.backgroundColor = 'transparent'
+              el.style.borderColor = ''
+              el.style.color = ''
+            }}
+          >
+            {post.category}
+          </span>
+        )}
+
+        {/* Title */}
+        <h3 className="font-display text-[clamp(1rem,1.5vw,1.3rem)] font-bold uppercase leading-[1.3] tracking-[0.02em] text-[#0a0a0a] transition-colors duration-200 group-hover:text-accent">
+          {post.title}
+        </h3>
+
+        {/* Excerpt */}
+        {post.excerpt && (
+          <p className="mt-2 line-clamp-2 text-[0.8rem] leading-[1.6] text-[#0a0a0a]/45">
+            {post.excerpt}
+          </p>
+        )}
+      </div>
+    </Link>
+  )
+}
+
 function DiarySection({ posts }: { posts: DiaryPost[] }) {
   const entries = posts.length > 0 ? posts.slice(0, 4) : PLACEHOLDER_POSTS
   const sectionRef = useRef<HTMLDivElement>(null)
@@ -281,7 +380,7 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
   // Scroll-driven background transition
   const { scrollYProgress } = useScroll({
     target: sectionRef,
-    offset: ['start end', 'start 0.3'],
+    offset: ['start end', 'start 0.15'],
   })
   const bg = useTransform(scrollYProgress, [0, 1], ['#0a0a0a', '#EDEDED'])
 
@@ -306,7 +405,7 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
             href="/diary"
             className="group mb-2 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-[#0a0a0a]/60 transition-all duration-200 hover:gap-3 hover:text-[#0a0a0a]"
           >
-            Read All
+            See All
             <svg
               width="16"
               height="16"
@@ -330,78 +429,23 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
       {/* Full-width divider */}
       <div className="h-px w-full bg-[#0a0a0a]/10" />
 
-      {/* Full-width post grid — newspaper style */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-        {entries.map((post, i) => {
-          const color = CATEGORY_COLORS[post.category || ''] || '#DA291C'
-          return (
-            <motion.div
-              key={post._id}
-              initial={{ opacity: 0, y: 40 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{
-                duration: 0.7,
-                delay: 0.15 + i * 0.1,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-            >
-              <Link
-                href={`/diary/${post.slug.current}`}
-                className="group block h-full border-r border-[#0a0a0a]/10 px-[var(--gutter)] py-[var(--space-xl)] transition-colors duration-300 hover:bg-[#0a0a0a]/[0.04] last:border-r-0"
-              >
-                {/* Category */}
-                <div className="mb-6 flex items-center gap-3">
-                  <span
-                    className="h-[6px] w-[6px] rounded-full"
-                    style={{ backgroundColor: color }}
-                  />
-                  <span
-                    className="text-[0.6rem] font-semibold uppercase tracking-[0.15em]"
-                    style={{ color }}
-                  >
-                    {post.category || 'Diary'}
-                  </span>
-                </div>
-
-                {/* Title */}
-                <h3 className="mb-4 font-display text-[clamp(1.3rem,2vw,1.7rem)] font-semibold leading-[1.25] text-[#0a0a0a] transition-colors duration-200 group-hover:text-accent">
-                  {post.title}
-                </h3>
-
-                {/* Excerpt */}
-                {post.excerpt && (
-                  <p className="mb-8 line-clamp-3 text-[0.85rem] leading-[1.7] text-[#0a0a0a]/50">
-                    {post.excerpt}
-                  </p>
-                )}
-
-                {/* Read arrow */}
-                <span className="inline-flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-[#0a0a0a]/40 transition-colors duration-200 group-hover:text-accent">
-                  Read
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    className="transition-transform duration-300 group-hover:translate-x-1"
-                  >
-                    <path
-                      d="M3 8h10M9 4l4 4-4 4"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
-              </Link>
-            </motion.div>
-          )
-        })}
+      {/* Full-width post grid — newspaper style with images */}
+      <div className="grid grid-cols-1 gap-6 px-[var(--gutter)] py-[var(--space-xl)] md:grid-cols-2 lg:grid-cols-4">
+        {entries.map((post, i) => (
+          <motion.div
+            key={post._id}
+            initial={{ opacity: 0, y: 40 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{
+              duration: 0.7,
+              delay: 0.15 + i * 0.1,
+              ease: [0.16, 1, 0.3, 1],
+            }}
+          >
+            <DiaryCardImage post={post} index={i} />
+          </motion.div>
+        ))}
       </div>
-
-      {/* Bottom divider */}
-      <div className="h-px w-full bg-[#0a0a0a]/10" />
     </motion.section>
   )
 }
