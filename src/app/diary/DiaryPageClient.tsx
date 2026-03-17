@@ -11,6 +11,7 @@ import {
   ScrollRevealStagger,
   ScrollRevealItem,
 } from '@/components/ScrollReveal'
+import { PageMorphBlobs, DIARY_BLOBS } from '@/components/MorphBlobs'
 
 interface DiaryPost {
   _id: string
@@ -60,7 +61,8 @@ export default function DiaryPageClient({ posts }: DiaryPageClientProps) {
   }, [posts, activeFilter])
 
   return (
-    <main>
+    <main className="relative overflow-x-clip">
+      <PageMorphBlobs blobs={DIARY_BLOBS} />
       {/* ═══════════════════════════════════════════
           HERO
       ═══════════════════════════════════════════ */}

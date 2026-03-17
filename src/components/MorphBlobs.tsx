@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useMemo } from 'react'
+import { useRef } from 'react'
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 
 /*
@@ -11,8 +11,6 @@ import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 */
 
 // ── Path interpolation utility ──
-// Extracts all numbers from an SVG path string, lerps them, and
-// reconstructs the path with the interpolated values.
 function extractNumbers(path: string): number[] {
   const nums: number[] = []
   path.replace(/-?\d+\.?\d*/g, (match) => {
@@ -42,7 +40,7 @@ function interpolatePath(pathA: string, pathB: string, t: number): string {
 }
 
 // ── Blob path pairs ──
-const BLOB_PATHS = {
+export const BLOB_PATHS = {
   a1: 'M380,50C420,90,450,160,440,240C430,320,390,400,340,460C290,520,220,560,150,550C80,540,20,480,5,400C-10,320,20,220,70,150C120,80,190,30,260,15C330,0,340,10,380,50Z',
   a2: 'M360,30C410,70,460,140,460,220C460,300,410,380,350,440C290,500,210,540,140,530C70,520,10,460,0,380C-10,300,30,200,80,130C130,60,200,10,270,5C340,0,310,-10,360,30Z',
 
@@ -57,9 +55,16 @@ const BLOB_PATHS = {
 
   e1: 'M200,5C280,20,350,80,380,160C410,240,400,340,350,410C300,480,210,520,130,500C50,480,-10,400,0,310C10,220,60,140,120,80C180,20,120,-10,200,5Z',
   e2: 'M220,15C300,40,360,110,380,190C400,270,380,360,330,430C280,500,190,530,110,500C30,470,-20,380,0,290C20,200,70,120,140,70C210,20,140,-10,220,15Z',
+
+  // New extra path pairs for more variety
+  f1: 'M300,30C360,60,410,130,420,210C430,290,400,370,340,430C280,490,200,520,120,500C40,480,-10,410,0,320C10,230,60,150,130,90C200,30,240,0,300,30Z',
+  f2: 'M280,20C350,50,400,120,420,200C440,280,420,360,360,420C300,480,220,510,140,490C60,470,-10,390,0,300C10,210,50,130,120,80C190,30,210,-10,280,20Z',
+
+  g1: 'M350,60C400,100,440,170,430,250C420,330,370,400,310,450C250,500,170,520,100,490C30,460,-20,390,0,310C20,230,70,150,140,100C210,50,300,20,350,60Z',
+  g2: 'M330,40C390,80,440,150,450,230C460,310,420,390,360,440C300,490,210,510,130,480C50,450,-20,370,10,290C40,210,90,130,160,80C230,30,270,0,330,40Z',
 }
 
-interface BlobConfig {
+export interface BlobConfig {
   pathA: string
   pathB: string
   color: string
@@ -78,16 +83,10 @@ function ScrollBlob({ config }: { config: BlobConfig }) {
     offset: ['start end', 'end start'],
   })
 
-  // Smooth scroll-driven morph: 0→1→0 as element scrolls through viewport
-  // This creates a forward-and-back morph cycle per scroll pass
   const morphT = useTransform(scrollYProgress, [0, 0.5, 1], [0, 1, 0])
-
-  // Generate the interpolated path reactively
   const morphedPath = useTransform(morphT, (t) =>
     interpolatePath(config.pathA, config.pathB, t)
   )
-
-  // Slight rotation driven by scroll for organic movement
   const rotate = useTransform(scrollYProgress, [0, 1], [-5, 5])
 
   return (
@@ -136,73 +135,202 @@ function ScrollBlob({ config }: { config: BlobConfig }) {
   )
 }
 
-const BLOBS: BlobConfig[] = [
-  {
-    pathA: BLOB_PATHS.a1,
-    pathB: BLOB_PATHS.a2,
-    color: '#DA291C',
-    size: 700,
-    blur: 60,
-    opacity: 0.15,
-    style: { top: '-100px', right: '-100px' },
-  },
-  {
-    pathA: BLOB_PATHS.b1,
-    pathB: BLOB_PATHS.b2,
-    color: '#f9b311',
-    size: 550,
-    blur: 50,
-    opacity: 0.1,
-    style: { top: '1400px', left: '-80px' },
-  },
-  {
-    pathA: BLOB_PATHS.c1,
-    pathB: BLOB_PATHS.c2,
-    color: '#004c95',
-    size: 600,
-    blur: 55,
-    opacity: 0.15,
-    style: { top: '2800px', right: '-80px' },
-  },
-  {
-    pathA: BLOB_PATHS.d1,
-    pathB: BLOB_PATHS.d2,
-    color: '#DA291C',
-    size: 500,
-    blur: 45,
-    opacity: 0.1,
-    style: { top: '4200px', left: '-60px' },
-  },
-  {
-    pathA: BLOB_PATHS.e1,
-    pathB: BLOB_PATHS.e2,
-    color: '#f9b311',
-    size: 550,
-    blur: 50,
-    opacity: 0.12,
-    style: { top: '5200px', right: '-80px' },
-  },
-  {
-    pathA: BLOB_PATHS.a1,
-    pathB: BLOB_PATHS.a2,
-    color: '#004c95',
-    size: 600,
-    blur: 55,
-    opacity: 0.13,
-    style: { top: '6400px', left: '-100px' },
-  },
-]
-
-export default function MorphBlobs() {
+/* ── Reusable component for any page ── */
+export function PageMorphBlobs({ blobs }: { blobs: BlobConfig[] }) {
   return (
     <div
       className="pointer-events-none absolute inset-0"
       style={{ zIndex: 0 }}
       aria-hidden="true"
     >
-      {BLOBS.map((blob, i) => (
+      {blobs.map((blob, i) => (
         <ScrollBlob key={i} config={blob} />
       ))}
     </div>
   )
 }
+
+/* ── Homepage blobs (expanded — 10 blobs) ── */
+const HOME_BLOBS: BlobConfig[] = [
+  // Hero area — red top right
+  {
+    pathA: BLOB_PATHS.a1, pathB: BLOB_PATHS.a2,
+    color: '#DA291C', size: 700, blur: 60, opacity: 0.15,
+    style: { top: '-100px', right: '-100px' },
+  },
+  // Hero area — yellow top left (NEW)
+  {
+    pathA: BLOB_PATHS.f1, pathB: BLOB_PATHS.f2,
+    color: '#f9b311', size: 500, blur: 55, opacity: 0.08,
+    style: { top: '200px', left: '-150px' },
+  },
+  // Selected Works — blue center-right (NEW)
+  {
+    pathA: BLOB_PATHS.g1, pathB: BLOB_PATHS.g2,
+    color: '#004c95', size: 450, blur: 50, opacity: 0.1,
+    style: { top: '800px', right: '10%' },
+  },
+  // We Do section — yellow left
+  {
+    pathA: BLOB_PATHS.b1, pathB: BLOB_PATHS.b2,
+    color: '#f9b311', size: 550, blur: 50, opacity: 0.1,
+    style: { top: '1400px', left: '-80px' },
+  },
+  // Mid-page — red center-left (NEW)
+  {
+    pathA: BLOB_PATHS.d1, pathB: BLOB_PATHS.d2,
+    color: '#DA291C', size: 400, blur: 45, opacity: 0.08,
+    style: { top: '2000px', left: '15%' },
+  },
+  // Partners — blue right
+  {
+    pathA: BLOB_PATHS.c1, pathB: BLOB_PATHS.c2,
+    color: '#004c95', size: 600, blur: 55, opacity: 0.15,
+    style: { top: '2800px', right: '-80px' },
+  },
+  // Testimonials area — yellow right (NEW)
+  {
+    pathA: BLOB_PATHS.e1, pathB: BLOB_PATHS.e2,
+    color: '#f9b311', size: 480, blur: 50, opacity: 0.09,
+    style: { top: '3600px', right: '-60px' },
+  },
+  // Lower page — red left
+  {
+    pathA: BLOB_PATHS.d1, pathB: BLOB_PATHS.d2,
+    color: '#DA291C', size: 500, blur: 45, opacity: 0.1,
+    style: { top: '4200px', left: '-60px' },
+  },
+  // Diary section — yellow right
+  {
+    pathA: BLOB_PATHS.e1, pathB: BLOB_PATHS.e2,
+    color: '#f9b311', size: 550, blur: 50, opacity: 0.12,
+    style: { top: '5200px', right: '-80px' },
+  },
+  // Bottom — blue left
+  {
+    pathA: BLOB_PATHS.a1, pathB: BLOB_PATHS.a2,
+    color: '#004c95', size: 600, blur: 55, opacity: 0.13,
+    style: { top: '6400px', left: '-100px' },
+  },
+]
+
+export default function MorphBlobs() {
+  return <PageMorphBlobs blobs={HOME_BLOBS} />
+}
+
+/* ── Preset blob configs for other pages ── */
+
+export const WORK_BLOBS: BlobConfig[] = [
+  {
+    pathA: BLOB_PATHS.c1, pathB: BLOB_PATHS.c2,
+    color: '#DA291C', size: 600, blur: 55, opacity: 0.12,
+    style: { top: '-50px', right: '-120px' },
+  },
+  {
+    pathA: BLOB_PATHS.f1, pathB: BLOB_PATHS.f2,
+    color: '#004c95', size: 500, blur: 50, opacity: 0.1,
+    style: { top: '800px', left: '-100px' },
+  },
+  {
+    pathA: BLOB_PATHS.b1, pathB: BLOB_PATHS.b2,
+    color: '#f9b311', size: 450, blur: 50, opacity: 0.09,
+    style: { top: '1800px', right: '-80px' },
+  },
+  {
+    pathA: BLOB_PATHS.g1, pathB: BLOB_PATHS.g2,
+    color: '#DA291C', size: 400, blur: 45, opacity: 0.08,
+    style: { top: '3000px', left: '-60px' },
+  },
+  {
+    pathA: BLOB_PATHS.e1, pathB: BLOB_PATHS.e2,
+    color: '#004c95', size: 500, blur: 50, opacity: 0.1,
+    style: { top: '4200px', right: '-100px' },
+  },
+]
+
+export const SERVICES_BLOBS: BlobConfig[] = [
+  {
+    pathA: BLOB_PATHS.a1, pathB: BLOB_PATHS.a2,
+    color: '#f9b311', size: 650, blur: 55, opacity: 0.1,
+    style: { top: '-80px', left: '-120px' },
+  },
+  {
+    pathA: BLOB_PATHS.d1, pathB: BLOB_PATHS.d2,
+    color: '#DA291C', size: 550, blur: 50, opacity: 0.12,
+    style: { top: '1200px', right: '-100px' },
+  },
+  {
+    pathA: BLOB_PATHS.c1, pathB: BLOB_PATHS.c2,
+    color: '#004c95', size: 500, blur: 50, opacity: 0.1,
+    style: { top: '2400px', left: '-80px' },
+  },
+  {
+    pathA: BLOB_PATHS.f1, pathB: BLOB_PATHS.f2,
+    color: '#f9b311', size: 450, blur: 45, opacity: 0.08,
+    style: { top: '3800px', right: '-60px' },
+  },
+  {
+    pathA: BLOB_PATHS.b1, pathB: BLOB_PATHS.b2,
+    color: '#DA291C', size: 500, blur: 50, opacity: 0.1,
+    style: { top: '5000px', left: '-100px' },
+  },
+]
+
+export const CONTACT_BLOBS: BlobConfig[] = [
+  {
+    pathA: BLOB_PATHS.e1, pathB: BLOB_PATHS.e2,
+    color: '#004c95', size: 550, blur: 55, opacity: 0.12,
+    style: { top: '-50px', right: '-100px' },
+  },
+  {
+    pathA: BLOB_PATHS.g1, pathB: BLOB_PATHS.g2,
+    color: '#DA291C', size: 400, blur: 45, opacity: 0.08,
+    style: { top: '400px', left: '-80px' },
+  },
+  {
+    pathA: BLOB_PATHS.a1, pathB: BLOB_PATHS.a2,
+    color: '#f9b311', size: 450, blur: 50, opacity: 0.1,
+    style: { top: '800px', right: '-60px' },
+  },
+]
+
+export const DIARY_BLOBS: BlobConfig[] = [
+  {
+    pathA: BLOB_PATHS.b1, pathB: BLOB_PATHS.b2,
+    color: '#DA291C', size: 600, blur: 55, opacity: 0.12,
+    style: { top: '-80px', right: '-100px' },
+  },
+  {
+    pathA: BLOB_PATHS.c1, pathB: BLOB_PATHS.c2,
+    color: '#f9b311', size: 500, blur: 50, opacity: 0.09,
+    style: { top: '1000px', left: '-100px' },
+  },
+  {
+    pathA: BLOB_PATHS.f1, pathB: BLOB_PATHS.f2,
+    color: '#004c95', size: 450, blur: 50, opacity: 0.1,
+    style: { top: '2200px', right: '-80px' },
+  },
+  {
+    pathA: BLOB_PATHS.d1, pathB: BLOB_PATHS.d2,
+    color: '#DA291C', size: 400, blur: 45, opacity: 0.08,
+    style: { top: '3400px', left: '-60px' },
+  },
+]
+
+export const START_PROJECT_BLOBS: BlobConfig[] = [
+  {
+    pathA: BLOB_PATHS.a1, pathB: BLOB_PATHS.a2,
+    color: '#004c95', size: 600, blur: 55, opacity: 0.12,
+    style: { top: '-60px', left: '-100px' },
+  },
+  {
+    pathA: BLOB_PATHS.e1, pathB: BLOB_PATHS.e2,
+    color: '#DA291C', size: 450, blur: 50, opacity: 0.09,
+    style: { top: '500px', right: '-80px' },
+  },
+  {
+    pathA: BLOB_PATHS.g1, pathB: BLOB_PATHS.g2,
+    color: '#f9b311', size: 500, blur: 50, opacity: 0.1,
+    style: { top: '1200px', left: '-60px' },
+  },
+]

@@ -11,6 +11,7 @@ import {
   ScrollRevealStagger,
   ScrollRevealItem,
 } from '@/components/ScrollReveal'
+import { PageMorphBlobs, WORK_BLOBS } from '@/components/MorphBlobs'
 
 interface Project {
   _id: string
@@ -71,7 +72,8 @@ export default function WorkPageClient({ projects }: WorkPageClientProps) {
   }, [projects, serviceFilter, industryFilter])
 
   return (
-    <main>
+    <main className="relative overflow-x-clip">
+      <PageMorphBlobs blobs={WORK_BLOBS} />
       {/* Hero */}
       <section className="relative px-[var(--gutter)] pt-40 pb-[var(--space-2xl)]">
         <div className="mx-auto max-w-[var(--max-width)]">

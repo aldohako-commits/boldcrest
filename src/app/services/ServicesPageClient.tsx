@@ -5,6 +5,7 @@ import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
 import MagneticBase, { CTAButton } from '@/components/MagneticButton'
+import { PageMorphBlobs, SERVICES_BLOBS } from '@/components/MorphBlobs'
 
 interface Service {
   _id: string
@@ -742,7 +743,8 @@ export default function ServicesPageClient({
   categories,
 }: ServicesPageClientProps) {
   return (
-    <main>
+    <main className="relative overflow-x-clip">
+      <PageMorphBlobs blobs={SERVICES_BLOBS} />
       {/* ── Hero ── */}
       <section className="relative px-[var(--gutter)] pt-40 pb-[var(--space-xl)]">
         <div className="mx-auto max-w-[var(--max-width)]">

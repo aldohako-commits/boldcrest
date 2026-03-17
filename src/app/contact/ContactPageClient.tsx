@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { submitContactForm } from './actions'
 import { SubmitButton } from '@/components/MagneticButton'
+import { PageMorphBlobs, CONTACT_BLOBS } from '@/components/MorphBlobs'
 
 interface SocialLink {
   platform: string
@@ -44,7 +45,8 @@ export default function ContactPageClient({
     defaultSocials
 
   return (
-    <main>
+    <main className="relative overflow-x-clip">
+      <PageMorphBlobs blobs={CONTACT_BLOBS} />
       {/* ═══════════════════════════════════════════
           HERO — Contact
       ═══════════════════════════════════════════ */}
