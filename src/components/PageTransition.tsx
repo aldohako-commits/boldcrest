@@ -90,30 +90,36 @@ export default function PageTransitionProvider({
     const logo = logoRef.current
     if (!overlay || !logo) return
 
-    // Hold briefly so the new page renders behind the overlay
+    const timers: ReturnType<typeof setTimeout>[] = []
+
+    // Wait for the new page to paint before starting wipe-out
     const t1 = setTimeout(() => {
-      // Fade out logo first
-      logo.style.transition = `opacity 0.3s ease, transform 0.3s ease`
-      logo.style.opacity = '0'
-      logo.style.transform = 'translateY(-15px) scale(0.95)'
+      // Use rAF to ensure the new page has painted
+      requestAnimationFrame(() => {
+        // Fade out logo first
+        logo.style.transition = 'opacity 0.3s ease, transform 0.3s ease'
+        logo.style.opacity = '0'
+        logo.style.transform = 'translateY(-15px) scale(0.95)'
 
-      // Then wipe out
-      setTimeout(() => {
-        overlay.style.transformOrigin = 'top'
-        overlay.style.transition = `transform ${WIPE_OUT}ms ${EASE}`
-        overlay.style.transform = 'scaleY(0)'
-
+        // Then wipe out
         const t2 = setTimeout(() => {
-          overlay.style.display = 'none'
-          transitioning.current = false
-          setIsTransitioning(false)
-        }, WIPE_OUT + 20)
+          overlay.style.transformOrigin = 'top'
+          overlay.style.transition = `transform ${WIPE_OUT}ms ${EASE}`
+          overlay.style.transform = 'scaleY(0)'
 
-        return () => clearTimeout(t2)
-      }, 200)
+          const t3 = setTimeout(() => {
+            overlay.style.display = 'none'
+            transitioning.current = false
+            setIsTransitioning(false)
+          }, WIPE_OUT + 20)
+          timers.push(t3)
+        }, 200)
+        timers.push(t2)
+      })
     }, HOLD)
+    timers.push(t1)
 
-    return () => clearTimeout(t1)
+    return () => timers.forEach(clearTimeout)
   }, [pathname])
 
   // Intercept clicks on internal links

@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 
 /*
@@ -75,7 +75,6 @@ export interface BlobConfig {
 
 function ScrollBlob({ config }: { config: BlobConfig }) {
   const ref = useRef<HTMLDivElement>(null)
-  const [hovered, setHovered] = useState(false)
   const isInView = useInView(ref, { margin: '-5%', once: false })
 
   const { scrollYProgress } = useScroll({
@@ -90,7 +89,6 @@ function ScrollBlob({ config }: { config: BlobConfig }) {
   const rotate = useTransform(scrollYProgress, [0, 1], [-5, 5])
 
   const baseOpacity = config.opacity ?? 0.18
-  const hoverOpacity = Math.min(baseOpacity * 3, 0.55)
 
   return (
     <motion.div
@@ -101,21 +99,17 @@ function ScrollBlob({ config }: { config: BlobConfig }) {
         width: config.size,
         height: config.size,
         rotate,
-        cursor: 'default',
-        pointerEvents: 'auto',
       }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       animate={
         isInView
           ? {
               scale: [0.6, 1.35, 0.65],
-              opacity: hovered ? hoverOpacity : baseOpacity,
+              opacity: baseOpacity,
             }
           : { scale: 0.5, opacity: 0 }
       }
       transition={{
-        opacity: { duration: hovered ? 0.4 : 1.2, ease: 'easeOut' },
+        opacity: { duration: 1.2, ease: 'easeOut' },
         scale: {
           duration: 5,
           repeat: Infinity,
@@ -145,8 +139,7 @@ function ScrollBlob({ config }: { config: BlobConfig }) {
 export function PageMorphBlobs({ blobs }: { blobs: BlobConfig[] }) {
   return (
     <div
-      className="pointer-events-none absolute top-0 left-0 w-full overflow-visible"
-      style={{ zIndex: 0, height: '100%', minHeight: '100vh' }}
+      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
       aria-hidden="true"
     >
       {blobs.map((blob, i) => (

@@ -68,11 +68,11 @@ export default function RootLayout({
       <body className={metropolis.variable}>
         <LenisProvider>
           <PageTransitionProvider>
-            <div className="relative z-[1] bg-bg">
+            <div className="relative z-[1] bg-bg min-h-screen">
               <Header />
               {children}
+              <Footer />
             </div>
-            <Footer />
           </PageTransitionProvider>
         </LenisProvider>
         <SanityLive />
