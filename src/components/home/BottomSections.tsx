@@ -206,26 +206,26 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
   )
 }
 
-/* ── 1. Services CTA ── */
+/* ── 1. Services CTA (rendered inside DiarySection on light bg) ── */
 function ServicesCTA() {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
-    <section ref={ref} className="px-[var(--gutter)] pb-[var(--space-lg)] pt-0">
+    <div ref={ref} className="px-[var(--gutter)] pb-[var(--space-xl)]">
       <motion.div
         className="text-center"
         initial={{ opacity: 0, y: 40 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
       >
-        <p className="font-display text-[clamp(2.8rem,6vw,6rem)] font-bold leading-[1.05] tracking-[-0.03em]">
+        <p className="font-display text-[clamp(2.8rem,6vw,6rem)] font-bold leading-[1.05] tracking-[-0.03em] text-[#0a0a0a]">
           <WordReveal text="Three disciplines." />{' '}
           <InlineButton href="/services" label="Explore All" />{' '}
           <span className="whitespace-nowrap"><WordReveal text="One obsession." /></span>
         </p>
       </motion.div>
-    </section>
+    </div>
   )
 }
 
@@ -384,17 +384,19 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
   })
   const bgColor = useTransform(
     scrollYProgress,
-    [0, 0.15, 0.85, 1],
+    [0, 0.05, 0.9, 1],
     ['#0a0a0a', '#EDEDED', '#EDEDED', '#0a0a0a']
   )
 
   return (
-    <div ref={sectionRef} className="relative py-[var(--space-2xl)]">
-      {/* Smooth color transition — extends above & below so change covers full viewport */}
+    <div ref={sectionRef} className="relative pt-[var(--space-2xl)] pb-[var(--space-2xl)]">
+      {/* Smooth color transition */}
       <motion.div
-        className="pointer-events-none absolute inset-x-0 -z-10"
-        style={{ top: '-200vh', bottom: '-200vh', backgroundColor: bgColor }}
+        className="pointer-events-none absolute inset-0 -z-10 rounded-[2rem]"
+        style={{ backgroundColor: bgColor }}
       />
+      {/* Services CTA — on light background */}
+      <ServicesCTA />
       {/* Header row */}
       <div className="px-[var(--gutter)]">
         <motion.div
@@ -494,7 +496,6 @@ function CoffeeCTA() {
 export default function BottomSections({ members, diaryPosts }: BottomSectionsProps) {
   return (
     <>
-      <ServicesCTA />
       <DiarySection posts={diaryPosts} />
       <PeopleSection />
       <TeamStrip members={members} />
