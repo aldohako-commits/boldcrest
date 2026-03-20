@@ -377,39 +377,8 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
   const sectionRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
 
-  // Theme swap — animate the page background when diary enters/exits viewport
-  useEffect(() => {
-    const section = sectionRef.current
-    if (!section) return
-
-    // Find the closest parent with bg-bg (the layout wrapper)
-    const wrapper = section.closest('main')?.parentElement as HTMLElement | null
-    if (!wrapper) return
-
-    // Ensure the wrapper has a CSS transition for background-color
-    wrapper.style.transition = 'background-color 0.6s ease-out, color 0.6s ease-out'
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          wrapper.style.backgroundColor = '#EDEDED'
-        } else {
-          wrapper.style.backgroundColor = ''
-        }
-      },
-      { threshold: 0.15 },
-    )
-
-    observer.observe(section)
-    return () => {
-      observer.disconnect()
-      wrapper.style.backgroundColor = ''
-      wrapper.style.transition = ''
-    }
-  }, [])
-
   return (
-    <div ref={sectionRef} className="relative py-[var(--space-2xl)]">
+    <div ref={sectionRef} className="relative py-[var(--space-2xl)] bg-[#EDEDED]">
       {/* Header row */}
       <div className="px-[var(--gutter)]">
         <motion.div
