@@ -743,7 +743,7 @@ export default function ServicesPageClient({
   categories,
 }: ServicesPageClientProps) {
   return (
-    <main className="relative overflow-x-clip">
+    <main className="relative">
       <PageMorphBlobs blobs={SERVICES_BLOBS} />
       {/* ── Hero ── */}
       <section className="relative px-[var(--gutter)] pt-40 pb-[var(--space-xl)]">

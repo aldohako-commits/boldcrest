@@ -1,4 +1,3 @@
-import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { sanityFetch } from '@/sanity/lib/live'
 import { allProjectsQuery } from '@/sanity/lib/queries'
@@ -14,12 +13,21 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function WorkPage() {
-  const { data: projects } = await sanityFetch({ query: allProjectsQuery })
+export default async function WorkPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ service?: string; industry?: string }>
+}) {
+  const [{ data: projects }, params] = await Promise.all([
+    sanityFetch({ query: allProjectsQuery }),
+    searchParams,
+  ])
 
   return (
-    <Suspense>
-      <WorkPageClient projects={projects ?? []} />
-    </Suspense>
+    <WorkPageClient
+      projects={projects ?? []}
+      initialService={params.service}
+      initialIndustry={params.industry}
+    />
   )
 }

@@ -61,7 +61,7 @@ export default function DiaryPageClient({ posts }: DiaryPageClientProps) {
   }, [posts, activeFilter])
 
   return (
-    <main className="relative overflow-x-clip">
+    <main className="relative">
       <PageMorphBlobs blobs={DIARY_BLOBS} />
       {/* ═══════════════════════════════════════════
           HERO

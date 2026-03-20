@@ -39,7 +39,7 @@ export default async function Home() {
   const settings = settingsResult.data
 
   return (
-    <main className="relative overflow-x-clip">
+    <main className="relative">
       <MorphBlobs />
       <Hero />
       <SelectedWorks projects={projects} />

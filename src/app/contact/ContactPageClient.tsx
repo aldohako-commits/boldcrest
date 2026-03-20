@@ -45,7 +45,7 @@ export default function ContactPageClient({
     defaultSocials
 
   return (
-    <main className="relative overflow-x-clip">
+    <main className="relative">
       <PageMorphBlobs blobs={CONTACT_BLOBS} />
       {/* ═══════════════════════════════════════════
           HERO — Contact

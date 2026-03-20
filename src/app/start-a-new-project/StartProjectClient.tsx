@@ -60,7 +60,7 @@ export default function StartProjectClient() {
   )
 
   return (
-    <main className="relative overflow-x-clip">
+    <main className="relative">
       <PageMorphBlobs blobs={START_PROJECT_BLOBS} />
       {/* ═══════════════════════════════════════════
           HERO — Start a New Project
