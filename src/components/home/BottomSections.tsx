@@ -377,20 +377,17 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
   const sectionRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
 
-  // Scroll-driven background transition
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ['start end', 'start 0.3'],
-  })
-  const bgOpacity = useTransform(scrollYProgress, [0, 1], [0, 1])
-
   return (
     <div ref={sectionRef} className="relative py-[var(--space-2xl)]">
-      {/* Background transition layer */}
-      <motion.div
-        className="absolute inset-0 -z-10 bg-[#EDEDED]"
-        style={{ opacity: bgOpacity }}
-      />
+      {/* Background: solid fill behind content */}
+      <div className="absolute inset-0 -z-10 bg-[#EDEDED]" />
+      {/* Gradient bleed extending above the section for smooth dark→light transition */}
+      <div
+        className="pointer-events-none absolute inset-x-0 -z-10"
+        style={{ top: '-50vh', height: '50vh' }}
+      >
+        <div className="h-full w-full bg-gradient-to-b from-transparent to-[#EDEDED]" />
+      </div>
       {/* Header row */}
       <div className="px-[var(--gutter)]">
         <motion.div
