@@ -377,23 +377,23 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
   const sectionRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
 
-  // Scroll-driven background color transition: dark → light
+  // Scroll-driven background color transition: dark → light → dark
   const { scrollYProgress } = useScroll({
     target: sectionRef,
-    offset: ['start end', 'start 0.3'],
+    offset: ['start end', 'end start'],
   })
   const bgColor = useTransform(
     scrollYProgress,
-    [0, 1],
-    ['#0a0a0a', '#EDEDED']
+    [0, 0.15, 0.85, 1],
+    ['#0a0a0a', '#EDEDED', '#EDEDED', '#0a0a0a']
   )
 
   return (
     <div ref={sectionRef} className="relative py-[var(--space-2xl)]">
-      {/* Smooth color transition — extends above section so change is visible while scrolling */}
+      {/* Smooth color transition — extends above & below so change covers full viewport */}
       <motion.div
         className="pointer-events-none absolute inset-x-0 -z-10"
-        style={{ top: '-200vh', bottom: 0, backgroundColor: bgColor }}
+        style={{ top: '-200vh', bottom: '-200vh', backgroundColor: bgColor }}
       />
       {/* Header row */}
       <div className="px-[var(--gutter)]">
