@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
-import { motion, useScroll, useTransform, useInView, useMotionValueEvent, AnimatePresence } from 'framer-motion'
+import { motion, useScroll, useTransform, useInView, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
 import { InlineButton } from '@/components/MagneticButton'
@@ -206,26 +206,26 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
   )
 }
 
-/* ── 1. Services CTA (rendered inside DiarySection on light bg) ── */
+/* ── 1. Services CTA (on dark background, before diary) ── */
 function ServicesCTA() {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
-    <div ref={ref} className="px-[var(--gutter)] pb-[var(--space-lg)] md:pb-[var(--space-xl)]">
+    <section ref={ref} className="px-[var(--gutter)] pb-[var(--space-lg)] pt-0 md:pb-[var(--space-xl)]">
       <motion.div
         className="text-center"
         initial={{ opacity: 0, y: 40 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
       >
-        <p className="font-display text-[clamp(2rem,6vw,6rem)] font-bold leading-[1.1] tracking-[-0.03em] text-[#0a0a0a]">
+        <p className="font-display text-[clamp(2rem,6vw,6rem)] font-bold leading-[1.1] tracking-[-0.03em]">
           <WordReveal text="Three disciplines." />{' '}
           <InlineButton href="/services" label="Explore All" />{' '}
           <WordReveal text="One obsession." />
         </p>
       </motion.div>
-    </div>
+    </section>
   )
 }
 
@@ -377,35 +377,34 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
   const sectionRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
 
-  // Scroll-driven background color transition: dark → light → dark
-  // Directly animate the layout wrapper's bg so the entire page transitions
+  // Scroll-driven background opacity: fade in light bg entering, fade out leaving
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ['start end', 'end start'],
   })
-  const bgColor = useTransform(
+  const bgOpacity = useTransform(
     scrollYProgress,
-    [0, 0.08, 0.88, 1],
-    ['#0a0a0a', '#EDEDED', '#EDEDED', '#0a0a0a']
+    [0, 0.1, 0.85, 1],
+    [0, 1, 1, 0]
   )
-
-  useMotionValueEvent(bgColor, 'change', (color) => {
-    const wrapper = document.querySelector('.bg-bg') as HTMLElement
-    if (wrapper) wrapper.style.backgroundColor = color
-  })
-
-  // Reset wrapper bg on unmount
-  useEffect(() => {
-    return () => {
-      const wrapper = document.querySelector('.bg-bg') as HTMLElement
-      if (wrapper) wrapper.style.backgroundColor = ''
-    }
-  }, [])
 
   return (
     <div ref={sectionRef} className="relative pt-[var(--space-2xl)] pb-[var(--space-2xl)]">
-      {/* Services CTA — on light background */}
-      <ServicesCTA />
+      {/* Light background with scroll-driven opacity */}
+      <motion.div
+        className="pointer-events-none absolute inset-0 bg-[#EDEDED]"
+        style={{ opacity: bgOpacity }}
+      />
+      {/* Top gradient fade: dark → light */}
+      <motion.div
+        className="pointer-events-none absolute inset-x-0 top-0 h-[200px] bg-gradient-to-b from-[#0a0a0a] to-transparent"
+        style={{ opacity: bgOpacity }}
+      />
+      {/* Bottom gradient fade: light → dark */}
+      <motion.div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[200px] bg-gradient-to-t from-[#0a0a0a] to-transparent"
+        style={{ opacity: bgOpacity }}
+      />
       {/* Header row */}
       <div className="px-[var(--gutter)]">
         <motion.div
@@ -505,6 +504,7 @@ function CoffeeCTA() {
 export default function BottomSections({ members, diaryPosts }: BottomSectionsProps) {
   return (
     <>
+      <ServicesCTA />
       <DiarySection posts={diaryPosts} />
       <PeopleSection />
       <TeamStrip members={members} />
