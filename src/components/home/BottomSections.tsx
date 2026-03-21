@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
-import { motion, useScroll, useTransform, useInView, AnimatePresence } from 'framer-motion'
+import { motion, useScroll, useTransform, useInView, useMotionValueEvent, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
 import { InlineButton } from '@/components/MagneticButton'
@@ -378,23 +378,32 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
 
   // Scroll-driven background color transition: dark → light → dark
+  // Directly animate the layout wrapper's bg so the entire page transitions
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ['start end', 'end start'],
   })
   const bgColor = useTransform(
     scrollYProgress,
-    [0, 0.05, 0.9, 1],
+    [0, 0.08, 0.88, 1],
     ['#0a0a0a', '#EDEDED', '#EDEDED', '#0a0a0a']
   )
 
+  useMotionValueEvent(bgColor, 'change', (color) => {
+    const wrapper = document.querySelector('.bg-bg') as HTMLElement
+    if (wrapper) wrapper.style.backgroundColor = color
+  })
+
+  // Reset wrapper bg on unmount
+  useEffect(() => {
+    return () => {
+      const wrapper = document.querySelector('.bg-bg') as HTMLElement
+      if (wrapper) wrapper.style.backgroundColor = ''
+    }
+  }, [])
+
   return (
-    <div ref={sectionRef} className="relative px-3 pt-[var(--space-2xl)] pb-[var(--space-2xl)] md:px-0">
-      {/* Smooth color transition */}
-      <motion.div
-        className="pointer-events-none absolute inset-0 -z-10 rounded-[1.25rem] md:rounded-[2rem]"
-        style={{ backgroundColor: bgColor }}
-      />
+    <div ref={sectionRef} className="relative pt-[var(--space-2xl)] pb-[var(--space-2xl)]">
       {/* Services CTA — on light background */}
       <ServicesCTA />
       {/* Header row */}
