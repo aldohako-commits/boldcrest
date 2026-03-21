@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
-import { motion, useScroll, useTransform, useInView, AnimatePresence } from 'framer-motion'
+import { motion, useScroll, useTransform, useInView, useMotionValueEvent, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
 import { InlineButton } from '@/components/MagneticButton'
@@ -377,34 +377,32 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
   const sectionRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
 
-  // Scroll-driven background opacity: fade in light bg entering, fade out leaving
+  // Smooth scroll-driven color change on the layout wrapper
+  // Starts when diary section top reaches 30% of viewport (ServicesCTA already scrolled off)
   const { scrollYProgress } = useScroll({
     target: sectionRef,
-    offset: ['start end', 'end start'],
+    offset: ['start 0.3', 'end 0.7'],
   })
-  const bgOpacity = useTransform(
+  const bgColor = useTransform(
     scrollYProgress,
-    [0, 0.1, 0.85, 1],
-    [0, 1, 1, 0]
+    [0, 0.04, 0.96, 1],
+    ['#0a0a0a', '#EDEDED', '#EDEDED', '#0a0a0a']
   )
+
+  useMotionValueEvent(bgColor, 'change', (color) => {
+    const wrapper = document.querySelector('.bg-bg') as HTMLElement
+    if (wrapper) wrapper.style.backgroundColor = color
+  })
+
+  useEffect(() => {
+    return () => {
+      const wrapper = document.querySelector('.bg-bg') as HTMLElement
+      if (wrapper) wrapper.style.backgroundColor = ''
+    }
+  }, [])
 
   return (
     <div ref={sectionRef} className="relative pt-[var(--space-2xl)] pb-[var(--space-2xl)]">
-      {/* Light background with scroll-driven opacity */}
-      <motion.div
-        className="pointer-events-none absolute inset-0 bg-[#EDEDED]"
-        style={{ opacity: bgOpacity }}
-      />
-      {/* Top gradient fade: dark → light */}
-      <motion.div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[200px] bg-gradient-to-b from-[#0a0a0a] to-transparent"
-        style={{ opacity: bgOpacity }}
-      />
-      {/* Bottom gradient fade: light → dark */}
-      <motion.div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[200px] bg-gradient-to-t from-[#0a0a0a] to-transparent"
-        style={{ opacity: bgOpacity }}
-      />
       {/* Header row */}
       <div className="px-[var(--gutter)]">
         <motion.div
