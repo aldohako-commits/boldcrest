@@ -108,7 +108,7 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
 
   return (
     <section ref={sectionRef} className="px-[var(--gutter)] pb-[var(--space-md)] pt-0">
-      <div className="mx-auto flex max-w-[var(--max-width)] flex-col items-stretch gap-10 md:flex-row md:items-start md:gap-0">
+      <div className="mx-auto flex max-w-[var(--max-width)] flex-col items-center gap-8 md:flex-row md:items-start md:gap-0">
         {/* Left: stacked portrait cards — 40% */}
         <div className="flex w-full justify-center md:w-[40%] md:justify-start">
           {mounted && faces.length > 0 ? (
@@ -212,17 +212,17 @@ function ServicesCTA() {
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
-    <div ref={ref} className="px-[var(--gutter)] pb-[var(--space-xl)]">
+    <div ref={ref} className="px-[var(--gutter)] pb-[var(--space-lg)] md:pb-[var(--space-xl)]">
       <motion.div
         className="text-center"
         initial={{ opacity: 0, y: 40 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
       >
-        <p className="font-display text-[clamp(2.8rem,6vw,6rem)] font-bold leading-[1.05] tracking-[-0.03em] text-[#0a0a0a]">
+        <p className="font-display text-[clamp(2rem,6vw,6rem)] font-bold leading-[1.1] tracking-[-0.03em] text-[#0a0a0a]">
           <WordReveal text="Three disciplines." />{' '}
           <InlineButton href="/services" label="Explore All" />{' '}
-          <span className="whitespace-nowrap"><WordReveal text="One obsession." /></span>
+          <WordReveal text="One obsession." />
         </p>
       </motion.div>
     </div>
@@ -298,7 +298,7 @@ function DiaryCardImage({ post, index }: { post: DiaryPost; index: number }) {
       >
         {/* Placeholder image */}
         <div className="flex h-full w-full items-center justify-center">
-          <span className="text-[3rem] font-bold uppercase leading-[1.1] tracking-[-0.02em] text-white/10 text-center px-8">
+          <span className="text-[1.2rem] font-bold uppercase leading-[1.1] tracking-[-0.02em] text-white/10 text-center px-4 md:text-[3rem] md:px-8">
             {post.title}
           </span>
         </div>
@@ -334,11 +334,11 @@ function DiaryCardImage({ post, index }: { post: DiaryPost; index: number }) {
       </div>
 
       {/* Info below image */}
-      <div className="mt-5 px-1">
+      <div className="mt-3 px-0.5 md:mt-5 md:px-1">
         {/* Category pill — neutral by default, colored on hover */}
         {post.category && (
           <span
-            className="category-pill mb-3 inline-block rounded-[var(--radius-pill)] border border-[#0a0a0a]/15 px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-[#0a0a0a]/50 transition-all duration-200"
+            className="category-pill mb-2 inline-block rounded-[var(--radius-pill)] border border-[#0a0a0a]/15 px-2 py-0.5 text-[0.5rem] font-semibold uppercase tracking-[0.12em] text-[#0a0a0a]/50 transition-all duration-200 md:mb-3 md:px-3 md:py-1 md:text-[0.6rem]"
             onMouseEnter={(e) => {
               const el = e.currentTarget
               el.style.backgroundColor = color
@@ -357,13 +357,13 @@ function DiaryCardImage({ post, index }: { post: DiaryPost; index: number }) {
         )}
 
         {/* Title */}
-        <h3 className="font-display text-[clamp(1rem,1.5vw,1.3rem)] font-bold uppercase leading-[1.3] tracking-[0.02em] text-[#0a0a0a] transition-colors duration-200 group-hover:text-accent">
+        <h3 className="font-display text-[0.7rem] font-bold uppercase leading-[1.3] tracking-[0.02em] text-[#0a0a0a] transition-colors duration-200 group-hover:text-accent md:text-[clamp(1rem,1.5vw,1.3rem)]">
           {post.title}
         </h3>
 
-        {/* Excerpt */}
+        {/* Excerpt — hidden on mobile */}
         {post.excerpt && (
-          <p className="mt-2 line-clamp-2 text-[0.8rem] leading-[1.6] text-[#0a0a0a]/45">
+          <p className="mt-2 line-clamp-2 hidden text-[0.8rem] leading-[1.6] text-[#0a0a0a]/45 md:block">
             {post.excerpt}
           </p>
         )}
@@ -389,10 +389,10 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
   )
 
   return (
-    <div ref={sectionRef} className="relative pt-[var(--space-2xl)] pb-[var(--space-2xl)]">
+    <div ref={sectionRef} className="relative px-3 pt-[var(--space-2xl)] pb-[var(--space-2xl)] md:px-0">
       {/* Smooth color transition */}
       <motion.div
-        className="pointer-events-none absolute inset-0 -z-10 rounded-[2rem]"
+        className="pointer-events-none absolute inset-0 -z-10 rounded-[1.25rem] md:rounded-[2rem]"
         style={{ backgroundColor: bgColor }}
       />
       {/* Services CTA — on light background */}
@@ -437,7 +437,7 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
       <div className="h-px w-full bg-[#0a0a0a]/10" />
 
       {/* Full-width post grid — newspaper style with images */}
-      <div className="grid grid-cols-1 gap-6 px-[var(--gutter)] py-[var(--space-xl)] md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 px-[var(--gutter)] py-[var(--space-lg)] md:gap-6 md:py-[var(--space-xl)] lg:grid-cols-4">
         {entries.map((post, i) => (
           <motion.div
             key={post._id}
@@ -462,7 +462,7 @@ function PeopleSection() {
   return (
     <section className="px-[var(--gutter)] pb-[var(--space-lg)] pt-[var(--space-lg)]">
       <div className="mx-auto max-w-[var(--max-width)]">
-        <p className="font-display text-[clamp(2.8rem,8vw,8rem)] font-bold leading-[1.05] tracking-[-0.03em]">
+        <p className="font-display text-[clamp(2rem,8vw,8rem)] font-bold leading-[1.1] tracking-[-0.03em]">
           <WordReveal text="No egos, just" />{' '}
           <InlineButton href="/people" label="The Team" showArrow />{' '}
           <WordReveal text="behind the bold." />
@@ -476,13 +476,13 @@ function PeopleSection() {
 /* ── 4. Coffee CTA ── */
 function CoffeeCTA() {
   return (
-    <section className="border-t border-border px-[var(--gutter)] py-[var(--space-3xl)]">
+    <section className="border-t border-border px-[var(--gutter)] py-[var(--space-2xl)] md:py-[var(--space-3xl)]">
       <div className="mx-auto max-w-[var(--max-width)]">
         <div className="flex flex-col items-center text-center">
-          <p className="mb-6 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
+          <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary md:mb-6 md:text-[0.75rem]">
             What are you waiting for?
           </p>
-          <p className="font-display text-[clamp(2.8rem,8vw,8rem)] font-bold leading-[1.05] tracking-[-0.03em]">
+          <p className="font-display text-[clamp(2rem,8vw,8rem)] font-bold leading-[1.1] tracking-[-0.03em]">
             Let&apos;s drink{' '}
             <InlineButton href="/contact" label="A Coffee" showArrow />{' '}
             together<span className="text-accent">.</span>
