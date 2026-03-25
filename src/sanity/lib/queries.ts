@@ -45,6 +45,8 @@ export const projectBySlugQuery = defineQuery(
     year,
     services,
     overview,
+    challenge,
+    solution,
     thumbnailType,
     thumbnail,
     thumbnailVideo,

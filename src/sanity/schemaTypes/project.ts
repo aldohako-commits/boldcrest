@@ -82,6 +82,18 @@ export const project = defineType({
       of: [{ type: 'block' }],
     }),
     defineField({
+      name: 'challenge',
+      title: 'Challenge',
+      type: 'array',
+      of: [{ type: 'block' }],
+    }),
+    defineField({
+      name: 'solution',
+      title: 'Solution',
+      type: 'array',
+      of: [{ type: 'block' }],
+    }),
+    defineField({
       name: 'thumbnailType',
       title: 'Thumbnail Type',
       type: 'string',

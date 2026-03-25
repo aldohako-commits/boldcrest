@@ -65,6 +65,8 @@ export default async function ProjectPage({
         <div className="mx-auto grid max-w-[var(--max-width)] gap-[var(--space-xl)] max-[959px]:grid-cols-1 min-[960px]:grid-cols-[340px_1fr]">
           <ProjectSidebar
             overview={project.overview}
+            challenge={project.challenge}
+            solution={project.solution}
             client={project.client}
             industry={project.industry}
             year={project.year}
