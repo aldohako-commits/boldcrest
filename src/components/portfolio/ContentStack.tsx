@@ -14,7 +14,7 @@ interface VideoMedia {
 }
 
 interface ImageMedia {
-  _type: 'imageMedia'
+  _type: 'imageMedia' | 'image'
   _key: string
   type: 'image'
   asset?: { _ref: string }
@@ -64,8 +64,8 @@ export default function ContentStack({ media }: ContentStackProps) {
           )
         }
 
-        // Image block — natural aspect ratio
-        if (block._type === 'imageMedia') {
+        // Image block — natural aspect ratio (new 'image' type + legacy 'imageMedia')
+        if (block._type === 'imageMedia' || block._type === 'image') {
           const img = block as ImageMedia
           const ref = getImageRef(img)
           if (!ref) return null

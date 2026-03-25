@@ -56,6 +56,12 @@ export const projectBySlugQuery = defineQuery(
         "type": "video",
         vimeoUrl
       },
+      _type == "image" => {
+        "type": "image",
+        asset,
+        hotspot,
+        crop
+      },
       _type == "imageMedia" => {
         "type": "image",
         "asset": coalesce(asset, image.asset),

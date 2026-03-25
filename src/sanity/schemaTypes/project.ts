@@ -141,8 +141,6 @@ export const project = defineType({
         },
         {
           type: 'image',
-          name: 'imageMedia',
-          title: 'Image',
           options: { hotspot: true },
         },
       ],
