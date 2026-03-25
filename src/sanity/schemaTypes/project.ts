@@ -140,46 +140,10 @@ export const project = defineType({
           },
         },
         {
-          type: 'object',
+          type: 'image',
           name: 'imageMedia',
           title: 'Image',
-          fields: [
-            defineField({
-              name: 'type',
-              title: 'Type',
-              type: 'string',
-              initialValue: 'image',
-              readOnly: true,
-              hidden: true,
-            }),
-            defineField({
-              name: 'image',
-              title: 'Image',
-              type: 'image',
-              options: { hotspot: true },
-              validation: (rule) => rule.required(),
-            }),
-            defineField({
-              name: 'aspectRatio',
-              title: 'Aspect Ratio',
-              type: 'string',
-              options: {
-                list: [
-                  { title: '4:3', value: '4:3' },
-                  { title: '16:9', value: '16:9' },
-                  { title: '21:9', value: '21:9' },
-                ],
-                layout: 'radio',
-              },
-              initialValue: '16:9',
-            }),
-          ],
-          preview: {
-            select: { media: 'image', ratio: 'aspectRatio' },
-            prepare({ media, ratio }) {
-              return { title: 'Image', subtitle: ratio || '16:9', media }
-            },
-          },
+          options: { hotspot: true },
         },
       ],
     }),

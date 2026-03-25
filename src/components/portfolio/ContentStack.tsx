@@ -17,10 +17,11 @@ interface ImageMedia {
   _type: 'imageMedia'
   _key: string
   type: 'image'
-  image?: {
-    asset: { _ref: string }
-  }
-  aspectRatio?: '4:3' | '16:9' | '21:9'
+  asset?: { _ref: string }
+  hotspot?: { x: number; y: number }
+  crop?: { top: number; bottom: number; left: number; right: number }
+  // Legacy support for old imageMedia objects
+  image?: { asset: { _ref: string } }
 }
 
 type MediaBlock = VideoMedia | ImageMedia
@@ -29,98 +30,27 @@ interface ContentStackProps {
   media?: MediaBlock[]
 }
 
-function getAspectClass(ratio?: string): string {
-  switch (ratio) {
-    case '4:3':
-      return 'aspect-[4/3]'
-    case '21:9':
-      return 'aspect-[21/9]'
-    case '16:9':
-    default:
-      return 'aspect-[16/9]'
-  }
+function getImageRef(img: ImageMedia): string | null {
+  // New structure: asset directly on the image
+  if (img.asset?._ref) return img.asset._ref
+  // Legacy structure: nested image.asset
+  if (img.image?.asset?._ref) return img.image.asset._ref
+  return null
 }
 
-function getDimensions(ratio?: string): { width: number; height: number } {
-  switch (ratio) {
-    case '4:3':
-      return { width: 1200, height: 900 }
-    case '21:9':
-      return { width: 1400, height: 600 }
-    case '16:9':
-    default:
-      return { width: 1400, height: 788 }
-  }
+function getImageSource(img: ImageMedia) {
+  if (img.asset?._ref) return img
+  if (img.image?.asset?._ref) return img.image
+  return null
 }
 
 export default function ContentStack({ media }: ContentStackProps) {
   if (!media || media.length === 0) return null
 
-  // Group consecutive images for potential two-up rows
-  const blocks: (MediaBlock | MediaBlock[])[] = []
-  let i = 0
-
-  while (i < media.length) {
-    const current = media[i]
-
-    // Check if we can create a two-up row (two consecutive images with 4:3 ratio)
-    if (
-      current._type === 'imageMedia' &&
-      i + 1 < media.length &&
-      media[i + 1]._type === 'imageMedia'
-    ) {
-      const next = media[i + 1] as ImageMedia
-      const curr = current as ImageMedia
-      // Two-up if both are 4:3
-      if (curr.aspectRatio === '4:3' && next.aspectRatio === '4:3') {
-        blocks.push([curr, next])
-        i += 2
-        continue
-      }
-    }
-
-    blocks.push(current)
-    i++
-  }
-
   return (
     <div className="flex flex-col gap-[var(--space-md)]">
-      {blocks.map((block, idx) => {
-        // Two-up image row
-        if (Array.isArray(block)) {
-          return (
-            <ScrollReveal key={`row-${idx}`}>
-              <div className="grid grid-cols-2 gap-[var(--space-md)]">
-                {block.map((img) => {
-                  const imgMedia = img as ImageMedia
-                  if (!imgMedia.image?.asset) return null
-                  const dims = getDimensions(imgMedia.aspectRatio)
-                  return (
-                    <div
-                      key={imgMedia._key}
-                      className={`relative overflow-hidden rounded-[var(--radius-lg)] bg-bg-card ${getAspectClass(imgMedia.aspectRatio)}`}
-                    >
-                      <Image
-                        loader={sanityImageLoader}
-                        src={urlFor(imgMedia.image)
-                          .width(dims.width)
-                          .height(dims.height)
-                          .url()}
-                        alt=""
-                        fill
-                        loading="lazy"
-                        className="object-cover"
-                        sizes="(max-width: 959px) 50vw, 35vw"
-                      />
-                    </div>
-                  )
-                })}
-              </div>
-            </ScrollReveal>
-          )
-        }
-
-        // Single video block
+      {media.map((block) => {
+        // Video block
         if (block._type === 'videoMedia') {
           const video = block as VideoMedia
           if (!video.vimeoUrl) return null
@@ -134,26 +64,23 @@ export default function ContentStack({ media }: ContentStackProps) {
           )
         }
 
-        // Single image block
+        // Image block — natural aspect ratio
         if (block._type === 'imageMedia') {
           const img = block as ImageMedia
-          if (!img.image?.asset) return null
-          const dims = getDimensions(img.aspectRatio)
+          const ref = getImageRef(img)
+          if (!ref) return null
+          const source = getImageSource(img)!
           return (
             <ScrollReveal key={img._key}>
-              <div
-                className={`relative overflow-hidden rounded-[var(--radius-lg)] bg-bg-card ${getAspectClass(img.aspectRatio)}`}
-              >
+              <div className="relative w-full overflow-hidden rounded-[var(--radius-lg)] bg-bg-card">
                 <Image
                   loader={sanityImageLoader}
-                  src={urlFor(img.image)
-                    .width(dims.width)
-                    .height(dims.height)
-                    .url()}
+                  src={urlFor(source).width(1800).quality(85).url()}
                   alt=""
-                  fill
+                  width={1800}
+                  height={1200}
                   loading="lazy"
-                  className="object-cover"
+                  className="h-auto w-full"
                   sizes="(max-width: 959px) 100vw, 70vw"
                 />
               </div>
