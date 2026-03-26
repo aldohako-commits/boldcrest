@@ -56,6 +56,15 @@ export const metadata: Metadata = {
       'We build identities and shape perceptions. Go bold or go unseen.',
     images: ['/og-image.png'],
   },
+  icons: {
+    icon: [
+      { url: '/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/site.webmanifest',
 }
 
 export default function RootLayout({
