@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import MobileMenu from './MobileMenu'
-import { CTAButton } from './MagneticButton'
 
 const navLinks = [
   { href: '/work', label: 'Work' },
@@ -40,7 +39,7 @@ export default function Header() {
         className="fixed top-0 left-0 right-0 z-[1000] transition-[padding] duration-[0.8s]"
         style={{
           padding: scrolled
-            ? '0.75rem var(--gutter)'
+            ? '0.5rem var(--gutter)'
             : '1.5rem var(--gutter)',
           transitionTimingFunction: 'var(--ease-out-expo)',
         }}
@@ -48,7 +47,7 @@ export default function Header() {
         <div
           className="flex w-full items-center justify-between transition-all duration-[0.8s]"
           style={{
-            padding: scrolled ? '0.6rem 1.5rem' : '0.75rem 1rem',
+            padding: scrolled ? '0.35rem 1.25rem' : '0.75rem 1rem',
             borderRadius: scrolled ? 'var(--radius-pill)' : '0',
             background: scrolled ? 'rgba(10,10,10,0.85)' : 'transparent',
             backdropFilter: scrolled ? 'blur(20px) saturate(1.5)' : 'none',
@@ -67,7 +66,12 @@ export default function Header() {
             <div className="flex h-9 w-9 items-center justify-center transition-transform duration-[0.4s] hover:scale-105" style={{ transitionTimingFunction: 'var(--ease-out-expo)' }}>
               <svg
                 viewBox="0 0 384.09 384"
-                className="h-8 w-8"
+                className="h-8 w-8 transition-[width,height] duration-[0.6s]"
+                style={{
+                  width: scrolled ? '1.5rem' : '2rem',
+                  height: scrolled ? '1.5rem' : '2rem',
+                  transitionTimingFunction: 'var(--ease-out-expo)',
+                }}
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
@@ -79,58 +83,92 @@ export default function Header() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden items-center gap-8 md:flex">
-            {navLinks.map((link, i) => (
-              <span key={link.href} className="flex items-center gap-8">
-                {i > 0 && (
-                  <span className="select-none text-[0.75rem] text-text-tertiary">
-                    /
-                  </span>
-                )}
-                <Link
-                  href={link.href}
-                  className={`group relative text-[0.8rem] font-medium uppercase tracking-[0.12em] transition-colors duration-[0.5s] ${
-                    pathname === link.href
-                      ? 'text-accent'
-                      : 'text-text-secondary hover:text-text-primary'
-                  }`}
-                  style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
-                >
-                  <span className="inline-flex overflow-hidden" style={{ height: '1.2em' }}>
-                    <span
-                      className="flex flex-col transition-transform duration-[0.5s] group-hover:-translate-y-1/2"
-                      style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
-                    >
-                      <span className="leading-[1.2]">{link.label}</span>
-                      <span className="leading-[1.2]">{link.label}</span>
-                    </span>
-                  </span>
+          <nav className="hidden items-center gap-6 md:flex">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`group relative transition-all duration-[0.5s] font-medium uppercase tracking-[0.12em] ${
+                  pathname === link.href
+                    ? 'text-accent'
+                    : 'text-text-secondary hover:text-text-primary'
+                }`}
+                style={{
+                  fontSize: scrolled ? '0.65rem' : '0.8rem',
+                  transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)',
+                }}
+              >
+                <span className="inline-flex overflow-hidden" style={{ height: '1.2em' }}>
                   <span
-                    className="absolute -bottom-1 left-0 h-[1.5px] bg-accent transition-[width] duration-[0.5s]"
-                    style={{
-                      width:
-                        pathname === link.href ? '100%' : '0%',
-                      transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)',
-                    }}
-                  />
-                  <span
-                    className="absolute -bottom-1 left-0 h-[1.5px] w-0 bg-accent transition-[width] duration-[0.5s] group-hover:w-full"
-                    style={{
-                      transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)',
-                      display: pathname === link.href ? 'none' : 'block',
-                    }}
-                  />
-                </Link>
-              </span>
+                    className="flex flex-col transition-transform duration-[0.5s] group-hover:-translate-y-1/2"
+                    style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
+                  >
+                    <span className="leading-[1.2]">{link.label}</span>
+                    <span className="leading-[1.2]">{link.label}</span>
+                  </span>
+                </span>
+                <span
+                  className="absolute -bottom-1 left-0 h-[1.5px] bg-accent transition-[width] duration-[0.5s]"
+                  style={{
+                    width: pathname === link.href ? '100%' : '0%',
+                    transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)',
+                  }}
+                />
+                <span
+                  className="absolute -bottom-1 left-0 h-[1.5px] w-0 bg-accent transition-[width] duration-[0.5s] group-hover:w-full"
+                  style={{
+                    transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)',
+                    display: pathname === link.href ? 'none' : 'block',
+                  }}
+                />
+              </Link>
             ))}
           </nav>
 
-          {/* CTA Button — text slide + magnetic trailing outlines */}
-          <CTAButton
+          {/* CTA — full text when not scrolled, circle + when scrolled */}
+          <Link
             href="/start-a-new-project"
-            label="Start a Project"
-            className="hidden md:inline-flex"
-          />
+            className="group relative z-10 hidden items-center justify-center overflow-hidden border transition-all duration-[0.6s] md:inline-flex"
+            style={{
+              width: scrolled ? '2.2rem' : 'auto',
+              height: scrolled ? '2.2rem' : 'auto',
+              padding: scrolled ? '0' : '0.6rem 1.4rem',
+              borderRadius: 'var(--radius-pill)',
+              borderColor: scrolled ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.25)',
+              backgroundColor: '#000',
+              transitionTimingFunction: 'var(--ease-out-expo)',
+            }}
+          >
+            {/* Plus icon — visible when scrolled */}
+            <span
+              className="absolute inset-0 flex items-center justify-center text-[1rem] font-light text-white/80 transition-all duration-[0.5s] group-hover:text-white"
+              style={{
+                opacity: scrolled ? 1 : 0,
+                transform: scrolled ? 'scale(1) rotate(0deg)' : 'scale(0.5) rotate(-90deg)',
+                transitionTimingFunction: 'var(--ease-out-expo)',
+              }}
+            >
+              +
+            </span>
+
+            {/* Text — visible when not scrolled */}
+            <span
+              className="relative z-10 inline-flex overflow-hidden text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-text-secondary transition-all duration-[0.5s] group-hover:text-white"
+              style={{
+                height: scrolled ? 0 : '1.2em',
+                opacity: scrolled ? 0 : 1,
+                transitionTimingFunction: 'var(--ease-out-expo)',
+              }}
+            >
+              <span
+                className="flex flex-col transition-transform duration-[0.5s] group-hover:-translate-y-1/2"
+                style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
+              >
+                <span className="leading-[1.2]">Start a Project</span>
+                <span className="leading-[1.2]">Start a Project</span>
+              </span>
+            </span>
+          </Link>
 
           {/* Mobile Hamburger */}
           <button

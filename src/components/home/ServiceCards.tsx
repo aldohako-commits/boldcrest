@@ -1,19 +1,17 @@
 'use client'
 
 import { useRef } from 'react'
-import { motion, useScroll, useTransform, MotionValue } from 'framer-motion'
+import Link from 'next/link'
+import { motion, useScroll, useTransform } from 'framer-motion'
 
-interface ServiceCardData {
-  title: string
-  color: string
-  services: string[]
-}
-
-const cards: ServiceCardData[] = [
+const capabilities = [
   {
-    title: 'Brand Development',
+    category: 'Brand Dev',
+    number: '01',
     color: '#DA291C',
-    services: [
+    heading: 'Branding',
+    abbr: 'BRND DEV',
+    tags: [
       'Visual Identity',
       'Packaging Design',
       'Creative Advertising',
@@ -21,11 +19,22 @@ const cards: ServiceCardData[] = [
       'Logo Design',
       'Brand Guidelines',
     ],
+    description:
+      "From brand architecture to visual identity, we create systems that clarify who you are and amplify how you're seen.",
+    icon: (
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+        <path d="M20 4L4 14v12l16 10 16-10V14L20 4z" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M20 14v12M12 19l8 5 8-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
   },
   {
-    title: 'Still & Motion',
+    category: 'Still & Motion',
+    number: '02',
     color: '#f9b311',
-    services: [
+    heading: 'Still & Motion',
+    abbr: 'STL & MTN',
+    tags: [
       'Photography',
       'Videography',
       'Animation',
@@ -33,11 +42,23 @@ const cards: ServiceCardData[] = [
       'Post-Production',
       'Color Grading',
     ],
+    description:
+      'Still frames that hold attention. Moving images that move people. Every shoot, every cut, every grade — deliberate.',
+    icon: (
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+        <rect x="6" y="10" width="28" height="20" rx="2" stroke="currentColor" strokeWidth="1.5" />
+        <circle cx="20" cy="20" r="6" stroke="currentColor" strokeWidth="1.5" />
+        <circle cx="20" cy="20" r="2" fill="currentColor" />
+      </svg>
+    ),
   },
   {
-    title: 'Communications',
+    category: 'Communications',
+    number: '03',
     color: '#004c95',
-    services: [
+    heading: 'Comms',
+    abbr: 'COMMS',
+    tags: [
       'Social Media',
       'Digital Marketing',
       'Public Relations',
@@ -45,188 +66,18 @@ const cards: ServiceCardData[] = [
       'Campaign Management',
       'Media Planning',
     ],
+    description:
+      'Strategy, content, and distribution — orchestrated to reach the right audience at the right moment.',
+    icon: (
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+        <path d="M8 12h24v16H22l-6 4v-4H8V12z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        <circle cx="16" cy="20" r="1.5" fill="currentColor" />
+        <circle cx="20" cy="20" r="1.5" fill="currentColor" />
+        <circle cx="24" cy="20" r="1.5" fill="currentColor" />
+      </svg>
+    ),
   },
 ]
-
-/* Placeholder SVG — replace later */
-function PlaceholderIcon() {
-  return (
-    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-      <rect x="8" y="8" width="14" height="14" rx="2" fill="currentColor" />
-      <rect x="26" y="8" width="14" height="14" rx="2" fill="currentColor" opacity="0.5" />
-      <rect x="8" y="26" width="14" height="14" rx="2" fill="currentColor" opacity="0.3" />
-      <rect x="26" y="26" width="14" height="14" rx="2" fill="currentColor" opacity="0.7" />
-    </svg>
-  )
-}
-
-function Card({
-  card,
-  index,
-  scrollYProgress,
-}: {
-  card: ServiceCardData
-  index: number
-  scrollYProgress: MotionValue<number>
-}) {
-  // Phase 1 (0–0.35): Fan → straighten
-  // Phase 2 (0.35–0.8): Flip to back, staggered per card
-  const fanRotations = [-12, 0, 12]
-  const fanOffsets = [-60, 0, 60] // horizontal pixel offset when fanned
-  const spreadPositions = [-110, 0, 110] // % offset when spread into row
-
-  // Fan rotation → 0
-  const rotate = useTransform(
-    scrollYProgress,
-    [0, 0.3],
-    [fanRotations[index], 0]
-  )
-
-  // Fan horizontal offset → spread into columns
-  const x = useTransform(
-    scrollYProgress,
-    [0, 0.3],
-    [`${fanOffsets[index]}px`, `${spreadPositions[index]}%`]
-  )
-
-  // Flip (staggered per card index)
-  const flipStart = 0.35 + index * 0.08
-  const flipEnd = 0.6 + index * 0.08
-
-  const rotateY = useTransform(
-    scrollYProgress,
-    [flipStart, flipEnd],
-    [0, 180]
-  )
-
-  // Opacity crossfade at the 90° mark
-  const midFlip = (flipStart + flipEnd) / 2
-
-  const frontOpacity = useTransform(
-    scrollYProgress,
-    [flipStart, midFlip - 0.01, midFlip, flipEnd],
-    [1, 1, 0, 0]
-  )
-
-  const backOpacity = useTransform(
-    scrollYProgress,
-    [flipStart, midFlip, midFlip + 0.01, flipEnd],
-    [0, 0, 1, 1]
-  )
-
-  // Scale: start slightly smaller when fanned, grow to full
-  const scale = useTransform(scrollYProgress, [0, 0.3], [0.9, 1])
-
-  // Z-index: left card on top when fanned
-  const zIndex = 3 - index
-
-  return (
-    <motion.div
-      className="absolute left-1/2 top-1/2 h-[380px] w-[280px] md:h-[440px] md:w-[320px]"
-      style={{
-        x,
-        rotate,
-        scale,
-        marginLeft: '-140px',
-        marginTop: '-220px',
-        zIndex,
-        perspective: 1200,
-      }}
-    >
-      <motion.div
-        className="relative h-full w-full"
-        style={{
-          rotateY,
-          transformStyle: 'preserve-3d',
-        }}
-      >
-        {/* Front Face — Colored */}
-        <motion.div
-          className="absolute inset-0 flex flex-col justify-between overflow-hidden rounded-2xl p-6"
-          style={{
-            backgroundColor: card.color,
-            backfaceVisibility: 'hidden',
-            opacity: frontOpacity,
-          }}
-        >
-          <div className="flex items-start justify-between">
-            <span className="text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-white/80">
-              {card.title}
-            </span>
-            <span className="text-white/60">
-              <PlaceholderIcon />
-            </span>
-          </div>
-
-          <div className="flex flex-col items-center gap-4 py-8">
-            <div className="text-white/90">
-              <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-                <rect x="12" y="12" width="24" height="24" rx="3" fill="currentColor" />
-                <rect x="44" y="12" width="24" height="24" rx="3" fill="currentColor" opacity="0.6" />
-                <rect x="12" y="44" width="24" height="24" rx="3" fill="currentColor" opacity="0.4" />
-                <rect x="44" y="44" width="24" height="24" rx="3" fill="currentColor" opacity="0.8" />
-              </svg>
-            </div>
-          </div>
-
-          <div className="flex items-end justify-between">
-            <span className="text-[0.6rem] uppercase tracking-wider text-white/50">
-              0{index + 1}
-            </span>
-            <span className="text-[0.6rem] uppercase tracking-wider text-white/50">
-              {card.title.split(' ').pop()}
-            </span>
-          </div>
-        </motion.div>
-
-        {/* Back Face — Service list */}
-        <motion.div
-          className="absolute inset-0 flex flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.08] bg-[#161616] p-6"
-          style={{
-            backfaceVisibility: 'hidden',
-            transform: 'rotateY(180deg)',
-            opacity: backOpacity,
-          }}
-        >
-          <div>
-            <div className="mb-6 flex items-start justify-between">
-              <span className="text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-white/60">
-                {card.title}
-              </span>
-              <span className="text-white/30">
-                <PlaceholderIcon />
-              </span>
-            </div>
-
-            <div className="flex flex-col">
-              {card.services.map((service, i) => (
-                <div
-                  key={service}
-                  className={`py-3 text-[0.85rem] text-white/70 ${
-                    i < card.services.length - 1
-                      ? 'border-b border-white/[0.06]'
-                      : ''
-                  }`}
-                >
-                  {service}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-end justify-between">
-            <span className="text-white/20">
-              <PlaceholderIcon />
-            </span>
-            <span className="rotate-180 text-[0.6rem] uppercase tracking-wider text-white/30">
-              {card.title}
-            </span>
-          </div>
-        </motion.div>
-      </motion.div>
-    </motion.div>
-  )
-}
 
 export default function ServiceCards() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -236,28 +87,146 @@ export default function ServiceCards() {
     offset: ['start start', 'end end'],
   })
 
+  const x = useTransform(scrollYProgress, [0, 1], ['0%', '-75%'])
+
   return (
-    <section ref={containerRef} className="relative h-[300vh]">
-      {/* Sticky inner — stays pinned while we scroll through 300vh */}
-      <div className="sticky top-0 flex h-screen flex-col overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-[var(--gutter)] pt-[var(--space-lg)]">
-          <h2 className="text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-secondary">
+    <section ref={containerRef} className="relative h-[200vh]">
+      <div className="sticky top-0 h-screen overflow-hidden">
+        {/* Label */}
+        <div className="flex items-center px-[var(--gutter)] pt-8 pb-6">
+          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
             What We Do
-          </h2>
+          </p>
         </div>
 
-        {/* Cards area */}
-        <div className="relative flex-1">
-          {cards.map((card, i) => (
-            <Card
-              key={card.title}
-              card={card}
-              index={i}
-              scrollYProgress={scrollYProgress}
-            />
+        {/* Top separator */}
+        <div className="mx-[var(--gutter)] h-px bg-border" />
+
+        {/* Horizontal panels */}
+        <motion.div
+          className="flex h-[calc(100vh-82px)]"
+          style={{ x }}
+        >
+          {capabilities.map((cap) => (
+            <div
+              key={cap.category}
+              className="relative flex h-full shrink-0 flex-col justify-between"
+              style={{
+                width: '33.333vw',
+                minWidth: '400px',
+                borderRight: `1px solid ${cap.color}15`,
+              }}
+            >
+              <div className="flex h-full flex-col justify-between bg-[var(--bg-primary)] px-6 py-8 lg:px-10 lg:py-10">
+                {/* Top: heading + tags */}
+                <div>
+                  <h2 className="mb-6 font-display text-[clamp(2.5rem,5vw,5.5rem)] font-bold leading-[0.95] tracking-[-0.03em] text-white">
+                    {cap.heading}
+                  </h2>
+
+                  <div className="flex flex-wrap gap-2">
+                    {cap.tags.map((tag) => (
+                      <Link
+                        key={tag}
+                        href={`/work?service=${encodeURIComponent(tag)}`}
+                        className="rounded-full border px-3.5 py-1.5 text-[0.7rem] font-medium uppercase tracking-[0.05em] transition-all duration-200"
+                        style={{
+                          borderColor: `${cap.color}30`,
+                          color: 'rgba(255,255,255,0.65)',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.borderColor = cap.color
+                          e.currentTarget.style.backgroundColor = `${cap.color}18`
+                          e.currentTarget.style.color = 'rgba(255,255,255,0.95)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.borderColor = `${cap.color}30`
+                          e.currentTarget.style.backgroundColor = 'transparent'
+                          e.currentTarget.style.color = 'rgba(255,255,255,0.65)'
+                        }}
+                      >
+                        {tag}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Bottom: icon + abbreviation + description */}
+                <div className="flex items-end gap-6">
+                  <div className="flex flex-col items-center gap-2">
+                    <div
+                      className="flex h-16 w-16 items-center justify-center rounded-2xl border"
+                      style={{
+                        borderColor: `${cap.color}25`,
+                        color: `${cap.color}90`,
+                      }}
+                    >
+                      {cap.icon}
+                    </div>
+                    <span
+                      className="text-[0.55rem] font-semibold uppercase tracking-[0.1em]"
+                      style={{ color: `${cap.color}60` }}
+                    >
+                      {cap.abbr}
+                    </span>
+                  </div>
+                  <p className="max-w-[280px] text-[0.8rem] uppercase leading-[1.5] tracking-[0.02em] text-white/40">
+                    {cap.description}
+                  </p>
+                </div>
+              </div>
+            </div>
           ))}
-        </div>
+
+          {/* CTA Panel */}
+          <div
+            className="relative flex h-full shrink-0 flex-col justify-between px-10 py-10 lg:px-16"
+            style={{
+              width: '33.333vw',
+              minWidth: '400px',
+              backgroundColor: '#DA291C',
+            }}
+          >
+            <div>
+              <h2 className="mb-8 font-display text-[clamp(2.5rem,5vw,5.5rem)] font-bold leading-[0.95] tracking-[-0.03em] text-white">
+                Start a<br />Project
+              </h2>
+            </div>
+
+            <div className="flex flex-col gap-6">
+              <p className="max-w-[320px] text-[0.85rem] leading-[1.7] text-white/80">
+                We live in the details. The pixels, the strategy, the
+                timing. If you&apos;re building something real, we&apos;ll
+                meet you there.
+              </p>
+              <Link
+                href="/start-a-new-project"
+                className="inline-flex w-fit items-center gap-3 rounded-[var(--radius-pill)] border border-white/30 px-6 py-3 text-[0.8rem] font-semibold uppercase tracking-[0.1em] text-white transition-all duration-[0.5s] hover:border-white/60"
+                style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
+              >
+                Let&apos;s Chat
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  className="transition-transform duration-300 group-hover:translate-x-1"
+                >
+                  <path
+                    d="M3 8h10M9 4l4 4-4 4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Bottom separator */}
+        <div className="mx-[var(--gutter)] h-px bg-border" />
       </div>
     </section>
   )
