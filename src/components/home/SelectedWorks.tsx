@@ -49,9 +49,9 @@ function ProjectCard({
       }}
     >
       <Link href={`/work/${project.slug?.current}`} className="group block">
-        {/* Image container — shrinks on hover to reveal info */}
+        {/* Image container — moves up and shrinks on hover */}
         <div
-          className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-bg-card transition-all duration-[0.6s] group-hover:scale-[0.94] group-hover:rounded-xl"
+          className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-bg-card transition-all duration-[0.6s] group-hover:-translate-y-4 group-hover:scale-[0.95]"
           style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
         >
           {project.thumbnailType === 'video' && project.thumbnailVideo ? (

@@ -45,9 +45,12 @@ export default function Header() {
         }}
       >
         <div
-          className="flex w-full items-center justify-between transition-all duration-[0.8s]"
+          className="flex items-center justify-between transition-all duration-[0.8s]"
           style={{
-            padding: scrolled ? '0.2rem 0.8rem' : '0.75rem 1rem',
+            width: scrolled ? 'fit-content' : '100%',
+            marginLeft: 'auto',
+            marginRight: 'auto',
+            padding: scrolled ? '0.3rem 1rem' : '0.75rem 1rem',
             borderRadius: scrolled ? 'var(--radius-pill)' : '0',
             background: scrolled ? 'rgba(10,10,10,0.85)' : 'transparent',
             backdropFilter: scrolled ? 'blur(20px) saturate(1.5)' : 'none',
@@ -68,8 +71,8 @@ export default function Header() {
                 viewBox="0 0 384.09 384"
                 className="h-8 w-8 transition-[width,height] duration-[0.6s]"
                 style={{
-                  width: scrolled ? '1.2rem' : '2rem',
-                  height: scrolled ? '1.2rem' : '2rem',
+                  width: scrolled ? '1.4rem' : '2rem',
+                  height: scrolled ? '1.4rem' : '2rem',
                   transitionTimingFunction: 'var(--ease-out-expo)',
                 }}
                 xmlns="http://www.w3.org/2000/svg"
@@ -83,7 +86,7 @@ export default function Header() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden items-center md:flex" style={{ gap: scrolled ? '0.8rem' : '1.5rem', transitionTimingFunction: 'var(--ease-out-expo)', transition: 'gap 0.8s' }}>
+          <nav className="hidden items-center md:flex" style={{ gap: scrolled ? '1rem' : '1.5rem', transitionTimingFunction: 'var(--ease-out-expo)', transition: 'gap 0.8s' }}>
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -94,7 +97,7 @@ export default function Header() {
                     : 'text-text-secondary hover:text-text-primary'
                 }`}
                 style={{
-                  fontSize: scrolled ? '0.55rem' : '0.8rem',
+                  fontSize: scrolled ? '0.7rem' : '0.8rem',
                   transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)',
                 }}
               >
