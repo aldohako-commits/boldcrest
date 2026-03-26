@@ -126,10 +126,10 @@ export default function Footer() {
 
   return (
     <>
-      <div ref={spacerRef} className="h-[50vh]" />
+      <div ref={spacerRef} className="h-screen" />
 
       <footer
-        className="sticky bottom-0 z-0 flex flex-col"
+        className="sticky bottom-0 z-0 flex min-h-screen flex-col justify-between"
         style={{ background: '#EDEDED', color: '#000000' }}
       >
         {/* Top section — logo + columns */}

@@ -244,8 +244,6 @@ export default function ServiceCards() {
           </div>
         </motion.div>
 
-        {/* Bottom separator */}
-        <div className="mx-[var(--gutter)] h-px bg-[#0a0a0a]/10" />
       </div>
     </section>
   )
