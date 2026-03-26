@@ -10,7 +10,6 @@ import {
 
 const Hero = dynamic(() => import('@/components/home/Hero'))
 const SelectedWorks = dynamic(() => import('@/components/home/SelectedWorks'))
-const WeDoSection = dynamic(() => import('@/components/home/WeDoSection'))
 const SelectedClients = dynamic(
   () => import('@/components/home/SelectedClients')
 )
@@ -43,7 +42,6 @@ export default async function Home() {
       <MorphBlobs />
       <Hero />
       <SelectedWorks projects={projects} />
-      <WeDoSection />
       <SelectedClients partners={partners} />
       <ServiceCards />
       <BottomSections members={members} diaryPosts={diaryPosts} />

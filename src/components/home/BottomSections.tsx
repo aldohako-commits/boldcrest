@@ -356,16 +356,19 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
   const sectionRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
 
-  // Smooth scroll-driven color change on the layout wrapper
-  // Starts early (when section top is at bottom of viewport) for transition from WeDoSection
   const { scrollYProgress } = useScroll({
     target: sectionRef,
-    offset: ['start 1', 'end 0.7'],
+    offset: ['start 0.85', 'end 0.6'],
   })
   const bgColor = useTransform(
     scrollYProgress,
-    [0, 0.04, 0.96, 1],
+    [0, 0.08, 0.88, 1],
     ['#0a0a0a', '#EDEDED', '#EDEDED', '#0a0a0a']
+  )
+  const textColor = useTransform(
+    scrollYProgress,
+    [0, 0.08, 0.88, 1],
+    ['#ffffff', '#0a0a0a', '#0a0a0a', '#ffffff']
   )
 
   useMotionValueEvent(bgColor, 'change', (color) => {
@@ -381,8 +384,20 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
   }, [])
 
   return (
-    <div ref={sectionRef} className="relative pt-[var(--space-2xl)] pb-[var(--space-2xl)]">
-      {/* Header row */}
+    <div ref={sectionRef} className="relative">
+      {/* "We do many things" — inside the color transition zone */}
+      <section className="px-[var(--gutter)] py-[var(--space-2xl)]">
+        <motion.p
+          className="font-display text-[clamp(2.8rem,8vw,8rem)] font-bold leading-[1.05] tracking-[-0.03em]"
+          style={{ color: textColor }}
+        >
+          We do many{' '}
+          <InlineButton href="/work" label="View All Work" />{' '}
+          things very well.
+        </motion.p>
+      </section>
+
+      {/* Diary header */}
       <div className="px-[var(--gutter)]">
         <motion.div
           className="flex items-end justify-between pb-[var(--space-xl)]"
@@ -390,39 +405,34 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          <h2 className="font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[0.95] tracking-[-0.03em] text-[#0a0a0a]">
-            The Diary<span className="text-accent">.</span>
-          </h2>
+          <motion.h2
+            className="font-display text-[0.75rem] font-semibold uppercase tracking-[0.2em]"
+            style={{ color: textColor }}
+          >
+            The Diary
+          </motion.h2>
           <Link
             href="/diary"
-            className="group mb-2 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-[#0a0a0a]/40 transition-all duration-200 hover:gap-3 hover:text-[#0a0a0a]/70"
+            className="group mb-2 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-text-tertiary transition-all duration-200 hover:gap-3 hover:text-text-secondary"
           >
-            See All
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              className="transition-transform duration-[0.4s] group-hover:translate-x-1"
-              style={{ transitionTimingFunction: 'var(--ease-out-expo)' }}
-            >
-              <path
-                d="M3 8h10M9 4l4 4-4 4"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+            <span className="inline-flex overflow-hidden" style={{ height: '1.2em' }}>
+              <span className="flex flex-col transition-transform duration-[0.5s] group-hover:-translate-y-1/2" style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}>
+                <span className="leading-[1.2]">See All</span>
+                <span className="leading-[1.2]">See All</span>
+              </span>
+            </span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="transition-transform duration-[0.5s] group-hover:translate-x-1" style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}>
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </Link>
         </motion.div>
       </div>
 
-      {/* Full-width divider */}
-      <div className="h-px w-full bg-[#0a0a0a]/10" />
+      {/* Divider */}
+      <div className="mx-[var(--gutter)] h-px bg-border" />
 
-      {/* Full-width post grid — newspaper style with images */}
-      <div className="grid grid-cols-2 gap-4 px-[var(--gutter)] py-[var(--space-lg)] md:gap-6 md:py-[var(--space-xl)] lg:grid-cols-4">
+      {/* Post grid — matching Selected Works style (2-col) */}
+      <div className="grid grid-cols-1 gap-x-5 gap-y-8 px-[var(--gutter)] py-[var(--space-xl)] md:grid-cols-2">
         {entries.map((post, i) => (
           <motion.div
             key={post._id}

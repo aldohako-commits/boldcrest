@@ -87,7 +87,9 @@ export default function ServiceCards() {
     offset: ['start start', 'end end'],
   })
 
-  const x = useTransform(scrollYProgress, [0, 1], ['0%', '-75%'])
+  // 4 panels × 33.333vw = 133.333vw total. To end at last panel's right edge:
+  // translate = -(totalWidth - 100vw) = -33.333vw ≈ -25% of total width
+  const x = useTransform(scrollYProgress, [0, 1], ['0%', '-25%'])
 
   return (
     <section ref={containerRef} className="relative h-[160vh]">
