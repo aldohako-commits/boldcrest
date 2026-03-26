@@ -23,7 +23,6 @@ const LINE_3 = [
 
 const lines = [LINE_1, LINE_2, LINE_3]
 
-// Flatten for stagger delay calculation
 function getWordDelay(lineIndex: number, wordIndex: number): number {
   let total = 0
   for (let i = 0; i < lineIndex; i++) {
@@ -110,33 +109,24 @@ function Word({
 
 export default function Hero() {
   return (
-    <section className="relative flex h-screen flex-col items-center justify-center overflow-hidden">
-      {/* Background media placeholder — replace with Vimeo iframe or Image */}
-      <div className="absolute inset-0 z-0">
-        <div className="h-full w-full bg-bg-card" />
-        {/* Darken overlay so text remains readable */}
-        <div className="absolute inset-0 bg-black/50" />
-      </div>
-
-      <div className="relative z-10 w-full px-[var(--gutter)]">
-        <h1 className="font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[1.05] tracking-[-0.03em]">
-          {lines.map((line, lineIndex) => (
-            <span key={lineIndex} className="block overflow-hidden">
-              {line.map((word, wordIndex) => (
-                <span key={wordIndex}>
-                  {wordIndex > 0 && ' '}
-                  <Word
-                    text={word.text}
-                    effect={word.effect}
-                    delay={getWordDelay(lineIndex, wordIndex)}
-                    isLastInLine={wordIndex === line.length - 1}
-                  />
-                </span>
-              ))}
-            </span>
-          ))}
-        </h1>
-      </div>
+    <section className="px-[var(--gutter)] pt-[clamp(10rem,20vh,16rem)] pb-[var(--space-2xl)]">
+      <h1 className="font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[1.05] tracking-[-0.03em]">
+        {lines.map((line, lineIndex) => (
+          <span key={lineIndex} className="block overflow-hidden">
+            {line.map((word, wordIndex) => (
+              <span key={wordIndex}>
+                {wordIndex > 0 && ' '}
+                <Word
+                  text={word.text}
+                  effect={word.effect}
+                  delay={getWordDelay(lineIndex, wordIndex)}
+                  isLastInLine={wordIndex === line.length - 1}
+                />
+              </span>
+            ))}
+          </span>
+        ))}
+      </h1>
     </section>
   )
 }
