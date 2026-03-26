@@ -26,6 +26,7 @@ const socialLinks = [
   { label: 'Instagram', href: '#' },
   { label: 'Behance', href: '#' },
   { label: 'Vimeo', href: '#' },
+  { label: 'Facebook', href: '#' },
 ]
 
 /* ── Spring-physics hook ── */
@@ -125,11 +126,11 @@ export default function Footer() {
 
   return (
     <>
-      <div ref={spacerRef} className="h-screen" />
+      <div ref={spacerRef} className="h-[50vh]" />
 
       <footer
-        className="sticky bottom-0 z-0 flex min-h-screen flex-col"
-        style={{ background: '#EDEDED' }}
+        className="sticky bottom-0 z-0 flex flex-col"
+        style={{ background: '#EDEDED', color: '#000000' }}
       >
         {/* Top section — logo + columns */}
         <div className="mx-auto w-full max-w-[var(--max-width)] px-[var(--gutter)] pt-12 pb-16">
@@ -172,14 +173,17 @@ export default function Footer() {
             {/* Contact */}
             <div>
               <h3 className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.15em] text-black/30">Contact</h3>
-              <a href="mailto:info@boldcrest.com" className={linkClass}>
-                info@boldcrest.com
-              </a>
               <p className="py-1 text-[0.85rem] text-black/50">
-                Tirana, Albania
+                Talk to us or ask us anything.
               </p>
-              <Link href="/start-a-new-project" className={`${linkClass} mt-2 font-medium text-black/80`}>
-                Start a Project &rarr;
+              <a href="mailto:info@boldcrest.com" className={linkClass}>
+                &rarr; info@boldcrest.com
+              </a>
+              <Link href="/contact" className={linkClass}>
+                &rarr; Contact Us
+              </Link>
+              <Link href="/privacy-policy" className={linkClass}>
+                &rarr; Privacy Policy
               </Link>
             </div>
 
@@ -194,7 +198,7 @@ export default function Footer() {
                   rel="noopener noreferrer"
                   className={linkClass}
                 >
-                  {link.label}
+                  &rarr; {link.label}
                 </a>
               ))}
             </div>
@@ -218,17 +222,15 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Giant wordmark */}
-        <div className="mt-auto flex w-full flex-auto items-end px-[var(--gutter)] pb-8 md:pb-16">
-          <div className="mx-auto w-full max-w-[var(--max-width)] overflow-hidden">
-            <div ref={wordmarkRef} style={{ transform: 'translateY(100%)' }}>
+        {/* Giant wordmark — centered, bottom half clipped */}
+        <div className="mt-auto flex w-full flex-auto items-end overflow-hidden">
+          <div className="mx-auto w-full overflow-hidden" style={{ height: 'clamp(4rem, 12vw, 12rem)' }}>
+            <div ref={wordmarkRef} className="flex justify-center" style={{ transform: 'translateY(100%)' }}>
               <h2
-                style={{ color: '#000000' }}
+                style={{ color: '#000000', fontSize: 'clamp(6rem, 22vw, 22rem)' }}
                 className="cursor-default select-none whitespace-nowrap font-display font-bold leading-[0.85]"
               >
-                <span style={{ fontSize: 'clamp(3rem, 10vw, 10rem)' }}>
-                  BoldCrest
-                </span>
+                BoldCrest
               </h2>
             </div>
           </div>

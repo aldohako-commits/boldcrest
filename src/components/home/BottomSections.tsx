@@ -96,7 +96,7 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
 
   // Stacked rotations & offsets — mimicking ServiceCards' fanned state
   const rotations = [-8, -3, 3, 8]
-  const offsets = [-40, -14, 14, 40]
+  const offsets = [-50, -18, 18, 50]
 
   const getInitials = (name: string) =>
     name
@@ -108,31 +108,31 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
 
   return (
     <section ref={sectionRef} className="px-[var(--gutter)] py-[var(--space-2xl)]">
-      <div className="mx-auto flex max-w-[var(--max-width)] flex-col items-center gap-12 md:flex-row md:items-center md:gap-0">
-        {/* Left: headline + body text — 60% */}
+      <div className="mx-auto flex max-w-[var(--max-width)] flex-col items-center gap-12 md:flex-row md:items-center md:gap-8">
+        {/* Left: headline + body text — 55% */}
         <motion.div
-          className="order-2 w-full md:order-1 md:w-[60%] md:pr-[var(--space-xl)]"
+          className="order-2 w-full md:order-1 md:w-[55%]"
           style={{ x: textX, opacity: textOpacity }}
         >
-          <p className="mb-6 font-display text-[clamp(2.2rem,5vw,4.5rem)] font-bold leading-[1.1] tracking-[-0.03em]">
+          <p className="mb-6 font-display text-[clamp(2.5rem,6vw,6rem)] font-bold leading-[1.1] tracking-[-0.03em]">
             No egos<span className="text-accent">,</span><br />
             just{' '}
             <InlineButton href="/people" label="The Team" showArrow /><br />
             behind the bold<span className="text-accent">.</span>
           </p>
-          <p className="max-w-[480px] text-[1rem] leading-[1.75] text-text-secondary">
+          <p className="max-w-[520px] text-[1.05rem] leading-[1.75] text-text-secondary">
             Strategists, designers, filmmakers, and communicators who
             care about the work as much as you do. No egos — just
             craft and conviction.
           </p>
         </motion.div>
 
-        {/* Right: stacked portrait cards — 40% */}
-        <div className="order-1 flex w-full justify-center md:order-2 md:w-[40%] md:justify-end">
+        {/* Right: stacked portrait cards — 45% */}
+        <div className="order-1 flex w-full justify-center md:order-2 md:w-[45%] md:justify-end">
           {mounted && faces.length > 0 ? (
             <div
               className="relative"
-              style={{ width: 260, height: 320 }}
+              style={{ width: 340, height: 420 }}
             >
               {faces.map((face, i) => {
                 const isActive = i === active
@@ -143,8 +143,8 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
                 return (
                   <motion.div
                     key={face._id}
-                    className="absolute left-1/2 top-0 h-[300px] w-[200px] cursor-pointer overflow-hidden rounded-2xl border-2 border-white/[0.06]"
-                    style={{ marginLeft: -100 }}
+                    className="absolute left-1/2 top-0 h-[400px] w-[260px] cursor-pointer overflow-hidden rounded-2xl border-2 border-white/[0.06]"
+                    style={{ marginLeft: -130 }}
                     animate={{
                       rotate: rotations[i] ?? 0,
                       x: offsets[i] ?? 0,
@@ -162,10 +162,10 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
                   >
                     {hasImage ? (
                       <Image
-                        src={urlFor(face.image!).width(400).height(600).url()}
+                        src={urlFor(face.image!).width(520).height(800).url()}
                         alt={face.name}
-                        width={200}
-                        height={300}
+                        width={260}
+                        height={400}
                         loader={sanityImageLoader}
                         className="h-full w-full object-cover"
                       />
@@ -204,7 +204,7 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
               })}
             </div>
           ) : (
-            <div style={{ width: 260, height: 320 }} />
+            <div style={{ width: 340, height: 420 }} />
           )}
         </div>
 
@@ -368,15 +368,14 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
     <div ref={sectionRef} className="relative pt-[var(--space-xl)] pb-[var(--space-2xl)]">
       {/* Diary header — matching Selected Works style */}
       <div className="px-[var(--gutter)]">
-        <div className="mb-4 h-px bg-[#0a0a0a]/10" />
         <div className="mb-[var(--space-lg)] flex items-center justify-between">
-          <h2 className="font-display text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-[#0a0a0a]/60">
+          <h2 className="font-display text-[0.75rem] font-semibold uppercase tracking-[0.2em]" style={{ color: 'rgba(10,10,10,0.6)' }}>
             The Diary
           </h2>
           <Link
             href="/diary"
-            className="group/link flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-[#0a0a0a]/40 transition-all duration-[0.5s] hover:gap-3 hover:text-[#0a0a0a]/70"
-            style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
+            className="group/link flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.15em] transition-all duration-[0.5s] hover:gap-3"
+            style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)', color: 'rgba(10,10,10,0.4)' }}
           >
             <span className="inline-flex overflow-hidden" style={{ height: '1.2em' }}>
               <span className="flex flex-col transition-transform duration-[0.5s] group-hover/link:-translate-y-1/2" style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}>
@@ -390,6 +389,8 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
           </Link>
         </div>
       </div>
+
+      <div className="mx-[var(--gutter)] mb-[var(--space-lg)] h-px" style={{ backgroundColor: 'rgba(10,10,10,0.1)' }} />
 
       {/* Post grid — 4 in one row */}
       <div className="grid grid-cols-2 gap-4 px-[var(--gutter)] md:grid-cols-4 md:gap-5">

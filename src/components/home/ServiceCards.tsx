@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, useScroll, useTransform } from 'framer-motion'
 
@@ -82,19 +82,25 @@ const capabilities = [
 export default function ServiceCards() {
   const containerRef = useRef<HTMLDivElement>(null)
   const trackRef = useRef<HTMLDivElement>(null)
+  const maxScroll = useRef(0)
+
+  useEffect(() => {
+    const measure = () => {
+      if (trackRef.current) {
+        maxScroll.current = trackRef.current.scrollWidth - window.innerWidth
+      }
+    }
+    measure()
+    window.addEventListener('resize', measure, { passive: true })
+    return () => window.removeEventListener('resize', measure)
+  }, [])
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ['start start', 'end end'],
   })
 
-  // Calculate how far to translate: totalTrackWidth - viewportWidth
-  const x = useTransform(scrollYProgress, (v) => {
-    if (!trackRef.current) return 0
-    const trackW = trackRef.current.scrollWidth
-    const viewW = window.innerWidth
-    return -v * (trackW - viewW)
-  })
+  const x = useTransform(scrollYProgress, (v) => -v * maxScroll.current)
 
   return (
     <section ref={containerRef} className="relative h-[200vh]">
@@ -178,7 +184,7 @@ export default function ServiceCards() {
                       {cap.abbr}
                     </span>
                   </div>
-                  <p className="max-w-[280px] text-[0.8rem] uppercase leading-[1.5] tracking-[0.02em] text-[#0a0a0a]/40">
+                  <p className="max-w-[280px] text-[0.8rem] leading-[1.5] text-[#0a0a0a]/40">
                     {cap.description}
                   </p>
                 </div>

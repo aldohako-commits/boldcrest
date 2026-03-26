@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
-import ScrollReveal from '@/components/ScrollReveal'
 
 interface Partner {
   _id: string
@@ -46,19 +44,18 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
     return result
   }
 
-  const row1Items = repeat(row1, 6)
-  const row2Items = repeat(row2, 6)
+  // Fewer repetitions needed — 4 is enough for seamless loop
+  const row1Items = repeat(row1, 4)
+  const row2Items = repeat(row2, 4)
 
   return (
     <section className="pb-[var(--space-2xl)] overflow-hidden">
       {/* Section label */}
       <div className="px-[var(--gutter)] mb-[var(--space-lg)]">
-        <ScrollReveal>
-          <div className="mb-4 h-px bg-[#0a0a0a]/10" />
-          <h2 className="text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-[#0a0a0a]/50">
-            Trusted by the ambitious<span className="text-accent">.</span>
-          </h2>
-        </ScrollReveal>
+        <h2 className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-[#0a0a0a]/50">
+          Trusted by the ambitious<span className="text-accent">.</span>
+        </h2>
+        <div className="h-px bg-[#0a0a0a]/10" />
       </div>
 
       {/* Row 1 — scrolls left */}
@@ -66,7 +63,7 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
         className="relative mb-2"
         onMouseLeave={() => setHovered(null)}
       >
-        <div className="flex animate-[marquee_35s_linear_infinite]">
+        <div className="flex animate-[marquee_35s_linear_infinite] will-change-transform">
           {row1Items.map((partner) => (
             <span
               key={partner._id}
@@ -77,7 +74,7 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
                     ? 1
                     : 0.2
                   : 0.45,
-                transform: hovered === partner.name ? 'scale(1.1)' : 'scale(1)',
+                transform: 'scale(1)',
                 color: '#0a0a0a',
               }}
               onMouseEnter={() => setHovered(partner.name)}
@@ -93,7 +90,7 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
         className="relative"
         onMouseLeave={() => setHovered(null)}
       >
-        <div className="flex animate-[marquee-reverse_40s_linear_infinite]">
+        <div className="flex animate-[marquee-reverse_40s_linear_infinite] will-change-transform">
           {row2Items.map((partner) => (
             <span
               key={partner._id}
@@ -104,7 +101,7 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
                     ? 1
                     : 0.2
                   : 0.45,
-                transform: hovered === partner.name ? 'scale(1.1)' : 'scale(1)',
+                transform: 'scale(1)',
                 color: '#0a0a0a',
               }}
               onMouseEnter={() => setHovered(partner.name)}

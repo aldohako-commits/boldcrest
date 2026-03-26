@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 
 /*
@@ -137,6 +137,17 @@ function ScrollBlob({ config }: { config: BlobConfig }) {
 
 /* ── Reusable component for any page ── */
 export function PageMorphBlobs({ blobs }: { blobs: BlobConfig[] }) {
+  const [enabled, setEnabled] = useState(false)
+
+  useEffect(() => {
+    // Disable on mobile and reduced-motion for performance
+    const isMobile = window.innerWidth < 768
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    setEnabled(!isMobile && !prefersReduced)
+  }, [])
+
+  if (!enabled) return null
+
   return (
     <div
       className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
