@@ -147,7 +147,7 @@ function FadeUp({ children, delay = 0, active, className = '' }: {
 /* ══════════════════════════════════════════════════════
    TOTAL SECTIONS = 9
 ══════════════════════════════════════════════════════ */
-const TOTAL_SECTIONS = 10
+const TOTAL_SECTIONS = 9
 const TRANSITION_DURATION = 700
 
 const galleryImages = [
@@ -395,73 +395,33 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
         </section>
 
         {/* ═══════════════════════════════════════════
-            3. THE NAME
+            3. THE MOTTO (was 4)
         ═══════════════════════════════════════════ */}
         <section className="flex h-[100dvh] items-center px-[var(--gutter)]">
           <div className="mx-auto w-full max-w-[var(--max-width)]">
-            <div className="mb-[var(--space-xl)]">
-              <BigStatement text="The name was chosen with intention." active={active(3)} />
-            </div>
-
-            <div className="grid gap-[var(--space-xl)] md:grid-cols-3">
-              <FadeUp active={active(3)}>
-                <div className="border-t border-border pt-[var(--space-md)]">
-                  <p className="mb-2 text-[0.75rem] font-semibold uppercase tracking-[0.25em] text-accent">Bold</p>
-                  <p className="text-[0.95rem] leading-[1.8] text-text-secondary">Because that&apos;s what we do to brands.</p>
-                </div>
-              </FadeUp>
-
-              <FadeUp delay={0.1} active={active(3)}>
-                <div className="border-t border-border pt-[var(--space-md)]">
-                  <p className="mb-2 text-[0.75rem] font-semibold uppercase tracking-[0.25em] text-[#f9b311]">Crest</p>
-                  <p className="text-[0.95rem] leading-[1.8] text-text-secondary">The peak you climb, and the mark you leave.</p>
-                </div>
-              </FadeUp>
-
-              <FadeUp delay={0.2} active={active(3)}>
-                <div className="border-t border-border pt-[var(--space-md)]">
-                  <p className="mb-2 text-[0.75rem] font-semibold uppercase tracking-[0.25em] text-[#004c95]">.com</p>
-                  <p className="text-[0.95rem] leading-[1.8] text-text-secondary">No _al. No _agency. A clean .com. From the beginning, we refused to be a local story with local ambitions.</p>
-                </div>
-              </FadeUp>
-            </div>
-
-            <FadeUp delay={0.15} active={active(3)}>
-              <p className="mt-[var(--space-xl)] text-[1.1rem] font-semibold leading-[1.7] text-text-primary">
-                We believed — and still believe — that our market is the world.
-              </p>
-            </FadeUp>
-          </div>
-        </section>
-
-        {/* ═══════════════════════════════════════════
-            4. THE MOTTO
-        ═══════════════════════════════════════════ */}
-        <section className="flex h-[100dvh] items-center px-[var(--gutter)]">
-          <div className="mx-auto w-full max-w-[var(--max-width)]">
-            <FadeUp active={active(4)}>
+            <FadeUp active={active(3)}>
               <p className="mb-[var(--space-md)] text-[0.75rem] font-semibold uppercase tracking-[0.25em] text-text-tertiary">
                 Our motto
               </p>
             </FadeUp>
 
-            <BigStatement text="Climbing mountains together." active={active(4)} />
+            <BigStatement text="Climbing mountains together." active={active(3)} />
 
             <div className="mt-[var(--space-xl)] grid gap-[var(--space-lg)] md:grid-cols-2">
-              <FadeUp delay={0.1} active={active(4)}>
+              <FadeUp delay={0.1} active={active(3)}>
                 <p className="text-[1rem] leading-[1.85] text-text-secondary">
                   It means we don&apos;t hand you a deliverable and disappear. We sit in your meetings. We learn your operations. We understand your problems before we try to solve them.
                 </p>
               </FadeUp>
 
-              <FadeUp delay={0.15} active={active(4)}>
+              <FadeUp delay={0.15} active={active(3)}>
                 <p className="text-[1rem] leading-[1.85] text-text-secondary">
                   We push back when we think you&apos;re wrong — not to be difficult, but because that&apos;s what real partners do. And when we&apos;re wrong, we listen.
                 </p>
               </FadeUp>
             </div>
 
-            <FadeUp delay={0.25} active={active(4)}>
+            <FadeUp delay={0.25} active={active(3)}>
               <p className="mt-[var(--space-lg)] border-l-2 border-accent pl-[var(--space-md)] text-[1.05rem] leading-[1.8] text-text-primary italic">
                 We&apos;ve been told we&apos;re too involved. We consider that a compliment.
               </p>
@@ -474,28 +434,28 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
         ═══════════════════════════════════════════ */}
         <section className="flex h-[100dvh] items-center px-[var(--gutter)]">
           <div className="mx-auto w-full max-w-[var(--max-width)]">
-            <FadeUp active={active(5)}>
+            <FadeUp active={active(4)}>
               <p className="mb-[var(--space-md)] text-[0.75rem] font-semibold uppercase tracking-[0.25em] text-text-tertiary">
                 The team
               </p>
             </FadeUp>
 
             <div className="max-w-[700px]">
-              <BigStatement text="Every person has a glitch in their system." active={active(5)} />
+              <BigStatement text="Every person has a glitch in their system." active={active(4)} />
 
-              <FadeUp delay={0.1} active={active(5)}>
+              <FadeUp delay={0.1} active={active(4)}>
                 <p className="mt-[var(--space-lg)] text-[1rem] leading-[1.85] text-text-secondary">
                   Something slightly off, slightly unusual, slightly theirs. And that&apos;s exactly what makes them belong here. We are different people who are somehow made of the same thing.
                 </p>
               </FadeUp>
 
-              <FadeUp delay={0.15} active={active(5)}>
+              <FadeUp delay={0.15} active={active(4)}>
                 <p className="mt-[var(--space-md)] text-[1rem] leading-[1.85] text-text-secondary">
                   We bully each other. We cook together. We have traditions that make no sense to anyone outside this room. And when someone is sick, we show up.
                 </p>
               </FadeUp>
 
-              <FadeUp delay={0.2} active={active(5)}>
+              <FadeUp delay={0.2} active={active(4)}>
                 <p className="mt-[var(--space-md)] text-[1.05rem] font-semibold leading-[1.7] text-text-primary">
                   It is, honestly, harder to find someone who won&apos;t disturb our peace than someone who has a great portfolio.
                 </p>
@@ -509,7 +469,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
         ═══════════════════════════════════════════ */}
         <section className="flex h-[100dvh] items-center px-[var(--gutter)]">
           <div className="mx-auto w-full max-w-[var(--max-width)]">
-            <FadeUp active={active(6)}>
+            <FadeUp active={active(5)}>
               <div className="mb-[var(--space-lg)] flex items-end justify-between border-b border-border pb-[var(--space-md)]">
                 <h2 className="text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-secondary">
                   The Faces
@@ -522,7 +482,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
 
             <div className="grid grid-cols-2 gap-[var(--space-md)] sm:grid-cols-3 lg:grid-cols-4">
               {members.map((member, idx) => (
-                <FadeUp key={member._id} delay={idx * 0.06} active={active(6)}>
+                <FadeUp key={member._id} delay={idx * 0.06} active={active(5)}>
                   <div className="group relative aspect-[3/4] overflow-hidden rounded-[var(--radius-lg)] bg-bg-card">
                     {member.image?.asset ? (
                       <Image
@@ -579,27 +539,27 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
         <section className="flex h-[100dvh] items-center px-[var(--gutter)]">
           <div className="mx-auto w-full max-w-[var(--max-width)]">
             <div className="mx-auto max-w-[700px] text-center">
-              <FadeUp active={active(7)}>
+              <FadeUp active={active(6)}>
                 <p className="mb-[var(--space-md)] text-[0.75rem] font-semibold uppercase tracking-[0.25em] text-text-tertiary">
                   The work
                 </p>
               </FadeUp>
 
-              <BigStatement text="The work we're most proud of, most people will never know we made." active={active(7)} className="text-center" />
+              <BigStatement text="The work we're most proud of, most people will never know we made." active={active(6)} className="text-center" />
 
-              <FadeUp delay={0.15} active={active(7)}>
+              <FadeUp delay={0.15} active={active(6)}>
                 <p className="mt-[var(--space-lg)] text-[1rem] leading-[1.85] text-text-secondary">
                   That&apos;s not false modesty. That&apos;s the goal. When a brand becomes so real, so lived-in, so theirs — when people carry it, wear it, post it, and believe in it without a second thought — the agency behind it disappears. And it should.
                 </p>
               </FadeUp>
 
-              <FadeUp delay={0.2} active={active(7)}>
+              <FadeUp delay={0.2} active={active(6)}>
                 <p className="mt-[var(--space-md)] text-[1.1rem] font-semibold leading-[1.7] text-text-primary">
                   The best thing we can do is make something bigger than ourselves, then step back and watch it belong to the world.
                 </p>
               </FadeUp>
 
-              <FadeUp delay={0.25} active={active(7)}>
+              <FadeUp delay={0.25} active={active(6)}>
                 <p className="mt-[var(--space-sm)] text-[0.95rem] text-text-tertiary italic">
                   That&apos;s why we exist.
                 </p>
@@ -614,7 +574,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
         <section className="flex h-[100dvh] items-center px-[var(--gutter)]">
           <div className="mx-auto w-full max-w-[var(--max-width)]">
             <div className="mx-auto max-w-[650px]">
-              <FadeUp active={active(8)}>
+              <FadeUp active={active(7)}>
                 <p className="text-[1rem] leading-[1.85] text-text-secondary">
                   If you&apos;ve read this far, we hope you felt something. A small warmth. A little confidence. Maybe a smile at the chaos of two kids building something real in a country still figuring out what &ldquo;brand&rdquo; means.
                 </p>
@@ -622,7 +582,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
             </div>
 
             {/* Sliding Gallery */}
-            <FadeUp delay={0.2} active={active(8)}>
+            <FadeUp delay={0.2} active={active(7)}>
               <div className="relative mt-[var(--space-xl)] overflow-hidden">
                 <div className="flex animate-[marquee_40s_linear_infinite] gap-3">
                   {[...galleryImages, ...galleryImages].map((img, i) => (
@@ -657,19 +617,19 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
         <section className="flex h-[100dvh] items-center px-[var(--gutter)]">
           <div className="mx-auto w-full max-w-[var(--max-width)]">
             <div className="mx-auto max-w-[650px]">
-              <FadeUp active={active(9)}>
+              <FadeUp active={active(8)}>
                 <p className="text-[1rem] leading-[1.85] text-text-secondary">
                   We&apos;re still figuring things out too. We always will be.
                 </p>
               </FadeUp>
 
-              <FadeUp delay={0.1} active={active(9)}>
+              <FadeUp delay={0.1} active={active(8)}>
                 <p className="mt-[var(--space-md)] text-[1rem] leading-[1.85] text-text-secondary">
                   But your project — your brand, your idea, your mountain — is in the safest hands we know how to offer.
                 </p>
               </FadeUp>
 
-              <FadeUp delay={0.2} active={active(9)}>
+              <FadeUp delay={0.2} active={active(8)}>
                 <div className="mt-[var(--space-xl)]" style={{ fontSize: 'clamp(3rem,8vw,6rem)' }}>
                   <InlineButton href="/start-a-new-project" label="Let's climb" showArrow />
                 </div>
