@@ -28,7 +28,7 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="fixed inset-0 z-[998]"
+            className="fixed inset-0 z-[1000]"
             style={{
               backgroundColor: 'rgba(0, 0, 0, 0.2)',
               backdropFilter: 'blur(4px)',
@@ -43,7 +43,7 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: [0, 0, 0.2, 1] }}
-            className="fixed left-[var(--gutter)] right-[var(--gutter)] top-4 z-[999] overflow-clip rounded-[1.75rem]"
+            className="fixed left-[var(--gutter)] right-[var(--gutter)] top-4 z-[1001] overflow-clip rounded-[1.75rem]"
             style={{
               backgroundColor: 'rgba(10, 10, 10, 0.88)',
               backdropFilter: 'blur(24px) saturate(1.5)',
@@ -72,7 +72,7 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
             </div>
 
             {/* Links */}
-            <ul className="flex flex-col gap-2 px-5 pb-6 pt-2">
+            <ul className="flex flex-col gap-1 px-5 pb-10 pt-2">
               {navLinks.map((link, i) => (
                 <motion.li
                   key={link.href}
@@ -87,7 +87,7 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
                   <Link
                     href={link.href}
                     onClick={onClose}
-                    className="block py-1 font-display text-[2rem] font-bold leading-[1.4] text-white/60 transition-colors duration-200 hover:text-white"
+                    className="block py-0.5 font-display text-[2rem] font-normal leading-[1.2] text-white/60 transition-colors duration-200 hover:text-white"
                   >
                     {link.label}
                   </Link>
