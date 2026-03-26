@@ -72,7 +72,7 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
             </div>
 
             {/* Links */}
-            <ul className="flex flex-col gap-1 px-5 pb-10 pt-2">
+            <ul className="flex flex-col gap-1 pb-10 pt-2" style={{ paddingLeft: 20, paddingRight: 20 }}>
               {navLinks.map((link, i) => (
                 <motion.li
                   key={link.href}
