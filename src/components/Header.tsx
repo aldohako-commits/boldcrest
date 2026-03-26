@@ -59,8 +59,14 @@ export default function Header() {
             }}
           />
 
-          {/* Inner content — always padded the same */}
-          <div className="flex w-full items-center justify-between px-5">
+          {/* Inner content */}
+          <div
+            className="flex w-full items-center justify-between transition-[padding] duration-[650ms]"
+            style={{
+              padding: scrolled ? '0 1.25rem' : '0',
+              transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
+            }}
+          >
             {/* Logo */}
             <Link href="/" className="z-10 flex items-center">
               <svg

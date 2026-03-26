@@ -121,7 +121,7 @@ export default function ServiceCards() {
           className="flex h-[calc(100vh-82px)]"
           style={{ x }}
         >
-          {capabilities.map((cap) => (
+          {capabilities.map((cap, i) => (
             <div
               key={cap.category}
               className="relative flex h-full shrink-0 flex-col justify-between"
@@ -131,7 +131,13 @@ export default function ServiceCards() {
                 borderRight: '1px solid #0a0a0a10',
               }}
             >
-              <div className="flex h-full flex-col justify-between px-6 py-8 lg:px-10 lg:py-10">
+              <div
+                className="flex h-full flex-col justify-between py-8 lg:py-10"
+                style={{
+                  paddingLeft: i === 0 ? 'var(--gutter)' : 'clamp(1.5rem, 2vw, 2.5rem)',
+                  paddingRight: 'clamp(1.5rem, 2vw, 2.5rem)',
+                }}
+              >
                 {/* Top: heading + tags */}
                 <div>
                   <h2 className="mb-6 font-display text-[clamp(2.5rem,5vw,5.5rem)] font-bold leading-[0.95] tracking-[-0.03em] text-[#0a0a0a]">

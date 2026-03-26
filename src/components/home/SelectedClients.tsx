@@ -1,10 +1,15 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
+import { urlFor } from '@/sanity/lib/image'
+import { sanityImageLoader } from '@/sanity/lib/loader'
 
 interface Partner {
   _id: string
   name: string
+  logo?: { asset: { _ref: string } }
+  website?: string
 }
 
 interface SelectedClientsProps {
@@ -28,12 +33,10 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
           { _id: '8', name: 'Altus' },
         ]
 
-  // Split into two rows for opposite-direction marquees
   const mid = Math.ceil(displayPartners.length / 2)
   const row1 = displayPartners.slice(0, mid)
   const row2 = displayPartners.slice(mid)
 
-  // Repeat each row enough times for seamless loop
   const repeat = (arr: Partner[], times: number) => {
     const result: Partner[] = []
     for (let t = 0; t < times; t++) {
@@ -44,13 +47,47 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
     return result
   }
 
-  // Fewer repetitions needed — 4 is enough for seamless loop
   const row1Items = repeat(row1, 4)
   const row2Items = repeat(row2, 4)
 
+  const hasLogo = (p: Partner) => !!p.logo?.asset?._ref
+
+  const renderPartner = (partner: Partner) => (
+    <span
+      key={partner._id}
+      className="shrink-0 cursor-default px-6 py-4 transition-opacity duration-300 flex items-center"
+      style={{
+        opacity: hovered
+          ? hovered === partner.name
+            ? 1
+            : 0.2
+          : 0.5,
+      }}
+      onMouseEnter={() => setHovered(partner.name)}
+    >
+      {hasLogo(partner) ? (
+        <Image
+          loader={sanityImageLoader}
+          src={urlFor(partner.logo!).height(300).url()}
+          alt={partner.name}
+          width={375}
+          height={150}
+          className="h-[150px] w-auto object-contain"
+          style={{ filter: 'brightness(0)' }}
+        />
+      ) : (
+        <span
+          className="font-display text-[clamp(1.2rem,2.5vw,2rem)] font-semibold uppercase tracking-[0.08em]"
+          style={{ color: '#0a0a0a' }}
+        >
+          {partner.name}
+        </span>
+      )}
+    </span>
+  )
+
   return (
     <section className="pb-[var(--space-2xl)] overflow-hidden">
-      {/* Section label */}
       <div className="px-[var(--gutter)] mb-[var(--space-lg)]">
         <h2 className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-[#0a0a0a]/50">
           Trusted by the ambitious<span className="text-accent">.</span>
@@ -63,25 +100,8 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
         className="relative mb-2"
         onMouseLeave={() => setHovered(null)}
       >
-        <div className="flex animate-[marquee_35s_linear_infinite] will-change-transform">
-          {row1Items.map((partner) => (
-            <span
-              key={partner._id}
-              className="shrink-0 cursor-default px-6 py-4 font-display text-[clamp(1.2rem,2.5vw,2rem)] font-semibold uppercase tracking-[0.08em] transition-all duration-300"
-              style={{
-                opacity: hovered
-                  ? hovered === partner.name
-                    ? 1
-                    : 0.2
-                  : 0.45,
-                transform: 'scale(1)',
-                color: '#0a0a0a',
-              }}
-              onMouseEnter={() => setHovered(partner.name)}
-            >
-              {partner.name}
-            </span>
-          ))}
+        <div className="flex animate-[marquee_35s_linear_infinite] will-change-transform items-center">
+          {row1Items.map(renderPartner)}
         </div>
       </div>
 
@@ -90,25 +110,8 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
         className="relative"
         onMouseLeave={() => setHovered(null)}
       >
-        <div className="flex animate-[marquee-reverse_40s_linear_infinite] will-change-transform">
-          {row2Items.map((partner) => (
-            <span
-              key={partner._id}
-              className="shrink-0 cursor-default px-6 py-4 font-display text-[clamp(1.2rem,2.5vw,2rem)] font-semibold uppercase tracking-[0.08em] transition-all duration-300"
-              style={{
-                opacity: hovered
-                  ? hovered === partner.name
-                    ? 1
-                    : 0.2
-                  : 0.45,
-                transform: 'scale(1)',
-                color: '#0a0a0a',
-              }}
-              onMouseEnter={() => setHovered(partner.name)}
-            >
-              {partner.name}
-            </span>
-          ))}
+        <div className="flex animate-[marquee-reverse_40s_linear_infinite] will-change-transform items-center">
+          {row2Items.map(renderPartner)}
         </div>
       </div>
     </section>
