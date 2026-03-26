@@ -49,11 +49,8 @@ function ProjectCard({
       }}
     >
       <Link href={`/work/${project.slug?.current}`} className="group block">
-        {/* Image container — moves up and shrinks on hover */}
-        <div
-          className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-bg-card transition-all duration-[0.6s] group-hover:-translate-y-4 group-hover:scale-[0.95]"
-          style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
-        >
+        {/* Image container */}
+        <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-bg-card">
           {project.thumbnailType === 'video' && project.thumbnailVideo ? (
             <iframe
               src={`https://player.vimeo.com/video/${project.thumbnailVideo.match(/vimeo\.com\/(\d+)/)?.[1]}?background=1&autoplay=1&loop=1&muted=1`}
@@ -69,7 +66,7 @@ function ProjectCard({
               alt={project.name}
               fill
               loading="lazy"
-              className="object-cover"
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
           ) : (
@@ -77,44 +74,40 @@ function ProjectCard({
               <div className="h-[60px] w-[60px] rounded-full border-2 border-text-tertiary" />
             </div>
           )}
+
+          {/* Dark overlay + blur — clears on hover (misfit.wtf style) */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] transition-all duration-700 ease-out group-hover:bg-black/0 group-hover:backdrop-blur-0" />
         </div>
 
-        {/* Info below image — slides in on hover */}
-        <div
-          className="grid grid-rows-[0fr] transition-all duration-[0.5s] group-hover:grid-rows-[1fr]"
-          style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
-        >
-          <div className="overflow-hidden">
-            <div className="pt-5 pb-2">
-              {/* Client name */}
-              {project.client && (
-                <span className="block text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-text-tertiary">
-                  {project.client}
-                </span>
-              )}
+        {/* Info below image — always visible */}
+        <div className="pt-5 pb-2">
+          {/* Client name */}
+          {project.client && (
+            <span className="block text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-text-tertiary">
+              {project.client}
+            </span>
+          )}
 
-              {/* Tagline (falls back to project name) */}
-              <h3 className="mt-1.5 font-display text-[1.15rem] font-semibold text-text-primary">
-                {project.tagline || project.name}
-              </h3>
+          {/* Tagline (falls back to project name) */}
+          <h3 className="mt-1.5 font-display text-[1.15rem] font-semibold text-text-primary">
+            {project.tagline || project.name}
+          </h3>
 
-              {/* Industry pill (filled) + Services (outlined) */}
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                {project.industry && (
-                  <span className="rounded-[var(--radius-pill)] bg-white/10 px-3.5 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.1em] text-text-secondary">
-                    {project.industry}
-                  </span>
-                )}
-                {project.services?.map((service) => (
-                  <span
-                    key={service}
-                    className="rounded-[var(--radius-pill)] border border-border px-3.5 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.1em] text-text-tertiary transition-all duration-300 hover:border-white/40 hover:text-text-secondary"
-                  >
-                    {service}
-                  </span>
-                ))}
-              </div>
-            </div>
+          {/* Industry pill (filled) + Services (outlined) */}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {project.industry && (
+              <span className="rounded-[var(--radius-pill)] bg-white/10 px-3.5 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.1em] text-text-secondary">
+                {project.industry}
+              </span>
+            )}
+            {project.services?.map((service) => (
+              <span
+                key={service}
+                className="rounded-[var(--radius-pill)] border border-border px-3.5 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.1em] text-text-tertiary transition-all duration-300 hover:border-white/40 hover:text-text-secondary"
+              >
+                {service}
+              </span>
+            ))}
           </div>
         </div>
       </Link>
@@ -125,7 +118,6 @@ function ProjectCard({
 export default function SelectedWorks({ projects }: SelectedWorksProps) {
   if (!projects.length) return null
 
-  // Use up to 6 projects, cycling if needed
   const padded: Project[] = []
   for (let i = 0; i < Math.min(6, Math.max(projects.length, 6)); i++) {
     padded.push({
@@ -148,22 +140,13 @@ export default function SelectedWorks({ projects }: SelectedWorksProps) {
             </h2>
             <Link
               href="/work"
-              className="group/link flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-text-secondary transition-all duration-[0.5s] hover:gap-3 hover:text-white"
-              style={{
-                transitionTimingFunction:
-                  'cubic-bezier(0.645, 0.045, 0.355, 1)',
-              }}
+              className="group/link flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-text-tertiary transition-all duration-[0.5s] hover:gap-3 hover:text-text-secondary"
+              style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
             >
-              <span
-                className="inline-flex overflow-hidden"
-                style={{ height: '1.2em' }}
-              >
+              <span className="inline-flex overflow-hidden" style={{ height: '1.2em' }}>
                 <span
                   className="flex flex-col transition-transform duration-[0.5s] group-hover/link:-translate-y-1/2"
-                  style={{
-                    transitionTimingFunction:
-                      'cubic-bezier(0.645, 0.045, 0.355, 1)',
-                  }}
+                  style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
                 >
                   <span className="leading-[1.2]">See All</span>
                   <span className="leading-[1.2]">See All</span>
@@ -175,10 +158,7 @@ export default function SelectedWorks({ projects }: SelectedWorksProps) {
                 viewBox="0 0 16 16"
                 fill="none"
                 className="transition-transform duration-[0.5s] group-hover/link:translate-x-1"
-                style={{
-                  transitionTimingFunction:
-                    'cubic-bezier(0.645, 0.045, 0.355, 1)',
-                }}
+                style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
               >
                 <path
                   d="M3 8h10M9 4l4 4-4 4"
@@ -193,7 +173,7 @@ export default function SelectedWorks({ projects }: SelectedWorksProps) {
         </ScrollReveal>
 
         {/* 2-column grid */}
-        <div className="grid grid-cols-1 gap-x-5 gap-y-5 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-x-5 gap-y-8 md:grid-cols-2">
           {padded.map((project, i) => (
             <ProjectCard key={project._id} project={project} index={i} />
           ))}

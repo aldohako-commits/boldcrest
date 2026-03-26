@@ -90,7 +90,7 @@ export default function ServiceCards() {
   const x = useTransform(scrollYProgress, [0, 1], ['0%', '-75%'])
 
   return (
-    <section ref={containerRef} className="relative h-[200vh]">
+    <section ref={containerRef} className="relative h-[160vh]">
       <div className="sticky top-0 h-screen overflow-hidden">
         {/* Label */}
         <div className="flex items-center px-[var(--gutter)] pt-8 pb-6">
