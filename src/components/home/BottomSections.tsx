@@ -206,28 +206,7 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
   )
 }
 
-/* ── 1. Services CTA (on dark background, before diary) ── */
-function ServicesCTA() {
-  const ref = useRef<HTMLDivElement>(null)
-  const isInView = useInView(ref, { once: true, margin: '-100px' })
-
-  return (
-    <section ref={ref} className="px-[var(--gutter)] pb-[var(--space-lg)] pt-0 md:pb-[var(--space-xl)]">
-      <motion.div
-        className="text-center"
-        initial={{ opacity: 0, y: 40 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <p className="font-display text-[clamp(2rem,6vw,6rem)] font-bold leading-[1.1] tracking-[-0.03em]">
-          <WordReveal text="Three disciplines." />{' '}
-          <InlineButton href="/services" label="Explore All" />{' '}
-          <WordReveal text="One obsession." />
-        </p>
-      </motion.div>
-    </section>
-  )
-}
+/* ServicesCTA removed — "Three disciplines" block deleted */
 
 /* ── Diary — two posts visible, slide to next two ── */
 const PLACEHOLDER_POSTS: DiaryPost[] = [
@@ -357,7 +336,7 @@ function DiaryCardImage({ post, index }: { post: DiaryPost; index: number }) {
         )}
 
         {/* Title */}
-        <h3 className="font-display text-[0.7rem] font-bold uppercase leading-[1.3] tracking-[0.02em] text-[#0a0a0a] transition-colors duration-200 group-hover:text-accent md:text-[clamp(1rem,1.5vw,1.3rem)]">
+        <h3 className="font-display text-[0.7rem] font-bold uppercase leading-[1.3] tracking-[0.02em] text-[#0a0a0a] transition-colors duration-200 group-hover:text-[#0a0a0a]/50 md:text-[clamp(1rem,1.5vw,1.3rem)]">
           {post.title}
         </h3>
 
@@ -378,10 +357,10 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
 
   // Smooth scroll-driven color change on the layout wrapper
-  // Starts when diary section top reaches 30% of viewport (ServicesCTA already scrolled off)
+  // Starts early (when section top is at bottom of viewport) for transition from WeDoSection
   const { scrollYProgress } = useScroll({
     target: sectionRef,
-    offset: ['start 0.3', 'end 0.7'],
+    offset: ['start 1', 'end 0.7'],
   })
   const bgColor = useTransform(
     scrollYProgress,
@@ -416,7 +395,7 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
           </h2>
           <Link
             href="/diary"
-            className="group mb-2 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-[#0a0a0a]/60 transition-all duration-200 hover:gap-3 hover:text-[#0a0a0a]"
+            className="group mb-2 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-[#0a0a0a]/40 transition-all duration-200 hover:gap-3 hover:text-[#0a0a0a]/70"
           >
             See All
             <svg
@@ -502,7 +481,6 @@ function CoffeeCTA() {
 export default function BottomSections({ members, diaryPosts }: BottomSectionsProps) {
   return (
     <>
-      <ServicesCTA />
       <DiarySection posts={diaryPosts} />
       <PeopleSection />
       <TeamStrip members={members} />

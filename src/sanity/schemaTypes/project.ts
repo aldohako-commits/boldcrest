@@ -158,6 +158,13 @@ export const project = defineType({
       ],
     }),
     defineField({
+      name: 'featured',
+      title: 'Featured',
+      type: 'boolean',
+      description: 'Show this project on the homepage Featured section',
+      initialValue: false,
+    }),
+    defineField({
       name: 'order',
       title: 'Order',
       type: 'number',

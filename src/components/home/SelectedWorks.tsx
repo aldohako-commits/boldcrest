@@ -75,8 +75,6 @@ function ProjectCard({
             </div>
           )}
 
-          {/* Dark overlay + blur — clears on hover (misfit.wtf style) */}
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] transition-all duration-700 ease-out group-hover:bg-black/0 group-hover:backdrop-blur-0" />
         </div>
 
         {/* Info below image — always visible */}
