@@ -2,7 +2,7 @@ import dynamic from 'next/dynamic'
 import { sanityFetch } from '@/sanity/lib/live'
 import {
   featuredProjectsQuery,
-  allPartnersQuery,
+  homepagePartnersQuery,
   allTeamMembersQuery,
   latestDiaryPostsQuery,
   siteSettingsQuery,
@@ -32,7 +32,7 @@ export default async function Home() {
   const [projectsResult, partnersResult, membersResult, diaryResult, settingsResult] =
     await Promise.all([
       sanityFetch({ query: featuredProjectsQuery }),
-      sanityFetch({ query: allPartnersQuery }),
+      sanityFetch({ query: homepagePartnersQuery }),
       sanityFetch({ query: allTeamMembersQuery }),
       sanityFetch({ query: latestDiaryPostsQuery }),
       sanityFetch({ query: siteSettingsQuery }),

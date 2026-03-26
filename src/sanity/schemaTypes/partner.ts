@@ -15,6 +15,28 @@ export const partner = defineType({
       name: 'logo',
       title: 'Logo',
       type: 'image',
+      options: { hotspot: true },
+    }),
+    defineField({
+      name: 'website',
+      title: 'Website URL',
+      type: 'url',
+      description: 'Link to the client\'s website',
+    }),
+    defineField({
+      name: 'showOn',
+      title: 'Show On',
+      type: 'array',
+      of: [{ type: 'string' }],
+      options: {
+        list: [
+          { title: 'Homepage', value: 'homepage' },
+          { title: 'Services Page', value: 'services' },
+        ],
+        layout: 'grid',
+      },
+      initialValue: ['homepage', 'services'],
+      description: 'Select which pages this client appears on',
     }),
     defineField({
       name: 'order',

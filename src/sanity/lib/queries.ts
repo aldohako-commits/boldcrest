@@ -96,7 +96,27 @@ export const allPartnersQuery = defineQuery(
   `*[_type == "partner"] | order(order asc) {
     _id,
     name,
-    logo
+    logo,
+    website,
+    showOn
+  }`
+)
+
+export const homepagePartnersQuery = defineQuery(
+  `*[_type == "partner" && "homepage" in showOn] | order(order asc) {
+    _id,
+    name,
+    logo,
+    website
+  }`
+)
+
+export const servicesPartnersQuery = defineQuery(
+  `*[_type == "partner" && "services" in showOn] | order(order asc) {
+    _id,
+    name,
+    logo,
+    website
   }`
 )
 
