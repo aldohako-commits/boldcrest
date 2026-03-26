@@ -10,14 +10,21 @@ import {
 
 const Hero = dynamic(() => import('@/components/home/Hero'))
 const SelectedWorks = dynamic(() => import('@/components/home/SelectedWorks'))
+const WeDoSection = dynamic(() => import('@/components/home/WeDoSection'))
 const SelectedClients = dynamic(
   () => import('@/components/home/SelectedClients')
 )
 const ServiceCards = dynamic(
   () => import('@/components/home/ServiceCards')
 )
+const HomeDiary = dynamic(() =>
+  import('@/components/home/BottomSections').then((m) => ({ default: m.HomeDiary }))
+)
 const BottomSections = dynamic(
   () => import('@/components/home/BottomSections')
+)
+const ColorTransitionZone = dynamic(
+  () => import('@/components/home/ColorTransitionZone')
 )
 const MorphBlobs = dynamic(() => import('@/components/MorphBlobs'))
 
@@ -42,9 +49,17 @@ export default async function Home() {
       <MorphBlobs />
       <Hero />
       <SelectedWorks projects={projects} />
-      <SelectedClients partners={partners} />
-      <ServiceCards />
-      <BottomSections members={members} diaryPosts={diaryPosts} />
+
+      {/* Color transition zone: dark → light → dark */}
+      <ColorTransitionZone>
+        <WeDoSection />
+        <SelectedClients partners={partners} />
+        <ServiceCards />
+        <HomeDiary diaryPosts={diaryPosts} />
+      </ColorTransitionZone>
+
+      {/* Dark sections — outside the transition zone */}
+      <BottomSections members={members} />
     </main>
   )
 }

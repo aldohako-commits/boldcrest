@@ -7,9 +7,9 @@ export default function WeDoSection() {
   return (
     <section className="px-[var(--gutter)] py-[var(--space-2xl)]">
       <ScrollReveal>
-        <p className="font-display text-[clamp(2.8rem,8vw,8rem)] font-bold leading-[1.05] tracking-[-0.03em]">
+        <p className="font-display text-[clamp(2.8rem,8vw,8rem)] font-bold leading-[1.05] tracking-[-0.03em] text-[#0a0a0a]">
           We do many{' '}
-          <InlineButton href="/work" label="View All Work" />{' '}
+          <InlineButton href="/work" label="View All Work" className="!text-white" />{' '}
           things very well.
         </p>
       </ScrollReveal>

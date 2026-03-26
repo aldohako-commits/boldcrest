@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
-import { motion, useScroll, useTransform, useInView, useMotionValueEvent, AnimatePresence } from 'framer-motion'
+import { motion, useScroll, useTransform, useInView, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
 import { InlineButton } from '@/components/MagneticButton'
@@ -107,10 +107,28 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
       .slice(0, 2)
 
   return (
-    <section ref={sectionRef} className="px-[var(--gutter)] pb-[var(--space-md)] pt-0">
-      <div className="mx-auto flex max-w-[var(--max-width)] flex-col items-center gap-8 md:flex-row md:items-start md:gap-0">
-        {/* Left: stacked portrait cards — 40% */}
-        <div className="flex w-full justify-center md:w-[40%] md:justify-start">
+    <section ref={sectionRef} className="px-[var(--gutter)] py-[var(--space-2xl)]">
+      <div className="mx-auto flex max-w-[var(--max-width)] flex-col items-center gap-12 md:flex-row md:items-center md:gap-0">
+        {/* Left: headline + body text — 60% */}
+        <motion.div
+          className="order-2 w-full md:order-1 md:w-[60%] md:pr-[var(--space-xl)]"
+          style={{ x: textX, opacity: textOpacity }}
+        >
+          <p className="mb-6 font-display text-[clamp(2.2rem,5vw,4.5rem)] font-bold leading-[1.1] tracking-[-0.03em]">
+            No egos<span className="text-accent">,</span><br />
+            just{' '}
+            <InlineButton href="/people" label="The Team" showArrow /><br />
+            behind the bold<span className="text-accent">.</span>
+          </p>
+          <p className="max-w-[480px] text-[1rem] leading-[1.75] text-text-secondary">
+            Strategists, designers, filmmakers, and communicators who
+            care about the work as much as you do. No egos — just
+            craft and conviction.
+          </p>
+        </motion.div>
+
+        {/* Right: stacked portrait cards — 40% */}
+        <div className="order-1 flex w-full justify-center md:order-2 md:w-[40%] md:justify-end">
           {mounted && faces.length > 0 ? (
             <div
               className="relative"
@@ -190,17 +208,6 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
           )}
         </div>
 
-        {/* Right: pull quote — 60%, bottom-aligned */}
-        <motion.div
-          className="w-full md:w-[60%] md:pl-[var(--space-xl)]"
-          style={{ x: textX, opacity: textOpacity }}
-        >
-          <p className="text-[1rem] leading-[1.75] text-text-secondary">
-            Strategists, designers, filmmakers, and communicators who
-            care about the work as much as you do. No egos — just
-            craft and conviction.
-          </p>
-        </motion.div>
       </div>
     </section>
   )
@@ -353,91 +360,44 @@ function DiaryCardImage({ post, index }: { post: DiaryPost; index: number }) {
 
 function DiarySection({ posts }: { posts: DiaryPost[] }) {
   const entries = posts.length > 0 ? posts.slice(0, 4) : PLACEHOLDER_POSTS
+  const isInView = useInView(useRef<HTMLDivElement>(null), { once: true, margin: '-100px' })
   const sectionRef = useRef<HTMLDivElement>(null)
-  const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
-
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ['start 0.85', 'end 0.6'],
-  })
-  const bgColor = useTransform(
-    scrollYProgress,
-    [0, 0.08, 0.88, 1],
-    ['#0a0a0a', '#EDEDED', '#EDEDED', '#0a0a0a']
-  )
-  const textColor = useTransform(
-    scrollYProgress,
-    [0, 0.08, 0.88, 1],
-    ['#ffffff', '#0a0a0a', '#0a0a0a', '#ffffff']
-  )
-
-  useMotionValueEvent(bgColor, 'change', (color) => {
-    const wrapper = document.querySelector('.bg-bg') as HTMLElement
-    if (wrapper) wrapper.style.backgroundColor = color
-  })
-
-  useEffect(() => {
-    return () => {
-      const wrapper = document.querySelector('.bg-bg') as HTMLElement
-      if (wrapper) wrapper.style.backgroundColor = ''
-    }
-  }, [])
+  const inView = useInView(sectionRef, { once: true, margin: '-100px' })
 
   return (
-    <div ref={sectionRef} className="relative">
-      {/* "We do many things" — inside the color transition zone */}
-      <section className="px-[var(--gutter)] py-[var(--space-2xl)]">
-        <motion.p
-          className="font-display text-[clamp(2.8rem,8vw,8rem)] font-bold leading-[1.05] tracking-[-0.03em]"
-          style={{ color: textColor }}
-        >
-          We do many{' '}
-          <InlineButton href="/work" label="View All Work" />{' '}
-          things very well.
-        </motion.p>
-      </section>
-
-      {/* Diary header */}
+    <div ref={sectionRef} className="relative pt-[var(--space-xl)] pb-[var(--space-2xl)]">
+      {/* Diary header — matching Selected Works style */}
       <div className="px-[var(--gutter)]">
-        <motion.div
-          className="flex items-end justify-between pb-[var(--space-xl)]"
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <motion.h2
-            className="font-display text-[0.75rem] font-semibold uppercase tracking-[0.2em]"
-            style={{ color: textColor }}
-          >
+        <div className="mb-4 h-px bg-[#0a0a0a]/10" />
+        <div className="mb-[var(--space-lg)] flex items-center justify-between">
+          <h2 className="font-display text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-[#0a0a0a]/60">
             The Diary
-          </motion.h2>
+          </h2>
           <Link
             href="/diary"
-            className="group mb-2 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-text-tertiary transition-all duration-200 hover:gap-3 hover:text-text-secondary"
+            className="group/link flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-[#0a0a0a]/40 transition-all duration-[0.5s] hover:gap-3 hover:text-[#0a0a0a]/70"
+            style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
           >
             <span className="inline-flex overflow-hidden" style={{ height: '1.2em' }}>
-              <span className="flex flex-col transition-transform duration-[0.5s] group-hover:-translate-y-1/2" style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}>
+              <span className="flex flex-col transition-transform duration-[0.5s] group-hover/link:-translate-y-1/2" style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}>
                 <span className="leading-[1.2]">See All</span>
                 <span className="leading-[1.2]">See All</span>
               </span>
             </span>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="transition-transform duration-[0.5s] group-hover:translate-x-1" style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="transition-transform duration-[0.5s] group-hover/link:translate-x-1" style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}>
               <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </Link>
-        </motion.div>
+        </div>
       </div>
 
-      {/* Divider */}
-      <div className="mx-[var(--gutter)] h-px bg-border" />
-
-      {/* Post grid — matching Selected Works style (2-col) */}
-      <div className="grid grid-cols-1 gap-x-5 gap-y-8 px-[var(--gutter)] py-[var(--space-xl)] md:grid-cols-2">
+      {/* Post grid — 4 in one row */}
+      <div className="grid grid-cols-2 gap-4 px-[var(--gutter)] md:grid-cols-4 md:gap-5">
         {entries.map((post, i) => (
           <motion.div
             key={post._id}
             initial={{ opacity: 0, y: 40 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{
               duration: 0.7,
               delay: 0.15 + i * 0.1,
@@ -454,17 +414,7 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
 
 /* ── 2. People CTA ── */
 function PeopleSection() {
-  return (
-    <section className="px-[var(--gutter)] pb-[var(--space-lg)] pt-[var(--space-lg)]">
-      <div className="mx-auto max-w-[var(--max-width)]">
-        <p className="font-display text-[clamp(2rem,8vw,8rem)] font-bold leading-[1.1] tracking-[-0.03em]">
-          <WordReveal text="No egos, just" />{' '}
-          <InlineButton href="/people" label="The Team" showArrow />{' '}
-          <WordReveal text="behind the bold." />
-        </p>
-      </div>
-    </section>
-  )
+  return null
 }
 
 
@@ -488,10 +438,15 @@ function CoffeeCTA() {
   )
 }
 
-export default function BottomSections({ members, diaryPosts }: BottomSectionsProps) {
+/** Diary only — lives inside the ColorTransitionZone */
+export function HomeDiary({ diaryPosts }: { diaryPosts: DiaryPost[] }) {
+  return <DiarySection posts={diaryPosts} />
+}
+
+/** Team + Coffee — lives outside the ColorTransitionZone (dark bg) */
+export default function BottomSections({ members }: { members: TeamMember[] }) {
   return (
     <>
-      <DiarySection posts={diaryPosts} />
       <PeopleSection />
       <TeamStrip members={members} />
       <CoffeeCTA />

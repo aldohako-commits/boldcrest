@@ -54,8 +54,8 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
       {/* Section label */}
       <div className="px-[var(--gutter)] mb-[var(--space-lg)]">
         <ScrollReveal>
-          <div className="mb-4 h-px bg-border" />
-          <h2 className="text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-secondary">
+          <div className="mb-4 h-px bg-[#0a0a0a]/10" />
+          <h2 className="text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-[#0a0a0a]/50">
             Trusted by the ambitious<span className="text-accent">.</span>
           </h2>
         </ScrollReveal>
@@ -78,7 +78,7 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
                     : 0.2
                   : 0.45,
                 transform: hovered === partner.name ? 'scale(1.1)' : 'scale(1)',
-                color: 'var(--text-primary)',
+                color: '#0a0a0a',
               }}
               onMouseEnter={() => setHovered(partner.name)}
             >
@@ -105,7 +105,7 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
                     : 0.2
                   : 0.45,
                 transform: hovered === partner.name ? 'scale(1.1)' : 'scale(1)',
-                color: 'var(--text-primary)',
+                color: '#0a0a0a',
               }}
               onMouseEnter={() => setHovered(partner.name)}
             >

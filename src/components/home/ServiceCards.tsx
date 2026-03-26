@@ -9,7 +9,7 @@ const capabilities = [
     category: 'Brand Dev',
     number: '01',
     color: '#DA291C',
-    heading: 'Branding',
+    heading: 'Brand Dev',
     abbr: 'BRND DEV',
     tags: [
       'Visual Identity',
@@ -81,31 +81,37 @@ const capabilities = [
 
 export default function ServiceCards() {
   const containerRef = useRef<HTMLDivElement>(null)
+  const trackRef = useRef<HTMLDivElement>(null)
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ['start start', 'end end'],
   })
 
-  // 4 panels × 33.333vw = 133.333vw total. To end at last panel's right edge:
-  // translate = -(totalWidth - 100vw) = -33.333vw ≈ -25% of total width
-  const x = useTransform(scrollYProgress, [0, 1], ['0%', '-25%'])
+  // Calculate how far to translate: totalTrackWidth - viewportWidth
+  const x = useTransform(scrollYProgress, (v) => {
+    if (!trackRef.current) return 0
+    const trackW = trackRef.current.scrollWidth
+    const viewW = window.innerWidth
+    return -v * (trackW - viewW)
+  })
 
   return (
-    <section ref={containerRef} className="relative h-[160vh]">
+    <section ref={containerRef} className="relative h-[200vh]">
       <div className="sticky top-0 h-screen overflow-hidden">
         {/* Label */}
         <div className="flex items-center px-[var(--gutter)] pt-8 pb-6">
-          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
+          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-[#0a0a0a]/50">
             What We Do
           </p>
         </div>
 
         {/* Top separator */}
-        <div className="mx-[var(--gutter)] h-px bg-border" />
+        <div className="mx-[var(--gutter)] h-px bg-[#0a0a0a]/10" />
 
         {/* Horizontal panels */}
         <motion.div
+          ref={trackRef}
           className="flex h-[calc(100vh-82px)]"
           style={{ x }}
         >
@@ -116,13 +122,13 @@ export default function ServiceCards() {
               style={{
                 width: '33.333vw',
                 minWidth: '400px',
-                borderRight: `1px solid ${cap.color}15`,
+                borderRight: '1px solid #0a0a0a10',
               }}
             >
-              <div className="flex h-full flex-col justify-between bg-[var(--bg-primary)] px-6 py-8 lg:px-10 lg:py-10">
+              <div className="flex h-full flex-col justify-between px-6 py-8 lg:px-10 lg:py-10">
                 {/* Top: heading + tags */}
                 <div>
-                  <h2 className="mb-6 font-display text-[clamp(2.5rem,5vw,5.5rem)] font-bold leading-[0.95] tracking-[-0.03em] text-white">
+                  <h2 className="mb-6 font-display text-[clamp(2.5rem,5vw,5.5rem)] font-bold leading-[0.95] tracking-[-0.03em] text-[#0a0a0a]">
                     {cap.heading}
                   </h2>
 
@@ -133,18 +139,18 @@ export default function ServiceCards() {
                         href={`/work?service=${encodeURIComponent(tag)}`}
                         className="rounded-full border px-3.5 py-1.5 text-[0.7rem] font-medium uppercase tracking-[0.05em] transition-all duration-200"
                         style={{
-                          borderColor: `${cap.color}30`,
-                          color: 'rgba(255,255,255,0.65)',
+                          borderColor: '#0a0a0a20',
+                          color: '#0a0a0a99',
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.borderColor = cap.color
-                          e.currentTarget.style.backgroundColor = `${cap.color}18`
-                          e.currentTarget.style.color = 'rgba(255,255,255,0.95)'
+                          e.currentTarget.style.backgroundColor = `${cap.color}15`
+                          e.currentTarget.style.color = '#0a0a0a'
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.borderColor = `${cap.color}30`
+                          e.currentTarget.style.borderColor = '#0a0a0a20'
                           e.currentTarget.style.backgroundColor = 'transparent'
-                          e.currentTarget.style.color = 'rgba(255,255,255,0.65)'
+                          e.currentTarget.style.color = '#0a0a0a99'
                         }}
                       >
                         {tag}
@@ -160,19 +166,19 @@ export default function ServiceCards() {
                       className="flex h-16 w-16 items-center justify-center rounded-2xl border"
                       style={{
                         borderColor: `${cap.color}25`,
-                        color: `${cap.color}90`,
+                        color: `${cap.color}`,
                       }}
                     >
                       {cap.icon}
                     </div>
                     <span
                       className="text-[0.55rem] font-semibold uppercase tracking-[0.1em]"
-                      style={{ color: `${cap.color}60` }}
+                      style={{ color: `${cap.color}80` }}
                     >
                       {cap.abbr}
                     </span>
                   </div>
-                  <p className="max-w-[280px] text-[0.8rem] uppercase leading-[1.5] tracking-[0.02em] text-white/40">
+                  <p className="max-w-[280px] text-[0.8rem] uppercase leading-[1.5] tracking-[0.02em] text-[#0a0a0a]/40">
                     {cap.description}
                   </p>
                 </div>
@@ -182,11 +188,10 @@ export default function ServiceCards() {
 
           {/* CTA Panel */}
           <div
-            className="relative flex h-full shrink-0 flex-col justify-between px-10 py-10 lg:px-16"
+            className="relative flex h-full shrink-0 flex-col justify-between bg-[#0a0a0a] px-10 py-10 lg:px-16"
             style={{
               width: '33.333vw',
               minWidth: '400px',
-              backgroundColor: '#DA291C',
             }}
           >
             <div>
@@ -228,7 +233,7 @@ export default function ServiceCards() {
         </motion.div>
 
         {/* Bottom separator */}
-        <div className="mx-[var(--gutter)] h-px bg-border" />
+        <div className="mx-[var(--gutter)] h-px bg-[#0a0a0a]/10" />
       </div>
     </section>
   )
