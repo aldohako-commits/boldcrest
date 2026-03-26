@@ -39,7 +39,7 @@ export default function Header() {
         className="fixed top-0 left-0 right-0 z-[1000] transition-[padding] duration-[0.8s]"
         style={{
           padding: scrolled
-            ? '0.5rem var(--gutter)'
+            ? '0.35rem var(--gutter)'
             : '1.5rem var(--gutter)',
           transitionTimingFunction: 'var(--ease-out-expo)',
         }}
@@ -47,7 +47,7 @@ export default function Header() {
         <div
           className="flex w-full items-center justify-between transition-all duration-[0.8s]"
           style={{
-            padding: scrolled ? '0.35rem 1.25rem' : '0.75rem 1rem',
+            padding: scrolled ? '0.2rem 0.8rem' : '0.75rem 1rem',
             borderRadius: scrolled ? 'var(--radius-pill)' : '0',
             background: scrolled ? 'rgba(10,10,10,0.85)' : 'transparent',
             backdropFilter: scrolled ? 'blur(20px) saturate(1.5)' : 'none',
@@ -68,8 +68,8 @@ export default function Header() {
                 viewBox="0 0 384.09 384"
                 className="h-8 w-8 transition-[width,height] duration-[0.6s]"
                 style={{
-                  width: scrolled ? '1.5rem' : '2rem',
-                  height: scrolled ? '1.5rem' : '2rem',
+                  width: scrolled ? '1.2rem' : '2rem',
+                  height: scrolled ? '1.2rem' : '2rem',
                   transitionTimingFunction: 'var(--ease-out-expo)',
                 }}
                 xmlns="http://www.w3.org/2000/svg"
@@ -83,7 +83,7 @@ export default function Header() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden items-center gap-6 md:flex">
+          <nav className="hidden items-center md:flex" style={{ gap: scrolled ? '0.8rem' : '1.5rem', transitionTimingFunction: 'var(--ease-out-expo)', transition: 'gap 0.8s' }}>
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -94,7 +94,7 @@ export default function Header() {
                     : 'text-text-secondary hover:text-text-primary'
                 }`}
                 style={{
-                  fontSize: scrolled ? '0.65rem' : '0.8rem',
+                  fontSize: scrolled ? '0.55rem' : '0.8rem',
                   transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)',
                 }}
               >
@@ -130,8 +130,8 @@ export default function Header() {
             href="/start-a-new-project"
             className="group relative z-10 hidden items-center justify-center overflow-hidden border transition-all duration-[0.6s] md:inline-flex"
             style={{
-              width: scrolled ? '2.2rem' : 'auto',
-              height: scrolled ? '2.2rem' : 'auto',
+              width: scrolled ? '1.8rem' : 'auto',
+              height: scrolled ? '1.8rem' : 'auto',
               padding: scrolled ? '0' : '0.6rem 1.4rem',
               borderRadius: 'var(--radius-pill)',
               borderColor: scrolled ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.25)',
@@ -141,7 +141,7 @@ export default function Header() {
           >
             {/* Plus icon — visible when scrolled */}
             <span
-              className="absolute inset-0 flex items-center justify-center text-[1rem] font-light text-white/80 transition-all duration-[0.5s] group-hover:text-white"
+              className="absolute inset-0 flex items-center justify-center text-[0.85rem] leading-none font-light text-white/80 transition-all duration-[0.5s] group-hover:text-white"
               style={{
                 opacity: scrolled ? 1 : 0,
                 transform: scrolled ? 'scale(1) rotate(0deg)' : 'scale(0.5) rotate(-90deg)',

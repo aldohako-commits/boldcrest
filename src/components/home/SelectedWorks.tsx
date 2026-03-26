@@ -49,19 +49,16 @@ function ProjectCard({
       }}
     >
       <Link href={`/work/${project.slug?.current}`} className="group block">
-        {/* Image container — lifts up on hover */}
+        {/* Image container — shrinks on hover to reveal info */}
         <div
-          className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-bg-card transition-transform duration-[0.6s] group-hover:-translate-y-3"
+          className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-bg-card transition-all duration-[0.6s] group-hover:scale-[0.94] group-hover:rounded-xl"
           style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
         >
           {project.thumbnailType === 'video' && project.thumbnailVideo ? (
             <iframe
               src={`https://player.vimeo.com/video/${project.thumbnailVideo.match(/vimeo\.com\/(\d+)/)?.[1]}?background=1&autoplay=1&loop=1&muted=1`}
-              className="pointer-events-none absolute top-1/2 left-1/2 h-[200%] w-[200%] -translate-x-1/2 -translate-y-1/2 transition-transform duration-[0.8s] group-hover:scale-[1.03]"
-              style={{
-                transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
-                border: 'none',
-              }}
+              className="pointer-events-none absolute top-1/2 left-1/2 h-[200%] w-[200%] -translate-x-1/2 -translate-y-1/2"
+              style={{ border: 'none' }}
               allow="autoplay; fullscreen"
               loading="lazy"
             />
@@ -72,8 +69,7 @@ function ProjectCard({
               alt={project.name}
               fill
               loading="lazy"
-              className="object-cover transition-transform duration-[0.8s] group-hover:scale-[1.04]"
-              style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
+              className="object-cover"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
           ) : (
@@ -89,30 +85,30 @@ function ProjectCard({
           style={{ transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
         >
           <div className="overflow-hidden">
-            <div className="pt-4 pb-2">
+            <div className="pt-5 pb-2">
               {/* Client name */}
               {project.client && (
-                <span className="block text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-text-tertiary">
+                <span className="block text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-text-tertiary">
                   {project.client}
                 </span>
               )}
 
               {/* Tagline (falls back to project name) */}
-              <h3 className="mt-1 font-display text-[0.95rem] font-semibold text-text-primary">
+              <h3 className="mt-1.5 font-display text-[1.15rem] font-semibold text-text-primary">
                 {project.tagline || project.name}
               </h3>
 
               {/* Industry pill (filled) + Services (outlined) */}
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {project.industry && (
-                  <span className="rounded-[var(--radius-pill)] bg-white/10 px-3 py-1 text-[0.6rem] font-medium uppercase tracking-[0.1em] text-text-secondary">
+                  <span className="rounded-[var(--radius-pill)] bg-white/10 px-3.5 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.1em] text-text-secondary">
                     {project.industry}
                   </span>
                 )}
                 {project.services?.map((service) => (
                   <span
                     key={service}
-                    className="rounded-[var(--radius-pill)] border border-border px-3 py-1 text-[0.6rem] font-medium uppercase tracking-[0.1em] text-text-tertiary transition-all duration-300 hover:border-white/40 hover:text-text-secondary"
+                    className="rounded-[var(--radius-pill)] border border-border px-3.5 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.1em] text-text-tertiary transition-all duration-300 hover:border-white/40 hover:text-text-secondary"
                   >
                     {service}
                   </span>
