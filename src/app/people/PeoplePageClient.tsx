@@ -612,24 +612,20 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
         </section>
 
         {/* ═══════════════════════════════════════════
-            9. CLOSING — Let's climb
+            8. CLOSING — CTA
         ═══════════════════════════════════════════ */}
         <section className="flex h-[100dvh] items-center px-[var(--gutter)]">
           <div className="mx-auto w-full max-w-[var(--max-width)]">
-            <div className="mx-auto max-w-[650px]">
-              <FadeUp active={active(8)}>
-                <p className="text-[1rem] leading-[1.85] text-text-secondary">
-                  We&apos;re still figuring things out too. We always will be.
+            <div className="mx-auto max-w-[700px] text-center">
+              <BigStatement text="Ready to climb?" active={active(8)} className="text-center" />
+
+              <FadeUp delay={0.15} active={active(8)}>
+                <p className="mt-[var(--space-lg)] text-[1rem] leading-[1.85] text-text-secondary">
+                  Your brand, your idea, your mountain — we&apos;ll meet you there with everything we have.
                 </p>
               </FadeUp>
 
-              <FadeUp delay={0.1} active={active(8)}>
-                <p className="mt-[var(--space-md)] text-[1rem] leading-[1.85] text-text-secondary">
-                  But your project — your brand, your idea, your mountain — is in the safest hands we know how to offer.
-                </p>
-              </FadeUp>
-
-              <FadeUp delay={0.2} active={active(8)}>
+              <FadeUp delay={0.25} active={active(8)}>
                 <div className="mt-[var(--space-xl)]" style={{ fontSize: 'clamp(3rem,8vw,6rem)' }}>
                   <InlineButton href="/start-a-new-project" label="Let's climb" showArrow />
                 </div>

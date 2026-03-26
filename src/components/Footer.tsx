@@ -4,9 +4,21 @@ import { useRef, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-const contactLinks = [
-  { label: 'Contact Us', href: '/contact' },
-  { label: 'Privacy Policy', href: '#' },
+const serviceLinks = [
+  { label: 'Branding', href: '/work?service=Branding' },
+  { label: 'Packaging', href: '/work?service=Packaging+Design' },
+  { label: 'Photography', href: '/work?service=Photography' },
+  { label: 'Videography', href: '/work?service=Videography' },
+  { label: 'Creative Advertising', href: '/work?service=Creative+Advertising' },
+  { label: 'Social Media', href: '/work?service=Social+Media+Management' },
+]
+
+const companyLinks = [
+  { label: 'Work', href: '/work' },
+  { label: 'Services', href: '/services' },
+  { label: 'People', href: '/people' },
+  { label: 'Diary', href: '/diary' },
+  { label: 'Contact', href: '/contact' },
 ]
 
 const socialLinks = [
@@ -14,10 +26,9 @@ const socialLinks = [
   { label: 'Instagram', href: '#' },
   { label: 'Behance', href: '#' },
   { label: 'Vimeo', href: '#' },
-  { label: 'Facebook', href: '#' },
 ]
 
-/* ── Spring-physics hook (matches react-spring defaults from Wolff Olins) ── */
+/* ── Spring-physics hook ── */
 function useSpringReveal(triggered: boolean) {
   const ref = useRef<HTMLDivElement>(null)
 
@@ -30,15 +41,14 @@ function useSpringReveal(triggered: boolean) {
       return
     }
 
-    /* Spring parameters — tension:170, friction:26, mass:1 (react-spring defaults) */
     const tension = 170
     const friction = 26
     const mass = 1
     const dt = 1 / 60
 
-    let position = 100   // start at 100% (below, hidden)
+    let position = 100
     let velocity = 0
-    const target = 0     // animate to 0% (fully visible)
+    const target = 0
 
     let rafId: number
 
@@ -50,12 +60,11 @@ function useSpringReveal(triggered: boolean) {
       velocity += acceleration * dt
       position += velocity * dt
 
-      // Settle when close enough
       if (Math.abs(position - target) < 0.01 && Math.abs(velocity) < 0.01) {
         position = target
         velocity = 0
         el.style.transform = `translateY(${target}%)`
-        return // stop the loop
+        return
       }
 
       el.style.transform = `translateY(${position}%)`
@@ -69,13 +78,13 @@ function useSpringReveal(triggered: boolean) {
   return ref
 }
 
+const linkClass = 'block py-1 text-[0.85rem] transition-colors duration-300 text-black/50 hover:text-black'
+
 export default function Footer() {
   const pathname = usePathname()
   const [visible, setVisible] = useState(false)
   const spacerRef = useRef<HTMLDivElement>(null)
 
-  /* Trigger spring when the spacer enters viewport (= footer starts revealing).
-     Uses both IntersectionObserver AND a scroll listener for reliability. */
   useEffect(() => {
     const spacer = spacerRef.current
     if (!spacer) return
@@ -106,9 +115,7 @@ export default function Footer() {
       cleanup()
     }
 
-    // Check immediately in case we're already scrolled there
     onScroll()
-
     return cleanup
   }, [])
 
@@ -116,126 +123,105 @@ export default function Footer() {
 
   if (pathname?.startsWith('/studio')) return null
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
   return (
     <>
-      {/* Spacer — content scrolls over the sticky footer below */}
       <div ref={spacerRef} className="h-screen" />
 
       <footer
-        className="sticky bottom-0 z-0 flex min-h-screen flex-col overflow-hidden"
+        className="sticky bottom-0 z-0 flex min-h-screen flex-col"
         style={{ background: '#EDEDED' }}
       >
-        {/* ── Top grid  ─────────────────────────────────────── */}
-        <div className="mx-auto grid w-full max-w-[var(--max-width)] grid-cols-12 gap-5 px-[var(--gutter)] pt-8 md:gap-y-16">
-
-          {/* Left — Copyright */}
-          <div className="col-span-12 md:col-span-5">
-            <span
-              className="text-[0.85rem]"
-              style={{ color: 'rgba(0,0,0,0.45)' }}
+        {/* Top section — logo + columns */}
+        <div className="mx-auto w-full max-w-[var(--max-width)] px-[var(--gutter)] pt-12 pb-16">
+          {/* Logo */}
+          <div className="mb-12">
+            <svg
+              viewBox="0 0 384.09 384"
+              className="h-8 w-8"
+              xmlns="http://www.w3.org/2000/svg"
             >
-              &copy; {new Date().getFullYear()} BoldCrest
-            </span>
+              <path
+                fill="#000"
+                d="M321.01,81.6v-2.75c-.93-.36-1.75-.71-2.59-.99-8.55-2.85-17.11-5.71-25.67-8.52-26.48-8.7-52.96-17.4-79.43-26.11h0s-2.56-.84-2.56-.84l-11.78-3.92-6.23-2.08-2.65.89s0,0,0,0c-2.13.72-4.26,1.43-6.39,2.14h0s-14.07,4.73-14.07,4.73h-.02c-27.79,9.32-55.59,18.64-83.38,27.95-6.55,2.19-13.08,4.42-19.69,6.66v2.61c0,45.43.01,90.86,0,136.28,0,13.38,2.79,26.12,8.44,38.25,8.64,18.55,22.04,33.2,37.91,45.71,22.54,17.77,47.81,30.42,74.74,39.82,1.51.53,6.13,2.14,6.13,2.14l5.03-1.78c.5-.17,1-.34,1.51-.52,1.29-.45,2.58-.91,3.87-1.38,14.85-5.43,29.16-12.08,42.9-19.98,18.41-10.59,35.35-23.05,49.24-39.32,16.32-19.11,24.99-40.88,24.78-66.35-.37-44.22-.1-88.44-.1-132.66ZM297.55,238.3c-17.69-24.61-35.31-49.27-52.91-73.95-6.98-9.78-15.27-9.84-22.23-.1-15.56,21.78-31.08,43.6-46.75,65.3-5.93,8.2-13.86,8.15-19.82.08-4.45-6.01-8.72-12.16-13.05-18.25-7.01-9.85-15.04-9.91-22.15-.04-8.87,12.31-17.56,24.76-26.56,36.98-.39-.78-.78-1.57-1.15-2.36-4.8-10.3-7.17-21.12-7.17-32.48.02-38.57,0-77.15,0-115.72v-2.22c5.61-1.9,11.16-3.79,16.72-5.65,21.05-7.06,42.1-14.11,63.15-21.17h0s25.8-8.61,25.8-8.61l1.47-.49,108.92,35.99v2.33c0,37.55-.23,75.1.09,112.65.08,9.86-1.41,19.06-4.36,27.7Z"
+              />
+            </svg>
           </div>
 
-          {/* Centre — Talk to us */}
-          <div className="col-span-12 flex flex-col gap-0 md:col-span-5">
-            <p
-              className="mb-3 text-[0.95rem] leading-snug"
-              style={{ color: 'rgba(0,0,0,0.85)' }}
-            >
-              Talk to us or ask us anything.
-            </p>
+          {/* Columns */}
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+            {/* Services */}
+            <div>
+              <h3 className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.15em] text-black/30">Services</h3>
+              {serviceLinks.map((link) => (
+                <Link key={link.href} href={link.href} className={linkClass}>
+                  {link.label}
+                </Link>
+              ))}
+            </div>
 
-            <a
-              href="mailto:info@boldcrest.com"
-              className="mb-1 flex items-center gap-[0.35rem] text-[0.85rem] transition-colors duration-[0.4s]"
-              style={{ color: 'rgba(0,0,0,0.55)', transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(0,0,0,1)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(0,0,0,0.55)' }}
-            >
-              <span style={{ fontSize: '0.7rem' }}>&rarr;</span>
-              info@boldcrest.com
-            </a>
+            {/* Company */}
+            <div>
+              <h3 className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.15em] text-black/30">Company</h3>
+              {companyLinks.map((link) => (
+                <Link key={link.href} href={link.href} className={linkClass}>
+                  {link.label}
+                </Link>
+              ))}
+            </div>
 
-            {contactLinks.map((link) => (
-              <Link
-                key={link.href + link.label}
-                href={link.href}
-                className="mb-1 flex items-center gap-[0.35rem] text-[0.85rem] transition-colors duration-[0.4s]"
-                style={{ color: 'rgba(0,0,0,0.55)', transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(0,0,0,1)' }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(0,0,0,0.55)' }}
-              >
-                <span style={{ fontSize: '0.7rem' }}>&rarr;</span>
-                {link.label}
+            {/* Contact */}
+            <div>
+              <h3 className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.15em] text-black/30">Contact</h3>
+              <a href="mailto:info@boldcrest.com" className={linkClass}>
+                info@boldcrest.com
+              </a>
+              <p className="py-1 text-[0.85rem] text-black/50">
+                Tirana, Albania
+              </p>
+              <Link href="/start-a-new-project" className={`${linkClass} mt-2 font-medium text-black/80`}>
+                Start a Project &rarr;
               </Link>
-            ))}
-          </div>
+            </div>
 
-          {/* Right — Social links */}
-          <ul className="col-span-12 md:col-span-1 lg:-ml-5">
-            {socialLinks.map((link) => (
-              <li key={link.label}>
+            {/* Social */}
+            <div>
+              <h3 className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.15em] text-black/30">Social</h3>
+              {socialLinks.map((link) => (
                 <a
+                  key={link.label}
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mb-1 flex items-center gap-[0.35rem] text-[0.85rem] transition-colors duration-[0.4s]"
-                  style={{ color: 'rgba(0,0,0,0.55)', transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
-                  onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(0,0,0,1)' }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(0,0,0,0.55)' }}
+                  className={linkClass}
                 >
-                  <span style={{ fontSize: '0.7rem' }}>&rarr;</span>
                   {link.label}
                 </a>
-              </li>
-            ))}
-          </ul>
-
-          {/* Far right — Back to top */}
-          <div className="hidden md:col-span-1 md:flex md:justify-end">
-            <button
-              onClick={scrollToTop}
-              className="group flex flex-col items-center gap-1 pt-0 transition-colors duration-[0.4s]"
-              style={{ color: 'rgba(0,0,0,0.55)', transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(0,0,0,1)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(0,0,0,0.55)' }}
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                className="transition-transform duration-[0.4s] group-hover:-translate-y-1"
-                style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
-              >
-                <path
-                  d="M10 16V4M10 4l-5 5M10 4l5 5"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span className="text-[0.7rem] font-medium">
-                Back to top
-              </span>
-            </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* ── Giant wordmark at bottom ──────────────────────── */}
+        {/* Bottom bar — copyright */}
+        <div className="border-t border-black/10 px-[var(--gutter)]">
+          <div className="mx-auto flex max-w-[var(--max-width)] items-center justify-between py-5">
+            <span className="text-[0.75rem] text-black/40">
+              &copy; {new Date().getFullYear()} BoldCrest. All rights reserved.
+            </span>
+            <div className="flex gap-4">
+              <Link href="#" className="text-[0.75rem] text-black/40 transition-colors duration-200 hover:text-black/70">
+                Privacy Policy
+              </Link>
+              <Link href="#" className="text-[0.75rem] text-black/40 transition-colors duration-200 hover:text-black/70">
+                Terms of Service
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Giant wordmark */}
         <div className="mt-auto flex w-full flex-auto items-end px-[var(--gutter)] pb-8 md:pb-16">
           <div className="mx-auto w-full max-w-[var(--max-width)] overflow-hidden">
-            <div
-              ref={wordmarkRef}
-              style={{ transform: 'translateY(100%)' }}
-            >
+            <div ref={wordmarkRef} style={{ transform: 'translateY(100%)' }}>
               <h2
                 style={{ color: '#000000' }}
                 className="cursor-default select-none whitespace-nowrap font-display font-bold leading-[0.85]"
