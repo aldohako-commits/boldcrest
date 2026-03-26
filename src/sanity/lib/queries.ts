@@ -153,6 +153,19 @@ export const allDiaryPostsQuery = defineQuery(
   }`
 )
 
+export const diaryPostBySlugQuery = defineQuery(
+  `*[_type == "diaryPost" && slug.current == $slug][0] {
+    _id,
+    title,
+    slug,
+    excerpt,
+    category,
+    coverImage,
+    body,
+    publishedAt
+  }`
+)
+
 export const siteSettingsQuery = defineQuery(
   `*[_type == "siteSettings"][0] {
     heroSubtitle,

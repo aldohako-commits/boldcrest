@@ -48,7 +48,13 @@ export const diaryPost = defineType({
       name: 'body',
       title: 'Body',
       type: 'array',
-      of: [{ type: 'block' }],
+      of: [
+        { type: 'block' },
+        {
+          type: 'image',
+          options: { hotspot: true },
+        },
+      ],
     }),
     defineField({
       name: 'publishedAt',
