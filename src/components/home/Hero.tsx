@@ -2,31 +2,54 @@
 
 import { motion } from 'framer-motion'
 
-const LINE_1 = [
-  { text: 'Build', effect: null },
-  { text: 'identities', effect: 'identities' },
-  { text: 'and', effect: null },
+/* Desktop lines (md+) */
+const DESKTOP_LINES = [
+  [
+    { text: 'Build', effect: null },
+    { text: 'identities', effect: 'identities' },
+    { text: 'and', effect: null },
+  ],
+  [
+    { text: 'shape', effect: null },
+    { text: 'perceptions', effect: 'perceptions' },
+  ],
+  [
+    { text: 'Go', effect: null },
+    { text: 'bold', effect: 'bold' },
+    { text: 'or', effect: null },
+    { text: 'go', effect: null },
+    { text: 'unseen', effect: 'unseen' },
+  ],
 ]
 
-const LINE_2 = [
-  { text: 'shape', effect: null },
-  { text: 'perceptions', effect: 'perceptions' },
+/* Mobile lines — "and" drops to line 2, "go unseen." gets its own line */
+const MOBILE_LINES = [
+  [
+    { text: 'Build', effect: null },
+    { text: 'identities', effect: 'identities' },
+  ],
+  [
+    { text: 'and', effect: null },
+    { text: 'shape', effect: null },
+    { text: 'perceptions', effect: 'perceptions' },
+  ],
+  [
+    { text: 'Go', effect: null },
+    { text: 'bold', effect: 'bold' },
+    { text: 'or', effect: null },
+  ],
+  [
+    { text: 'go', effect: null },
+    { text: 'unseen', effect: 'unseen' },
+  ],
 ]
 
-const LINE_3 = [
-  { text: 'Go', effect: null },
-  { text: 'bold', effect: 'bold' },
-  { text: 'or', effect: null },
-  { text: 'go', effect: null },
-  { text: 'unseen', effect: 'unseen' },
-]
+const lines = DESKTOP_LINES
 
-const lines = [LINE_1, LINE_2, LINE_3]
-
-function getWordDelay(lineIndex: number, wordIndex: number): number {
+function getWordDelay(lineSet: typeof DESKTOP_LINES, lineIndex: number, wordIndex: number): number {
   let total = 0
   for (let i = 0; i < lineIndex; i++) {
-    total += lines[i].length
+    total += lineSet[i].length
   }
   total += wordIndex
   return 0.1 + total * 0.1
@@ -110,8 +133,9 @@ function Word({
 export default function Hero() {
   return (
     <section className="px-[var(--gutter)] pt-[clamp(10rem,20vh,16rem)] pb-[var(--space-2xl)]">
-      <h1 className="font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[1.05] tracking-[-0.03em]">
-        {lines.map((line, lineIndex) => (
+      {/* Desktop lines */}
+      <h1 className="hidden font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[1.05] tracking-[-0.03em] md:block">
+        {DESKTOP_LINES.map((line, lineIndex) => (
           <span key={lineIndex} className="block overflow-hidden">
             {line.map((word, wordIndex) => (
               <span key={wordIndex}>
@@ -119,7 +143,26 @@ export default function Hero() {
                 <Word
                   text={word.text}
                   effect={word.effect}
-                  delay={getWordDelay(lineIndex, wordIndex)}
+                  delay={getWordDelay(DESKTOP_LINES, lineIndex, wordIndex)}
+                  isLastInLine={wordIndex === line.length - 1}
+                />
+              </span>
+            ))}
+          </span>
+        ))}
+      </h1>
+
+      {/* Mobile lines */}
+      <h1 className="font-display text-[clamp(3rem,12vw,5rem)] font-bold leading-[1.05] tracking-[-0.03em] md:hidden">
+        {MOBILE_LINES.map((line, lineIndex) => (
+          <span key={lineIndex} className="block overflow-hidden">
+            {line.map((word, wordIndex) => (
+              <span key={wordIndex}>
+                {wordIndex > 0 && ' '}
+                <Word
+                  text={word.text}
+                  effect={word.effect}
+                  delay={getWordDelay(MOBILE_LINES, lineIndex, wordIndex)}
                   isLastInLine={wordIndex === line.length - 1}
                 />
               </span>
