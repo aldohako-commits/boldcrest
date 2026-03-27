@@ -39,7 +39,7 @@ const capabilities = [
     heading: 'Brand\nDevelopment',
     abbr: 'BRND DEV',
     href: '/services/brand-development',
-    ctaLabel: 'Explore Brand Dev',
+    ctaLabel: 'Explore',
     tags: [
       'Visual Identity',
       'Packaging Design',
@@ -58,7 +58,7 @@ const capabilities = [
     heading: 'Still &\nMotion',
     abbr: 'STL & MTN',
     href: '/services/still-motion',
-    ctaLabel: 'Explore Still & Motion',
+    ctaLabel: 'Explore',
     tags: [
       'Photography',
       'Videography',
@@ -77,7 +77,7 @@ const capabilities = [
     heading: 'Commu-\nnication',
     abbr: 'COMMS',
     href: '/services/communication',
-    ctaLabel: 'Explore Communication',
+    ctaLabel: 'Explore',
     tags: [
       'Social Media',
       'Digital Marketing',
@@ -264,9 +264,9 @@ function HorizontalCapabilities({
                   borderRight: '1px solid rgba(255,255,255,0.06)',
                 }}
               >
-                <div className="flex h-full flex-col justify-between px-8 py-10 lg:px-12 lg:py-14">
+                <div className="flex h-full flex-col justify-between overflow-hidden px-8 py-10 lg:px-12 lg:py-14">
                   {/* Top section */}
-                  <div>
+                  <div className="min-h-0 flex-1 overflow-y-auto">
                     {/* Number + Abbreviation */}
                     <div className="mb-8 flex items-center gap-4">
                       <span
@@ -319,7 +319,7 @@ function HorizontalCapabilities({
                   </div>
 
                   {/* Bottom: CTA button */}
-                  <div>
+                  <div className="shrink-0 pt-8">
                     <Link
                       href={cap.href}
                       className="group inline-flex items-center gap-3 rounded-[var(--radius-pill)] border px-5 py-[0.55rem] text-[0.7rem] font-semibold uppercase tracking-[0.12em] transition-all duration-500"
