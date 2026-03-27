@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useCallback } from 'react'
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
-import MagneticBase, { CTAButton } from '@/components/MagneticButton'
+import { CTAButton } from '@/components/MagneticButton'
 import { PageMorphBlobs, SERVICES_BLOBS } from '@/components/MorphBlobs'
 import FAQSection from '@/components/services/FAQSection'
 
@@ -36,8 +36,10 @@ const capabilities = [
     category: 'Brand Dev',
     number: '01',
     color: '#DA291C',
-    heading: 'Branding',
+    heading: 'Brand\nDevelopment',
     abbr: 'BRND DEV',
+    href: '/services/brand-development',
+    ctaLabel: 'Explore Brand Dev',
     tags: [
       'Visual Identity',
       'Packaging Design',
@@ -47,20 +49,16 @@ const capabilities = [
       'Brand Guidelines',
     ],
     description:
-      "From brand architecture to visual identity, we create systems that clarify who you are and amplify how you're seen.",
-    icon: (
-      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-        <path d="M20 4L4 14v12l16 10 16-10V14L20 4z" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M20 14v12M12 19l8 5 8-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
-    ),
+      "From brand architecture to visual identity, we create systems that clarify who you are and amplify how you're seen. Whether it's a startup's first logo or a national brand's complete identity overhaul.",
   },
   {
     category: 'Still & Motion',
     number: '02',
     color: '#f9b311',
-    heading: 'Still & Motion',
+    heading: 'Still &\nMotion',
     abbr: 'STL & MTN',
+    href: '/services/still-motion',
+    ctaLabel: 'Explore Still & Motion',
     tags: [
       'Photography',
       'Videography',
@@ -70,21 +68,16 @@ const capabilities = [
       'Color Grading',
     ],
     description:
-      'Still frames that hold attention. Moving images that move people. Every shoot, every cut, every grade — deliberate.',
-    icon: (
-      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-        <rect x="6" y="10" width="28" height="20" rx="2" stroke="currentColor" strokeWidth="1.5" />
-        <circle cx="20" cy="20" r="6" stroke="currentColor" strokeWidth="1.5" />
-        <circle cx="20" cy="20" r="2" fill="currentColor" />
-      </svg>
-    ),
+      'Still frames that hold attention. Moving images that move people. Every shoot, every cut, every grade, deliberate. We handle the full production cycle, all in-house.',
   },
   {
     category: 'Communications',
     number: '03',
     color: '#004c95',
-    heading: 'Comms',
+    heading: 'Commu-\nnication',
     abbr: 'COMMS',
+    href: '/services/communication',
+    ctaLabel: 'Explore Communication',
     tags: [
       'Social Media',
       'Digital Marketing',
@@ -94,15 +87,7 @@ const capabilities = [
       'Media Planning',
     ],
     description:
-      "A great brand in silence is a waste. We put yours where it belongs — in front of the right people, saying the right thing.",
-    icon: (
-      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-        <path d="M8 10h24v16H22l-6 4v-4H8V10z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-        <circle cx="16" cy="18" r="1.5" fill="currentColor" />
-        <circle cx="20" cy="18" r="1.5" fill="currentColor" />
-        <circle cx="24" cy="18" r="1.5" fill="currentColor" />
-      </svg>
-    ),
+      "A great brand in silence is a waste. We put yours where it belongs, in front of the right people, saying the right thing, at the right moment.",
   },
 ]
 
@@ -239,15 +224,16 @@ function HorizontalCapabilities({
     offset: ['start start', 'end end'],
   })
 
-  const x = useTransform(scrollYProgress, [0, 1], ['0%', '-75%'])
+  // 3 panels at 50vw each = 150vw total. Offset = 150vw - 100vw = 50vw = 33.33% of total
+  const x = useTransform(scrollYProgress, [0, 1], ['0%', '-33.333%'])
 
   return (
-    <section ref={containerRef} className="relative h-[200vh]">
-      <div className="sticky top-0 h-screen overflow-hidden">
+    <section ref={containerRef} className="relative h-[250vh]">
+      <div className="sticky top-0 flex h-screen flex-col overflow-hidden">
         {/* Label */}
-        <div className="flex items-center px-[var(--gutter)] pt-8 pb-6">
+        <div className="flex items-center justify-between px-[var(--gutter)] pt-8 pb-6">
           <p className="text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
-            Our capabilities
+            Three Disciplines. One Standard.
           </p>
         </div>
 
@@ -256,10 +242,10 @@ function HorizontalCapabilities({
 
         {/* Horizontal panels */}
         <motion.div
-          className="flex h-[calc(100vh-82px)]"
+          className="flex flex-1"
           style={{ x }}
         >
-          {capabilities.map((cap) => {
+          {capabilities.map((cap, index) => {
             const sanityServices =
               categories.find((c) => c.category === cap.category)
                 ?.services || []
@@ -271,40 +257,59 @@ function HorizontalCapabilities({
             return (
               <div
                 key={cap.category}
-                className="relative flex h-full shrink-0 flex-col justify-between"
+                className="relative flex shrink-0 flex-col"
                 style={{
-                  width: '33.333vw',
-                  minWidth: '400px',
-                  borderRight: `1px solid ${cap.color}15`,
+                  width: '50vw',
+                  minWidth: '480px',
+                  borderRight: '1px solid rgba(255,255,255,0.06)',
                 }}
               >
-                {/* Panel — dark background matching page */}
-                <div className="flex h-full flex-col justify-between bg-[var(--bg-primary)] px-6 py-8 lg:px-10 lg:py-10">
-                  {/* Top: heading + tags */}
+                <div className="flex h-full flex-col justify-between px-8 py-10 lg:px-12 lg:py-14">
+                  {/* Top section */}
                   <div>
-                    <h2 className="mb-6 font-display text-[clamp(2.5rem,5vw,5.5rem)] font-bold leading-[0.95] tracking-[-0.03em] text-white">
+                    {/* Number + Abbreviation */}
+                    <div className="mb-8 flex items-center gap-4">
+                      <span
+                        className="text-[0.65rem] font-bold tracking-[0.15em]"
+                        style={{ color: cap.color }}
+                      >
+                        {cap.number}
+                      </span>
+                      <span className="text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-text-tertiary/50">
+                        {cap.abbr}
+                      </span>
+                    </div>
+
+                    {/* Heading */}
+                    <h2 className="mb-6 font-display text-[clamp(3rem,6vw,6rem)] font-bold leading-[0.9] tracking-[-0.04em] text-white whitespace-pre-line">
                       {cap.heading}
                     </h2>
 
+                    {/* Description */}
+                    <p className="mb-8 max-w-[420px] text-[0.9rem] leading-[1.7] text-text-secondary">
+                      {cap.description}
+                    </p>
+
+                    {/* Tags */}
                     <div className="flex flex-wrap gap-2">
                       {tags.map((tag) => (
                         <Link
                           key={tag}
                           href={`/work?service=${encodeURIComponent(tag)}`}
-                          className="rounded-full border px-3.5 py-1.5 text-[0.7rem] font-medium uppercase tracking-[0.05em] transition-all duration-200"
+                          className="rounded-full border px-3.5 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.06em] transition-all duration-300"
                           style={{
-                            borderColor: `${cap.color}30`,
-                            color: 'rgba(255,255,255,0.65)',
+                            borderColor: `${cap.color}25`,
+                            color: 'rgba(255,255,255,0.5)',
                           }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.borderColor = cap.color
-                            e.currentTarget.style.backgroundColor = `${cap.color}18`
-                            e.currentTarget.style.color = 'rgba(255,255,255,0.95)'
+                            e.currentTarget.style.backgroundColor = `${cap.color}15`
+                            e.currentTarget.style.color = 'rgba(255,255,255,0.9)'
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = `${cap.color}30`
+                            e.currentTarget.style.borderColor = `${cap.color}25`
                             e.currentTarget.style.backgroundColor = 'transparent'
-                            e.currentTarget.style.color = 'rgba(255,255,255,0.65)'
+                            e.currentTarget.style.color = 'rgba(255,255,255,0.5)'
                           }}
                         >
                           {tag}
@@ -313,85 +318,37 @@ function HorizontalCapabilities({
                     </div>
                   </div>
 
-                  {/* Bottom: icon + abbreviation + description */}
-                  <div className="flex items-end gap-6">
-                    <div className="flex flex-col items-center gap-2">
-                      <div
-                        className="flex h-16 w-16 items-center justify-center rounded-2xl border"
-                        style={{
-                          borderColor: `${cap.color}25`,
-                          color: `${cap.color}90`,
-                        }}
-                      >
-                        {cap.icon}
-                      </div>
-                      <span
-                        className="text-[0.55rem] font-semibold uppercase tracking-[0.1em]"
-                        style={{ color: `${cap.color}60` }}
-                      >
-                        {cap.abbr}
-                      </span>
-                    </div>
-                    <p className="max-w-[280px] text-[0.8rem] uppercase leading-[1.5] tracking-[0.02em] text-white/40">
-                      {cap.description}
-                    </p>
+                  {/* Bottom: CTA button */}
+                  <div>
+                    <Link
+                      href={cap.href}
+                      className="group inline-flex items-center gap-3 rounded-[var(--radius-pill)] border px-5 py-[0.55rem] text-[0.7rem] font-semibold uppercase tracking-[0.12em] transition-all duration-500"
+                      style={{
+                        borderColor: `${cap.color}40`,
+                        color: 'rgba(255,255,255,0.7)',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = cap.color
+                        e.currentTarget.style.color = '#fff'
+                        e.currentTarget.style.backgroundColor = `${cap.color}18`
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = `${cap.color}40`
+                        e.currentTarget.style.color = 'rgba(255,255,255,0.7)'
+                        e.currentTarget.style.backgroundColor = 'transparent'
+                      }}
+                    >
+                      {cap.ctaLabel}
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="transition-transform duration-300 group-hover:translate-x-1">
+                        <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </Link>
                   </div>
                 </div>
               </div>
             )
           })}
-
-          {/* CTA Panel — accent color */}
-          <div
-            className="relative flex h-full shrink-0 flex-col justify-between px-10 py-10 lg:px-16"
-            style={{
-              width: '33.333vw',
-              minWidth: '400px',
-              backgroundColor: '#DA291C',
-            }}
-          >
-            <div>
-              <h2 className="mb-8 font-display text-[clamp(2.5rem,5vw,5.5rem)] font-bold leading-[0.95] tracking-[-0.03em] text-white">
-                Start a<br />Project
-              </h2>
-            </div>
-
-            <div className="flex flex-col gap-6">
-              <p className="max-w-[320px] text-[0.85rem] leading-[1.7] text-white/80">
-                We live in the details. The pixels, the strategy, the
-                timing. If you&apos;re building something real, we&apos;ll
-                meet you there.
-              </p>
-              <MagneticBase
-                href="/start-a-new-project"
-                className="inline-flex w-fit items-center gap-3 rounded-[var(--radius-pill)] border border-white/30 px-6 py-3 text-[0.8rem] font-semibold uppercase tracking-[0.1em] text-white transition-all duration-[0.5s] hover:border-white/60"
-                style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
-              >
-                <span className="relative z-10 inline-flex items-center gap-3">
-                  Let&apos;s Chat
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    className="transition-transform duration-300 group-hover:translate-x-1"
-                  >
-                    <path
-                      d="M3 8h10M9 4l4 4-4 4"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
-              </MagneticBase>
-            </div>
-          </div>
         </motion.div>
-
-        {/* Bottom separator line */}
-        <div className="mx-[var(--gutter)] h-px bg-border" />
       </div>
     </section>
   )
