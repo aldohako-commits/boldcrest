@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -27,7 +27,7 @@ interface DiaryPageClientProps {
   posts: DiaryPost[]
 }
 
-const categoryColors: Record<string, string> = {
+const CATEGORY_COLORS: Record<string, string> = {
   Branding: '#DA291C',
   Design: '#f9b311',
   Motion: '#004c95',
@@ -35,13 +35,109 @@ const categoryColors: Record<string, string> = {
   Strategy: '#f9b311',
 }
 
-function formatDate(dateStr?: string) {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
+function DiaryCard({ post }: { post: DiaryPost }) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [mouse, setMouse] = useState({ x: 0, y: 0 })
+  const [hovering, setHovering] = useState(false)
+  const color = CATEGORY_COLORS[post.category || ''] || '#DA291C'
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = cardRef.current?.getBoundingClientRect()
+    if (!rect) return
+    setMouse({ x: e.clientX - rect.left, y: e.clientY - rect.top })
+  }
+
+  return (
+    <Link href={`/diary/${post.slug?.current}`} className="group block">
+      {/* Image container with circle-reveal hover */}
+      <div
+        ref={cardRef}
+        className="relative aspect-square overflow-hidden rounded-2xl bg-[#1a1a1a]"
+        onMouseMove={handleMouseMove}
+        onMouseEnter={() => setHovering(true)}
+        onMouseLeave={() => setHovering(false)}
+      >
+        {post.coverImage?.asset ? (
+          <Image
+            loader={sanityImageLoader}
+            src={urlFor(post.coverImage).width(800).height(800).url()}
+            alt={post.title}
+            fill
+            loading="lazy"
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <span className="px-4 text-center text-[1.2rem] font-bold uppercase leading-[1.1] tracking-[-0.02em] text-white/10 md:px-8 md:text-[3rem]">
+              {post.title}
+            </span>
+          </div>
+        )}
+
+        {/* Circle reveal overlay on hover — "Read More" marquee */}
+        <motion.div
+          className="pointer-events-none absolute flex items-center justify-center overflow-hidden rounded-full"
+          style={{
+            left: mouse.x,
+            top: mouse.y,
+            x: '-50%',
+            y: '-50%',
+            backgroundColor: '#0a0a0a',
+          }}
+          animate={{
+            width: hovering ? 600 : 0,
+            height: hovering ? 600 : 0,
+          }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className="flex shrink-0 animate-[marquee_4s_linear_infinite] items-center gap-8 whitespace-nowrap">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <span
+                key={i}
+                className="text-[1.2rem] font-semibold tracking-[0.1em] text-white"
+              >
+                Read More
+              </span>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Info below image */}
+      <div className="mt-3 md:mt-5">
+        {post.category && (
+          <span
+            className="mb-2 inline-block rounded-[var(--radius-pill)] border border-white/15 px-2 py-0.5 text-[0.5rem] font-semibold uppercase tracking-[0.12em] text-text-tertiary transition-all duration-200 md:mb-3 md:px-3 md:py-1 md:text-[0.6rem]"
+            onMouseEnter={(e) => {
+              const el = e.currentTarget
+              el.style.backgroundColor = color
+              el.style.borderColor = color
+              el.style.color = '#fff'
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget
+              el.style.backgroundColor = 'transparent'
+              el.style.borderColor = ''
+              el.style.color = ''
+            }}
+          >
+            {post.category}
+          </span>
+        )}
+
+        <h3 className="font-display text-[0.85rem] font-bold uppercase leading-[1.3] tracking-[0.02em] text-white transition-colors duration-200 group-hover:text-text-tertiary md:text-[clamp(1rem,1.5vw,1.3rem)]">
+          {post.title}
+        </h3>
+
+        {post.excerpt && (
+          <p className="mt-2 line-clamp-2 hidden text-[0.8rem] leading-[1.6] text-text-secondary md:block">
+            {post.excerpt}
+          </p>
+        )}
+      </div>
+    </Link>
+  )
 }
 
 export default function DiaryPageClient({ posts }: DiaryPageClientProps) {
@@ -63,9 +159,8 @@ export default function DiaryPageClient({ posts }: DiaryPageClientProps) {
   return (
     <main className="relative">
       <PageMorphBlobs blobs={DIARY_BLOBS} />
-      {/* ═══════════════════════════════════════════
-          HERO
-      ═══════════════════════════════════════════ */}
+
+      {/* Hero */}
       <section className="relative px-[var(--gutter)] pt-40 pb-[var(--space-xl)]">
         <div className="mx-auto max-w-[var(--max-width)]">
           <motion.p
@@ -103,9 +198,7 @@ export default function DiaryPageClient({ posts }: DiaryPageClientProps) {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════
-          FILTERS + COUNT
-      ═══════════════════════════════════════════ */}
+      {/* Filters */}
       <section className="px-[var(--gutter)] pb-[var(--space-lg)]">
         <div className="mx-auto max-w-[var(--max-width)]">
           <motion.div
@@ -141,9 +234,7 @@ export default function DiaryPageClient({ posts }: DiaryPageClientProps) {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════
-          POSTS GRID
-      ═══════════════════════════════════════════ */}
+      {/* Posts Grid */}
       <section className="px-[var(--gutter)] pb-[var(--space-3xl)]">
         <div className="mx-auto max-w-[var(--max-width)]">
           {filtered.length === 0 ? (
@@ -154,86 +245,12 @@ export default function DiaryPageClient({ posts }: DiaryPageClientProps) {
             </div>
           ) : (
             <ScrollRevealStagger
-              className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3"
+              className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
               staggerDelay={0.08}
             >
               {filtered.map((post) => (
                 <ScrollRevealItem key={post._id}>
-                  <Link
-                    href={`/diary/${post.slug?.current}`}
-                    className="group block"
-                  >
-                    {/* Image */}
-                    <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-lg)] bg-bg-card">
-                      {post.coverImage?.asset ? (
-                        <Image
-                          loader={sanityImageLoader}
-                          src={urlFor(post.coverImage)
-                            .width(800)
-                            .height(600)
-                            .url()}
-                          alt={post.title}
-                          fill
-                          loading="lazy"
-                          className="object-cover transition-transform duration-[0.8s] group-hover:scale-105"
-                          style={{
-                            transitionTimingFunction: 'var(--ease-out-expo)',
-                          }}
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center">
-                          <div className="h-[60px] w-[60px] rounded-full border-2 border-text-tertiary" />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Meta */}
-                    <div className="mt-5">
-                      {post.category && (
-                        <span
-                          className="mb-2 inline-block text-[0.7rem] font-semibold uppercase tracking-[0.15em]"
-                          style={{
-                            color:
-                              categoryColors[post.category] ?? 'var(--accent)',
-                          }}
-                        >
-                          {post.category}
-                        </span>
-                      )}
-
-                      <h2 className="font-display text-[1.3rem] font-bold leading-[1.3] transition-colors duration-300 group-hover:text-accent">
-                        {post.title}
-                      </h2>
-
-                      {post.excerpt && (
-                        <p className="mt-2 line-clamp-2 text-[0.85rem] leading-[1.6] text-text-secondary">
-                          {post.excerpt}
-                        </p>
-                      )}
-
-                      <div className="mt-4 flex items-center justify-between">
-                        <span className="inline-flex items-center gap-1 text-[0.75rem] font-medium text-text-secondary transition-colors duration-300 group-hover:text-accent">
-                          Read
-                          <svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 20 20"
-                            fill="none"
-                            className="transition-transform duration-300 group-hover:translate-x-1"
-                          >
-                            <path
-                              d="M4 10h12M12 6l4 4-4 4"
-                              stroke="currentColor"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
+                  <DiaryCard post={post} />
                 </ScrollRevealItem>
               ))}
             </ScrollRevealStagger>

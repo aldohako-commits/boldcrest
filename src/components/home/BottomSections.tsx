@@ -393,7 +393,7 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
       <div className="mx-[var(--gutter)] mb-[var(--space-lg)] h-px" style={{ backgroundColor: 'rgba(10,10,10,0.1)' }} />
 
       {/* Post grid — 4 in one row */}
-      <div className="grid grid-cols-2 gap-4 px-[var(--gutter)] md:grid-cols-4 md:gap-5">
+      <div className="grid grid-cols-1 gap-6 px-[var(--gutter)] sm:grid-cols-2 md:grid-cols-4 md:gap-5">
         {entries.map((post, i) => (
           <motion.div
             key={post._id}
