@@ -138,61 +138,41 @@ export default function ServiceCards() {
                   paddingRight: 'clamp(1.5rem, 2vw, 2.5rem)',
                 }}
               >
-                {/* Top: heading + tags */}
+                {/* Top: heading + description */}
                 <div>
-                  <h2 className="mb-6 font-display text-[clamp(2.5rem,5vw,5.5rem)] font-bold leading-[0.95] tracking-[-0.03em] text-[#0a0a0a]">
+                  <h2 className="mb-4 font-display text-[clamp(2.5rem,5vw,5.5rem)] font-bold leading-[0.95] tracking-[-0.03em] text-[#0a0a0a]">
                     {cap.heading}
                   </h2>
-
-                  <div className="flex flex-wrap gap-2">
-                    {cap.tags.map((tag) => (
-                      <Link
-                        key={tag}
-                        href={`/work?service=${encodeURIComponent(tag)}`}
-                        className="rounded-full border px-3.5 py-1.5 text-[0.7rem] font-medium uppercase tracking-[0.05em] transition-all duration-200"
-                        style={{
-                          borderColor: '#0a0a0a20',
-                          color: '#0a0a0a99',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.borderColor = cap.color
-                          e.currentTarget.style.backgroundColor = `${cap.color}15`
-                          e.currentTarget.style.color = '#0a0a0a'
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.borderColor = '#0a0a0a20'
-                          e.currentTarget.style.backgroundColor = 'transparent'
-                          e.currentTarget.style.color = '#0a0a0a99'
-                        }}
-                      >
-                        {tag}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Bottom: icon + abbreviation + description */}
-                <div className="flex items-end gap-6">
-                  <div className="flex flex-col items-center gap-2">
-                    <div
-                      className="flex h-16 w-16 items-center justify-center rounded-2xl border"
-                      style={{
-                        borderColor: `${cap.color}25`,
-                        color: `${cap.color}`,
-                      }}
-                    >
-                      {cap.icon}
-                    </div>
-                    <span
-                      className="text-[0.55rem] font-semibold uppercase tracking-[0.1em]"
-                      style={{ color: `${cap.color}80` }}
-                    >
-                      {cap.abbr}
-                    </span>
-                  </div>
-                  <p className="max-w-[280px] text-[0.8rem] leading-[1.5] text-[#0a0a0a]/40">
+                  <p className="max-w-[320px] text-[0.85rem] leading-[1.6] text-[#0a0a0a]/45">
                     {cap.description}
                   </p>
+                </div>
+
+                {/* Bottom: service tags */}
+                <div className="flex flex-wrap gap-2">
+                  {cap.tags.map((tag) => (
+                    <Link
+                      key={tag}
+                      href={`/work?service=${encodeURIComponent(tag)}`}
+                      className="rounded-full border px-3.5 py-1.5 text-[0.7rem] font-medium uppercase tracking-[0.05em] transition-all duration-200"
+                      style={{
+                        borderColor: '#0a0a0a20',
+                        color: '#0a0a0a99',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = cap.color
+                        e.currentTarget.style.backgroundColor = `${cap.color}15`
+                        e.currentTarget.style.color = '#0a0a0a'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = '#0a0a0a20'
+                        e.currentTarget.style.backgroundColor = 'transparent'
+                        e.currentTarget.style.color = '#0a0a0a99'
+                      }}
+                    >
+                      {tag}
+                    </Link>
+                  ))}
                 </div>
               </div>
             </div>
