@@ -73,7 +73,12 @@ export default async function ProjectPage({
             services={project.services}
           />
 
-          <ContentStack media={project.media} />
+          <ContentStack
+            media={project.media}
+            thumbnail={project.thumbnail}
+            thumbnailVideo={project.thumbnailVideo}
+            thumbnailType={project.thumbnailType}
+          />
         </div>
       </section>
 
