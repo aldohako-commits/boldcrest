@@ -122,27 +122,31 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
             behind the bold<span className="text-accent">.</span>
           </p>
 
-          {/* Mobile — text + big button below */}
+          {/* Mobile — text + paragraph + full-width button */}
           <div className="mb-6 md:hidden">
             <p className="font-display text-[clamp(2.5rem,10vw,4rem)] font-bold leading-[1.1] tracking-[-0.03em]">
               No egos<span className="text-accent">,</span><br />
               just the team<br />
               behind the bold<span className="text-accent">.</span>
             </p>
-            <div className="mt-6">
-              <Link
-                href="/people"
-                className="inline-flex items-center gap-3 rounded-full bg-white px-8 py-4 text-[0.8rem] font-semibold uppercase tracking-[0.1em] text-[#0a0a0a] transition-opacity duration-300 hover:opacity-80"
-              >
-                Meet the People
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </Link>
-            </div>
+            <p className="mt-5 text-[1rem] leading-[1.75] text-text-secondary">
+              Strategists, designers, filmmakers, and communicators who
+              care about the work as much as you do. No egos — just
+              craft and conviction.
+            </p>
+            <Link
+              href="/people"
+              className="mt-8 flex w-full items-center justify-between rounded-full border border-white/20 px-8 py-5 text-[0.85rem] font-semibold uppercase tracking-[0.1em] text-white transition-all duration-300 hover:border-white/40"
+            >
+              Meet the People
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Link>
           </div>
 
-          <p className="max-w-[520px] text-[1.05rem] leading-[1.75] text-text-secondary">
+          {/* Desktop paragraph */}
+          <p className="hidden max-w-[520px] text-[1.05rem] leading-[1.75] text-text-secondary md:block">
             Strategists, designers, filmmakers, and communicators who
             care about the work as much as you do. No egos — just
             craft and conviction.

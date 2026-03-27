@@ -15,22 +15,20 @@ export default function WeDoSection() {
           things very well.
         </p>
 
-        {/* Mobile — text + big button below */}
+        {/* Mobile — text + full-width button below */}
         <div className="md:hidden">
-          <p className="text-center font-display text-[clamp(2.8rem,12vw,5rem)] font-bold leading-[1.05] tracking-[-0.03em] text-[#0a0a0a]">
+          <p className="font-display text-[clamp(2.8rem,12vw,5rem)] font-bold leading-[1.05] tracking-[-0.03em] text-[#0a0a0a]">
             We do many things very well.
           </p>
-          <div className="mt-6 flex justify-center">
-            <Link
-              href="/work"
-              className="inline-flex items-center gap-3 rounded-full bg-[#0a0a0a] px-8 py-4 text-[0.8rem] font-semibold uppercase tracking-[0.1em] text-white transition-opacity duration-300 hover:opacity-80"
-            >
-              View All Work
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
-          </div>
+          <Link
+            href="/work"
+            className="mt-8 flex w-full items-center justify-between rounded-full bg-[#0a0a0a] px-8 py-5 text-[0.85rem] font-semibold uppercase tracking-[0.1em] text-white transition-opacity duration-300 hover:opacity-80"
+          >
+            View All Work
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </Link>
         </div>
       </ScrollReveal>
     </section>
