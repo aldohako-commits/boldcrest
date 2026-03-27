@@ -199,7 +199,7 @@ export default function ServiceCards() {
                 timing. If you&apos;re building something real, we&apos;ll
                 meet you there.
               </p>
-              <CTAButton href="/start-a-new-project" label="Let's Chat" />
+              <CTAButton href="/start-a-new-project" label="Let's Chat" showArrow />
             </div>
           </div>
         </motion.div>

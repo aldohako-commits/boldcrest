@@ -98,17 +98,19 @@ const CUBIC = 'cubic-bezier(0.645, 0.045, 0.355, 1)'
 export function CTAButton({
   href,
   label,
+  showArrow = false,
   className = '',
 }: {
   href: string
   label: string
+  showArrow?: boolean
   className?: string
 }) {
   return (
     <MagneticBase
       href={href}
-      className={`items-center rounded-[var(--radius-pill)] border border-white/25 bg-black px-6 py-[0.7rem] text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-text-secondary transition-all duration-[0.5s] hover:border-white/60 hover:text-white ${className}`}
-      style={{ transitionTimingFunction: CUBIC, backgroundColor: '#000' }}
+      className={`items-center gap-3 rounded-[var(--radius-pill)] border border-white/25 px-5 py-[0.55rem] text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-text-secondary transition-all duration-[0.5s] hover:border-white/60 hover:text-white ${className}`}
+      style={{ transitionTimingFunction: CUBIC }}
     >
       <span
         className="relative z-10 inline-flex overflow-hidden"
@@ -122,6 +124,11 @@ export function CTAButton({
           <span className="leading-[1.2]">{label}</span>
         </span>
       </span>
+      {showArrow && (
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="relative z-10 transition-transform duration-[0.5s] group-hover:translate-x-1" style={{ transitionTimingFunction: CUBIC }}>
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
     </MagneticBase>
   )
 }
