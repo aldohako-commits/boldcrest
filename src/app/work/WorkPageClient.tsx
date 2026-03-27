@@ -72,11 +72,11 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
       >
         {/* Card container — fixed aspect, overflow hidden */}
         <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-bg-card">
-          {/* Image — translates UP on hover */}
+          {/* Image — translates UP on hover (desktop only) */}
           {project.thumbnailType === 'video' && project.thumbnailVideo ? (
             <iframe
               src={`https://player.vimeo.com/video/${project.thumbnailVideo.match(/vimeo\.com\/(\d+)/)?.[1]}?background=1&autoplay=1&loop=1&muted=1`}
-              className="pointer-events-none absolute top-1/2 left-1/2 h-[200%] w-[200%] -translate-x-1/2 -translate-y-1/2 transition-transform duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:-translate-y-[calc(50%+48px)]"
+              className="pointer-events-none absolute top-1/2 left-1/2 h-[200%] w-[200%] -translate-x-1/2 -translate-y-1/2 md:transition-transform md:duration-[250ms] md:ease-[cubic-bezier(0.4,0,0.2,1)] md:group-hover:-translate-y-[calc(50%+48px)]"
               style={{ border: 'none' }}
               allow="autoplay; fullscreen"
               loading="lazy"
@@ -91,7 +91,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
               alt={project.name}
               fill
               loading="lazy"
-              className="object-cover transition-transform duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform group-hover:-translate-y-12"
+              className="object-cover md:transition-transform md:duration-[250ms] md:ease-[cubic-bezier(0.4,0,0.2,1)] md:will-change-transform md:group-hover:-translate-y-12"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
           ) : (
@@ -100,23 +100,18 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
             </div>
           )}
 
-          {/* Info panel — grows up from bottom on hover */}
+          {/* Info panel — grows up from bottom on hover (desktop only) */}
           <div
-            className="absolute bottom-0 left-0 z-20 w-full origin-bottom scale-y-0 bg-[#0a0a0a] px-5 pt-4 pb-4 transition-transform duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:scale-y-100"
+            className="absolute bottom-0 left-0 z-20 hidden w-full origin-bottom scale-y-0 bg-[#0a0a0a] px-5 pt-4 pb-4 transition-transform duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:scale-y-100 md:block"
           >
-            {/* Client name */}
             {project.client && (
               <span className="block text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-text-tertiary">
                 {project.client}
               </span>
             )}
-
-            {/* Tagline */}
             <h3 className="mt-1.5 font-display text-[1.15rem] font-semibold text-text-primary">
               {project.tagline || project.name}
             </h3>
-
-            {/* Industry pill + Services */}
             <div className="mt-3 flex flex-wrap items-center gap-2">
               {project.industry && (
                 <span className="rounded-[var(--radius-pill)] bg-white/10 px-3.5 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.1em] text-text-secondary">
@@ -132,6 +127,33 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                 </span>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* Mobile info — always visible below card */}
+        <div className="mt-3 md:hidden">
+          {project.client && (
+            <span className="block text-[0.7rem] font-semibold uppercase tracking-[0.15em] text-text-tertiary">
+              {project.client}
+            </span>
+          )}
+          <h3 className="mt-1 font-display text-[1rem] font-semibold text-text-primary">
+            {project.tagline || project.name}
+          </h3>
+          <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+            {project.industry && (
+              <span className="rounded-[var(--radius-pill)] bg-white/10 px-3 py-1 text-[0.6rem] font-medium uppercase tracking-[0.1em] text-text-secondary">
+                {project.industry}
+              </span>
+            )}
+            {project.services?.map((service) => (
+              <span
+                key={service}
+                className="rounded-[var(--radius-pill)] border border-border px-3 py-1 text-[0.6rem] font-medium uppercase tracking-[0.1em] text-text-tertiary"
+              >
+                {service}
+              </span>
+            ))}
           </div>
         </div>
       </Link>
