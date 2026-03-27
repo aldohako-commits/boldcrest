@@ -114,12 +114,34 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
           className="order-2 w-full md:order-1 md:w-[55%]"
           style={{ x: textX, opacity: textOpacity }}
         >
-          <p className="mb-6 font-display text-[clamp(2.5rem,6vw,6rem)] font-bold leading-[1.1] tracking-[-0.03em]">
+          {/* Desktop — inline button */}
+          <p className="mb-6 hidden font-display text-[clamp(2.5rem,6vw,6rem)] font-bold leading-[1.1] tracking-[-0.03em] md:block">
             No egos<span className="text-accent">,</span><br />
             just{' '}
             <InlineButton href="/people" label="The Team" showArrow /><br />
             behind the bold<span className="text-accent">.</span>
           </p>
+
+          {/* Mobile — text + big button below */}
+          <div className="mb-6 md:hidden">
+            <p className="font-display text-[clamp(2.5rem,10vw,4rem)] font-bold leading-[1.1] tracking-[-0.03em]">
+              No egos<span className="text-accent">,</span><br />
+              just the team<br />
+              behind the bold<span className="text-accent">.</span>
+            </p>
+            <div className="mt-6">
+              <Link
+                href="/people"
+                className="inline-flex items-center gap-3 rounded-full bg-white px-8 py-4 text-[0.8rem] font-semibold uppercase tracking-[0.1em] text-[#0a0a0a] transition-opacity duration-300 hover:opacity-80"
+              >
+                Meet the People
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+
           <p className="max-w-[520px] text-[1.05rem] leading-[1.75] text-text-secondary">
             Strategists, designers, filmmakers, and communicators who
             care about the work as much as you do. No egos — just
