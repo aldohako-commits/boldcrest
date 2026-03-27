@@ -182,9 +182,6 @@ export default function Footer() {
               <Link href="/contact" className={linkClass}>
                 &rarr; Contact Us
               </Link>
-              <Link href="/privacy-policy" className={linkClass}>
-                &rarr; Privacy Policy
-              </Link>
             </div>
 
             {/* Social */}
