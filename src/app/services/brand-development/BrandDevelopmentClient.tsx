@@ -1,7 +1,7 @@
 'use client'
 
 import ServiceHero from '@/components/services/ServiceHero'
-import SocialProof from '@/components/services/SocialProof'
+import ProjectMarquee from '@/components/services/ProjectMarquee'
 import OutcomesSection from '@/components/services/OutcomesSection'
 import ServicesList from '@/components/services/ServicesList'
 import ProcessTable from '@/components/services/ProcessTable'
@@ -11,7 +11,18 @@ import OtherServices from '@/components/services/OtherServices'
 
 interface FAQItem { question: string; answer: string }
 
-const BRANDS = ['Hako', 'MORE', 'Altus', 'Bariu', 'ASF', 'Adelse', 'UniCredit', 'Veneto', 'Karrige Pogradeci', 'AksesTirana', 'Happy Pizza', 'deCanto', 'Zephyra', 'Albita', 'Noble Cigars', 'PiperoCare', 'Plenty', "Ina's Farm"]
+interface Project {
+  _id: string
+  name: string
+  slug: { current: string }
+  tagline?: string
+  client?: string
+  industry?: string
+  services?: string[]
+  thumbnail?: { asset: { _ref: string } }
+  thumbnailType?: string
+  thumbnailVideo?: string
+}
 
 const OUTCOMES = [
   { title: 'Instant Recognition', description: "A well-built identity makes your brand recognizable across every touchpoint, from a storefront sign to a 1-inch social avatar. We design systems that work at every scale." },
@@ -51,7 +62,7 @@ const OTHER_SERVICES = [
   { title: 'Communication', href: '/services/communication', description: 'Strategy and distribution that reach the right people.', color: '#004c95' },
 ]
 
-export default function BrandDevelopmentClient({ faqItems }: { faqItems: FAQItem[] }) {
+export default function BrandDevelopmentClient({ faqItems, projects }: { faqItems: FAQItem[]; projects: Project[] }) {
   return (
     <main className="relative">
       <ServiceHero
@@ -60,7 +71,7 @@ export default function BrandDevelopmentClient({ faqItems }: { faqItems: FAQItem
         subtitle="Your brand is the promise you make before you say a word. We build identity systems, logos, visual languages, packaging, guidelines, and campaigns, that earn trust on sight and hold up everywhere your name appears."
         ctaLabel="Start Your Brand Project"
       />
-      <SocialProof heading="Identity Systems Trusted by 30+ Brands" brands={BRANDS} />
+      <ProjectMarquee heading="Identity Systems Trusted by 30+ Brands" projects={projects} accentColor="#DA291C" />
       <OutcomesSection heading="What Strong Brand Development Does for Your Business" outcomes={OUTCOMES} />
       <ServicesList heading="Our Brand Development Capabilities" services={SERVICES} ctaLabel="Get a Brand Proposal" />
       <ProcessTable heading="How We Build Brand Identity Systems" steps={PROCESS} />

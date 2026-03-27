@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+import { client } from '@/sanity/lib/client'
+import { projectsByServicesQuery } from '@/sanity/lib/queries'
 import CommunicationClient from './CommunicationClient'
 import { BreadcrumbJsonLd, ServiceJsonLd, FAQJsonLd } from '@/components/services/JsonLd'
 
@@ -24,13 +26,17 @@ const FAQ_ITEMS = [
   { question: "What does the monthly report include?", answer: "KPIs, engagement rates, follower growth, top-performing posts, competitor benchmark, audience demographics, and strategic recommendations for the next month." },
 ]
 
-export default function CommunicationPage() {
+export default async function CommunicationPage() {
+  const projects = await client.fetch(projectsByServicesQuery, {
+    serviceNames: ['Social Media Management', 'Ads Management'],
+  })
+
   return (
     <>
       <BreadcrumbJsonLd items={[{ name: 'Home', url: '/' }, { name: 'Services', url: '/services' }, { name: 'Communication', url: '/services/communication' }]} />
       <ServiceJsonLd name="Communication Services" description="Social media management, digital marketing, PR, content strategy, and campaign management." url="/services/communication" />
       <FAQJsonLd items={FAQ_ITEMS} />
-      <CommunicationClient faqItems={FAQ_ITEMS} />
+      <CommunicationClient faqItems={FAQ_ITEMS} projects={projects ?? []} />
     </>
   )
 }

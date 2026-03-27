@@ -120,6 +120,22 @@ export const servicesPartnersQuery = defineQuery(
   }`
 )
 
+// Projects filtered by service names (for subpages)
+export const projectsByServicesQuery = defineQuery(
+  `*[_type == "project" && count((services[])[@ in $serviceNames]) > 0] | order(order asc) [0...6] {
+    _id,
+    name,
+    slug,
+    tagline,
+    client,
+    industry,
+    services,
+    thumbnail,
+    thumbnailType,
+    thumbnailVideo
+  }`
+)
+
 export const allTeamMembersQuery = defineQuery(
   `*[_type == "teamMember"] | order(order asc) {
     _id,

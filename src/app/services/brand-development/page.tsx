@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+import { client } from '@/sanity/lib/client'
+import { projectsByServicesQuery } from '@/sanity/lib/queries'
 import BrandDevelopmentClient from './BrandDevelopmentClient'
 import { BreadcrumbJsonLd, ServiceJsonLd, FAQJsonLd } from '@/components/services/JsonLd'
 
@@ -24,13 +26,17 @@ const FAQ_ITEMS = [
   { question: "How long does a branding project take?", answer: "Logo: 2-3 weeks. Full visual identity with brandbook: 4-8 weeks. Packaging: 2-4 weeks per product. We'll lock a timeline in our first meeting." },
 ]
 
-export default function BrandDevelopmentPage() {
+export default async function BrandDevelopmentPage() {
+  const projects = await client.fetch(projectsByServicesQuery, {
+    serviceNames: ['Branding', 'Creative Advertising', 'Packaging'],
+  })
+
   return (
     <>
       <BreadcrumbJsonLd items={[{ name: 'Home', url: '/' }, { name: 'Services', url: '/services' }, { name: 'Brand Development', url: '/services/brand-development' }]} />
       <ServiceJsonLd name="Brand Development" description="Strategic brand development: logo design, visual identity systems, brand guidelines, packaging design, and creative advertising." url="/services/brand-development" />
       <FAQJsonLd items={FAQ_ITEMS} />
-      <BrandDevelopmentClient faqItems={FAQ_ITEMS} />
+      <BrandDevelopmentClient faqItems={FAQ_ITEMS} projects={projects ?? []} />
     </>
   )
 }

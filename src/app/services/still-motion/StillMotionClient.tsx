@@ -1,7 +1,7 @@
 'use client'
 
 import ServiceHero from '@/components/services/ServiceHero'
-import SocialProof from '@/components/services/SocialProof'
+import ProjectMarquee from '@/components/services/ProjectMarquee'
 import OutcomesSection from '@/components/services/OutcomesSection'
 import ServicesList from '@/components/services/ServicesList'
 import ProcessTable from '@/components/services/ProcessTable'
@@ -11,7 +11,18 @@ import OtherServices from '@/components/services/OtherServices'
 
 interface FAQItem { question: string; answer: string }
 
-const BRANDS = ['Magniflex', 'Tepelene', 'SofaHaus', 'Hako', 'Tirana Home Store', 'Allure Beauty', 'Primera', 'More', 'Ventoro', 'Barbaroza', 'AlisaDudaj', 'Baboon', 'Fentimans', 'Borghese Milano', 'El Gaucho', 'Ama Caffe']
+interface Project {
+  _id: string
+  name: string
+  slug: { current: string }
+  tagline?: string
+  client?: string
+  industry?: string
+  services?: string[]
+  thumbnail?: { asset: { _ref: string } }
+  thumbnailType?: string
+  thumbnailVideo?: string
+}
 
 const OUTCOMES = [
   { title: "Content That Matches Your Brand's Ambition", description: "Your audience judges quality in the first second. Professionally shot, edited, and graded content instantly signals that your brand is serious, polished, and worth paying attention to." },
@@ -51,7 +62,7 @@ const OTHER_SERVICES = [
   { title: 'Communication', href: '/services/communication', description: 'Strategy and distribution that reach the right people.', color: '#004c95' },
 ]
 
-export default function StillMotionClient({ faqItems }: { faqItems: FAQItem[] }) {
+export default function StillMotionClient({ faqItems, projects }: { faqItems: FAQItem[]; projects: Project[] }) {
   return (
     <main className="relative">
       <ServiceHero
@@ -60,7 +71,7 @@ export default function StillMotionClient({ faqItems }: { faqItems: FAQItem[] })
         subtitle="Photography, videography, animation, and post-production, handled by a full in-house team that plans, shoots, edits, and delivers production-ready content. Every frame intentional. Every second earned."
         ctaLabel="Start a Production Project"
       />
-      <SocialProof heading="Production for 22+ Active Brands" brands={BRANDS} />
+      <ProjectMarquee heading="Production for 22+ Active Brands" projects={projects} accentColor="#f9b311" />
       <OutcomesSection heading="What Professional Production Delivers" outcomes={OUTCOMES} />
       <ServicesList heading="Our Still & Motion Capabilities" services={SERVICES} ctaLabel="Plan Your Next Production" />
       <ProcessTable heading="How We Run Production" steps={PROCESS} />

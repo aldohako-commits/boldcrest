@@ -3,7 +3,7 @@
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import ServiceHero from '@/components/services/ServiceHero'
-import SocialProof from '@/components/services/SocialProof'
+import ProjectMarquee from '@/components/services/ProjectMarquee'
 import OutcomesSection from '@/components/services/OutcomesSection'
 import ServicesList from '@/components/services/ServicesList'
 import ProcessTable from '@/components/services/ProcessTable'
@@ -13,7 +13,18 @@ import OtherServices from '@/components/services/OtherServices'
 
 interface FAQItem { question: string; answer: string }
 
-const BRANDS = ['Magniflex', 'Tepelene', 'SofaHaus', 'Hako', 'Start Oil', 'Tirana Home Store', 'Airbendr', 'Baboon', 'Primera', 'Fentimans', 'AK-Invest', 'Red Bull']
+interface Project {
+  _id: string
+  name: string
+  slug: { current: string }
+  tagline?: string
+  client?: string
+  industry?: string
+  services?: string[]
+  thumbnail?: { asset: { _ref: string } }
+  thumbnailType?: string
+  thumbnailVideo?: string
+}
 
 const OUTCOMES = [
   { title: 'Consistent Visibility', description: "Your audience scrolls every day. A structured content system keeps your brand visible, relevant, and top-of-mind, without you writing captions at midnight." },
@@ -124,7 +135,7 @@ function RetainerTiers() {
   )
 }
 
-export default function CommunicationClient({ faqItems }: { faqItems: FAQItem[] }) {
+export default function CommunicationClient({ faqItems, projects }: { faqItems: FAQItem[]; projects: Project[] }) {
   return (
     <main className="relative">
       <ServiceHero
@@ -133,7 +144,7 @@ export default function CommunicationClient({ faqItems }: { faqItems: FAQItem[] 
         subtitle="A great brand in silence is a waste. We put yours where it belongs, in front of the right audience, saying the right thing, at the right moment. From monthly social management to full-scale campaign orchestration."
         ctaLabel="Start a Communication Project"
       />
-      <SocialProof heading="Communication for 22+ Brands and Counting" brands={BRANDS} />
+      <ProjectMarquee heading="Communication for 22+ Brands and Counting" projects={projects} accentColor="#004c95" />
       <OutcomesSection heading="What Strategic Communication Delivers" outcomes={OUTCOMES} />
       <ServicesList heading="Our Communication Capabilities" services={SERVICES} ctaLabel="Build Your Communication Plan" />
       <ProcessTable heading="How We Run Communication" steps={PROCESS} />
