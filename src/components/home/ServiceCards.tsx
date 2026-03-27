@@ -200,16 +200,15 @@ export default function ServiceCards() {
               </p>
               <Link
                 href="/start-a-new-project"
-                className="inline-flex w-fit items-center gap-3 rounded-[var(--radius-pill)] border border-white/30 px-6 py-3 text-[0.8rem] font-semibold uppercase tracking-[0.1em] text-white transition-all duration-[0.5s] hover:border-white/60"
-                style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
+                className="group/btn flex w-full items-center justify-between rounded-full border border-white/20 px-8 py-5 text-[0.85rem] font-semibold uppercase tracking-[0.1em] text-white transition-all duration-300 hover:border-white/40"
               >
                 Let&apos;s Chat
                 <svg
-                  width="16"
-                  height="16"
+                  width="18"
+                  height="18"
                   viewBox="0 0 16 16"
                   fill="none"
-                  className="transition-transform duration-300 group-hover:translate-x-1"
+                  className="transition-transform duration-300 group-hover/btn:translate-x-1"
                 >
                   <path
                     d="M3 8h10M9 4l4 4-4 4"
