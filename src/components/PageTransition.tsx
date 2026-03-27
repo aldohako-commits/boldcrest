@@ -20,9 +20,9 @@ export function usePageTransition() {
 }
 
 /* ── Timing (ms) ── */
-const WIPE_IN = 1200     // overlay slides up to cover the screen
-const HOLD = 600          // pause while fully covered (new page loads)
-const WIPE_OUT = 1000     // overlay slides away to reveal new page
+const WIPE_IN = 900
+const HOLD = 400
+const WIPE_OUT = 800
 const EASE = 'cubic-bezier(0.77, 0, 0.175, 1)'
 
 export default function PageTransitionProvider({
@@ -37,12 +37,24 @@ export default function PageTransitionProvider({
   const logoRef = useRef<HTMLDivElement>(null)
   const transitioning = useRef(false)
   const prevPathname = useRef(pathname)
+  const readyForWipeOut = useRef(false)
+
+  // Force scroll to top on every pathname change
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    // Also reset Lenis if present
+    const lenisEl = document.querySelector('[data-lenis-prevent]')
+    if ((window as any).__lenis) {
+      ;(window as any).__lenis.scrollTo(0, { immediate: true })
+    }
+  }, [pathname])
 
   const navigate = useCallback(
     (href: string) => {
       if (href === pathname || transitioning.current) return
 
       transitioning.current = true
+      readyForWipeOut.current = false
       setIsTransitioning(true)
 
       const overlay = overlayRef.current
@@ -70,11 +82,19 @@ export default function PageTransitionProvider({
         logo.style.transform = 'translateY(0) scale(1)'
       }, WIPE_IN * 0.4)
 
-      // After wipe covers screen, navigate
+      // After wipe fully covers screen, scroll to top and navigate
       setTimeout(() => {
+        // Scroll to top while overlay covers the page
         window.scrollTo(0, 0)
+        document.documentElement.scrollTop = 0
+        document.body.scrollTop = 0
+
+        // Mark ready — wipe-out will only happen after both
+        // the pathname changes AND the hold period passes
+        readyForWipeOut.current = true
+
         router.push(href)
-      }, WIPE_IN + 50)
+      }, WIPE_IN)
     },
     [pathname, router],
   )
@@ -92,12 +112,18 @@ export default function PageTransitionProvider({
 
     const timers: ReturnType<typeof setTimeout>[] = []
 
-    // Wait for the new page to paint before starting wipe-out
-    const t1 = setTimeout(() => {
-      // Use rAF to ensure the new page has painted
+    // Ensure scroll is at top before revealing
+    window.scrollTo(0, 0)
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+
+    const doWipeOut = () => {
+      // Double-ensure scroll top before reveal
+      window.scrollTo(0, 0)
+
       requestAnimationFrame(() => {
         // Fade out logo first
-        logo.style.transition = 'opacity 0.3s ease, transform 0.3s ease'
+        logo.style.transition = 'opacity 0.25s ease, transform 0.25s ease'
         logo.style.opacity = '0'
         logo.style.transform = 'translateY(-15px) scale(0.95)'
 
@@ -113,10 +139,13 @@ export default function PageTransitionProvider({
             setIsTransitioning(false)
           }, WIPE_OUT + 20)
           timers.push(t3)
-        }, 200)
+        }, 150)
         timers.push(t2)
       })
-    }, HOLD)
+    }
+
+    // Wait for hold period to ensure smooth experience
+    const t1 = setTimeout(doWipeOut, HOLD)
     timers.push(t1)
 
     return () => timers.forEach(clearTimeout)
@@ -138,7 +167,6 @@ export default function PageTransitionProvider({
       )
         return
       if (anchor.target === '_blank') return
-      if (e.metaKey || e.ctrlKey || e.shiftKey) return
       // Skip studio links
       if (href.startsWith('/studio')) return
 
