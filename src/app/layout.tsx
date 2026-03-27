@@ -74,6 +74,24 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'LocalBusiness',
+              '@id': 'https://boldcrest.com/#organization',
+              name: 'BoldCrest',
+              url: 'https://boldcrest.com',
+              email: 'info@boldcrest.com',
+              description: 'Creative agency offering brand development, photography, video, animation, and communication. 300+ projects, 30+ brands, 7+ years.',
+              address: { '@type': 'PostalAddress', addressLocality: 'Tirana', addressCountry: 'AL' },
+              sameAs: ['https://www.instagram.com/boldcrest/', 'https://www.linkedin.com/company/boldcrest/', 'https://www.behance.net/boldcrest', 'https://vimeo.com/boldcrest'],
+            }),
+          }}
+        />
+      </head>
       <body className={metropolis.variable}>
         <LenisProvider>
           <PageTransitionProvider>

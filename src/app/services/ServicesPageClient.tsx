@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import MagneticBase, { CTAButton } from '@/components/MagneticButton'
 import { PageMorphBlobs, SERVICES_BLOBS } from '@/components/MorphBlobs'
+import FAQSection from '@/components/services/FAQSection'
 
 interface Service {
   _id: string
@@ -20,8 +21,14 @@ interface CategoryGroup {
   services: Service[]
 }
 
+interface FAQItem {
+  question: string
+  answer: string
+}
+
 interface ServicesPageClientProps {
   categories: CategoryGroup[]
+  faqItems?: FAQItem[]
 }
 
 const capabilities = [
@@ -627,7 +634,7 @@ function WorkedOn() {
       const progress = Math.min(elapsed / duration, 1)
       // ease-out cubic
       const eased = 1 - Math.pow(1 - progress, 3)
-      setCount(Math.round(eased * 200))
+      setCount(Math.round(eased * 300))
       if (progress < 1) frame = requestAnimationFrame(animate)
     }
     frame = requestAnimationFrame(animate)
@@ -739,8 +746,69 @@ function WorkedOn() {
   )
 }
 
+const PROCESS_STEPS = [
+  { number: '01', title: 'Discovery & Brief', description: 'We meet face to face. We learn your business, your market, your ambitions. You get a dedicated account manager from day one who knows your project inside out.' },
+  { number: '02', title: 'Strategy & Direction', description: 'Before any creative begins, we define the territory: positioning, audience, competitive landscape, and the creative direction we\'ll pursue together.' },
+  { number: '03', title: 'Creative Development', description: 'Multiple concepts, real iterations, structured feedback. We present with rationale, not just aesthetics, and push back when a different direction will serve you better.' },
+  { number: '04', title: 'Production & Delivery', description: 'Final files, guidelines, content calendars, print-ready assets. Everything delivered production-ready with clear documentation and structured handoff.' },
+  { number: '05', title: 'Ongoing Partnership', description: 'Brands evolve. Campaigns rotate. Content never stops. We stay with you, managing, optimizing, and scaling your creative output month after month.' },
+]
+
+function ProcessSection() {
+  const ref = useRef<HTMLElement>(null)
+  const isInView = useInView(ref, { once: true, margin: '-100px' })
+
+  return (
+    <section ref={ref} className="px-[var(--gutter)] py-[var(--space-3xl)]">
+      <div className="mx-auto max-w-[var(--max-width)]">
+        <motion.p
+          className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.6 }}
+        >
+          Process
+        </motion.p>
+        <motion.h2
+          className="mb-4 max-w-[700px] font-display text-[clamp(1.8rem,3.5vw,2.8rem)] font-bold leading-[1.1] tracking-[-0.02em]"
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
+          How Every BoldCrest Project Works
+        </motion.h2>
+        <motion.p
+          className="mb-[var(--space-xl)] max-w-[600px] text-[0.95rem] leading-[1.7] text-text-secondary"
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+        >
+          Regardless of discipline, every engagement follows the same framework.
+          Clarity at each stage, no surprises, and a dedicated team from start to finish.
+        </motion.p>
+        <div className="mt-[var(--space-xl)]">
+          {PROCESS_STEPS.map((step, i) => (
+            <motion.div
+              key={step.number}
+              className="group grid grid-cols-[60px_1fr] gap-6 border-t border-border/40 py-8 last:border-b md:grid-cols-[80px_200px_1fr]"
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.2 + i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <span className="font-display text-[0.75rem] font-semibold text-text-tertiary">{step.number}</span>
+              <h3 className="text-[0.95rem] font-semibold text-text-primary">{step.title}</h3>
+              <p className="col-span-2 text-[0.85rem] leading-[1.7] text-text-secondary md:col-span-1">{step.description}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export default function ServicesPageClient({
   categories,
+  faqItems,
 }: ServicesPageClientProps) {
   return (
     <main className="relative">
@@ -763,20 +831,30 @@ export default function ServicesPageClient({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            What gets us
+            What Gets Us
             <br />
-            out of bed<span className="text-accent">.</span>
+            Out of Bed
           </motion.h1>
 
           <motion.p
-            className="mt-8 max-w-[520px] text-[1.05rem] leading-[1.7] text-text-secondary"
+            className="mt-8 max-w-[560px] text-[1.05rem] leading-[1.7] text-text-secondary"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
           >
             Three disciplines, one obsession. From first concept to final
-            build, we handle the details.
+            delivery, we handle the details so your brand never has to
+            compromise between ambition and execution.
           </motion.p>
+
+          <motion.div
+            className="mt-10"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <CTAButton href="/start-a-new-project" label="Start a Project" showArrow />
+          </motion.div>
         </div>
       </section>
 
@@ -799,23 +877,49 @@ export default function ServicesPageClient({
         </div>
       </div>
 
-      {/* ── Statement with word-by-word reveal ── */}
+      {/* ── Manifesto ── */}
       <section className="px-[var(--gutter)] py-[var(--space-3xl)]">
         <div className="mx-auto max-w-[var(--max-width)]">
-          <h2 className="max-w-[800px] font-display text-[clamp(1.8rem,4vw,3.5rem)] font-bold leading-[1.15] tracking-[-0.02em]">
-            <WordReveal text="We design brands, craft stories, and build campaigns that don't just inform — they pull people in." />
+          <h2 className="mb-10 max-w-[800px] font-display text-[clamp(1.8rem,4vw,3.5rem)] font-bold leading-[1.15] tracking-[-0.02em]">
+            <WordReveal text="We Design Brands, Craft Stories, and Build Campaigns That Don't Just Inform. They Pull People In." />
           </h2>
+          <div className="max-w-[640px] space-y-6 text-[0.95rem] leading-[1.7] text-text-secondary">
+            <p>
+              BoldCrest is a Tirana-based creative agency working across brand
+              development, production, and communication. We&apos;ve spent 7+
+              years building identities, shooting campaigns, and running content
+              systems for 30+ brands.
+            </p>
+            <p>
+              We don&apos;t separate thinking from making. Strategy informs
+              every visual. Craft elevates every message. And every project,
+              whether it&apos;s a logo or a national TVC, gets the same
+              obsessive attention to detail.
+            </p>
+          </div>
         </div>
       </section>
 
       {/* ── Horizontal Scroll Capabilities ── */}
       <HorizontalCapabilities categories={categories} />
 
-      {/* ── Worked On 200+ ── */}
+      {/* ── Process ── */}
+      <ProcessSection />
+
+      {/* ── Worked On 300+ ── */}
       <WorkedOn />
 
       {/* ── Testimonials ── */}
       <Testimonials />
+
+      {/* ── FAQ ── */}
+      {faqItems && faqItems.length > 0 && (
+        <FAQSection
+          heading="Questions We Hear Most"
+          items={faqItems}
+          ctaLabel="Start a Project"
+        />
+      )}
     </main>
   )
 }

@@ -1,0 +1,36 @@
+import type { Metadata } from 'next'
+import BrandDevelopmentClient from './BrandDevelopmentClient'
+import { BreadcrumbJsonLd, ServiceJsonLd, FAQJsonLd } from '@/components/services/JsonLd'
+
+export const metadata: Metadata = {
+  title: 'Brand Development Agency | Visual Identity, Logo & Packaging Design | BoldCrest',
+  description:
+    'Strategic brand development from Tirana. Logo design, visual identity systems, brand guidelines, packaging design, and creative advertising. 300+ projects across 11 industries. Go bold or go unseen.',
+  keywords: ['branding agency', 'logo design', 'brand identity design', 'visual identity', 'packaging design', 'brandbook design'],
+  openGraph: {
+    title: 'Brand Development | BoldCrest',
+    description: 'Strategic brand development. Logo design, visual identity systems, brand guidelines, packaging design, and creative advertising.',
+    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+  },
+  alternates: { canonical: '/services/brand-development' },
+}
+
+const FAQ_ITEMS = [
+  { question: "What's the difference between a logo and a visual identity?", answer: "A logo is one element, your mark. A visual identity is the complete system: logo, colors, typography, patterns, imagery style, and the rules governing how they work together. Think of the logo as your face and the identity as your entire wardrobe, posture, and voice." },
+  { question: "How many logo concepts will I see?", answer: "Depending on complexity, 2-3 distinct concepts. Each presented with strategic rationale. We then refine the chosen direction through 2-3 collaborative rounds." },
+  { question: "Can you rebrand an existing business?", answer: "Absolutely. We've handled rebrands for UniCredit, Albita, and others. Our process includes audit, logo refresh, updated templates, and new brand guide." },
+  { question: "Do I own the final brand files?", answer: "Yes. Full ownership transfers on final payment. All source files (AI, SVG, PNG, PDF) plus the brandbook. We retain portfolio rights unless otherwise agreed." },
+  { question: "Can you design packaging as part of a branding project?", answer: "Yes, and we recommend it. When identity and packaging are designed by the same team, coherence is built in. We handle everything from single product packaging to full product line systems." },
+  { question: "How long does a branding project take?", answer: "Logo: 2-3 weeks. Full visual identity with brandbook: 4-8 weeks. Packaging: 2-4 weeks per product. We'll lock a timeline in our first meeting." },
+]
+
+export default function BrandDevelopmentPage() {
+  return (
+    <>
+      <BreadcrumbJsonLd items={[{ name: 'Home', url: '/' }, { name: 'Services', url: '/services' }, { name: 'Brand Development', url: '/services/brand-development' }]} />
+      <ServiceJsonLd name="Brand Development" description="Strategic brand development: logo design, visual identity systems, brand guidelines, packaging design, and creative advertising." url="/services/brand-development" />
+      <FAQJsonLd items={FAQ_ITEMS} />
+      <BrandDevelopmentClient faqItems={FAQ_ITEMS} />
+    </>
+  )
+}
