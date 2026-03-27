@@ -136,7 +136,7 @@ export default function Hero() {
       {/* Desktop lines */}
       <h1 className="hidden font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[1.05] tracking-[-0.03em] md:block">
         {DESKTOP_LINES.map((line, lineIndex) => (
-          <span key={lineIndex} className="block overflow-hidden">
+          <span key={lineIndex} className={`block ${lineIndex < DESKTOP_LINES.length - 1 ? 'overflow-hidden' : ''}`}>
             {line.map((word, wordIndex) => (
               <span key={wordIndex}>
                 {wordIndex > 0 && ' '}
@@ -155,7 +155,7 @@ export default function Hero() {
       {/* Mobile lines */}
       <h1 className="font-display text-[clamp(3rem,12vw,5rem)] font-bold leading-[1.05] tracking-[-0.03em] md:hidden">
         {MOBILE_LINES.map((line, lineIndex) => (
-          <span key={lineIndex} className="block overflow-hidden">
+          <span key={lineIndex} className={`block ${lineIndex < MOBILE_LINES.length - 1 ? 'overflow-hidden' : ''}`}>
             {line.map((word, wordIndex) => (
               <span key={wordIndex}>
                 {wordIndex > 0 && ' '}
