@@ -16,9 +16,9 @@
   --text-primary: #ffffff;
   --text-secondary: rgba(255, 255, 255, 0.55);
   --text-tertiary: rgba(255, 255, 255, 0.3);
-  --accent: #e63228;
-  --accent-hover: #ff3d32;
-  --accent-glow: rgba(230, 50, 40, 0.15);
+  --accent: #4a4a4a;
+  --accent-hover: #666666;
+  --accent-glow: rgba(74, 74, 74, 0.15);
 
   /* Spacing */
   --space-xs: 0.5rem;

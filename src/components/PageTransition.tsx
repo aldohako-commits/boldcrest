@@ -219,7 +219,7 @@ export default function PageTransitionProvider({
             }}
           >
             BoldCrest
-            <span style={{ color: '#DA291C' }}>.</span>
+            <span style={{ color: '#4a4a4a' }}>.</span>
           </span>
         </div>
       </div>
