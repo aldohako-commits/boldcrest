@@ -3,6 +3,7 @@
 import { useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, useScroll, useTransform } from 'framer-motion'
+import { CTAButton } from '@/components/MagneticButton'
 
 const capabilities = [
   {
@@ -198,27 +199,7 @@ export default function ServiceCards() {
                 timing. If you&apos;re building something real, we&apos;ll
                 meet you there.
               </p>
-              <Link
-                href="/start-a-new-project"
-                className="group/btn flex w-full items-center justify-between rounded-full border border-white/20 px-8 py-5 text-[0.85rem] font-semibold uppercase tracking-[0.1em] text-white transition-all duration-300 hover:border-white/40"
-              >
-                Let&apos;s Chat
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  className="transition-transform duration-300 group-hover/btn:translate-x-1"
-                >
-                  <path
-                    d="M3 8h10M9 4l4 4-4 4"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </Link>
+              <CTAButton href="/start-a-new-project" label="Let's Chat" />
             </div>
           </div>
         </motion.div>
