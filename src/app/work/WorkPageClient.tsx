@@ -164,15 +164,29 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
 function ProjectListRow({ project, index }: { project: Project; index: number }) {
   const { ref, isVisible } = useInViewOnce()
   const [hovered, setHovered] = useState(false)
+  const [mouseMoving, setMouseMoving] = useState(false)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const rowRef = useRef<HTMLAnchorElement>(null)
+  const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setMouseMoving(false)
+      if (scrollTimer.current) clearTimeout(scrollTimer.current)
+      scrollTimer.current = setTimeout(() => setMouseMoving(true), 150)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (scrollTimer.current) clearTimeout(scrollTimer.current)
+    }
+  }, [])
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!rowRef.current) return
-    const rect = rowRef.current.getBoundingClientRect()
+    setMouseMoving(true)
     setMousePos({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
+      x: e.clientX,
+      y: e.clientY,
     })
   }
 
@@ -219,12 +233,12 @@ function ProjectListRow({ project, index }: { project: Project; index: number })
 
         {/* Hover thumbnail */}
         <AnimatePresence>
-          {hovered && project.thumbnail?.asset && (
+          {hovered && mouseMoving && project.thumbnail?.asset && (
             <motion.div
-              className="pointer-events-none absolute z-30"
+              className="pointer-events-none fixed z-30"
               style={{
-                left: mousePos.x,
-                top: mousePos.y - 120,
+                left: mousePos.x + 20,
+                top: mousePos.y - 80,
               }}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -321,7 +335,7 @@ function InlineFilter({
                 &times;
               </button>
             )}
-            <span className="text-[0.5rem] text-text-tertiary">/</span>
+            <span className="h-3 w-px bg-text-tertiary" />
             <button
               onClick={() => setOpenFilter('industry')}
               className={`${labelClass} flex items-center gap-2`}
