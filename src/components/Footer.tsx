@@ -206,9 +206,9 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Giant wordmark SVG — centered, bottom half clipped */}
-        <div className="mt-12 flex w-full items-end overflow-hidden md:mt-20">
-          <div className="w-full overflow-hidden" style={{ height: 'clamp(3rem, 8vw, 7rem)' }}>
+        {/* Giant wordmark SVG — constrained to content width, bottom half clipped */}
+        <div className="flex w-full items-end overflow-hidden px-[var(--gutter)] pt-5">
+          <div className="mx-auto w-full max-w-[var(--max-width)] overflow-hidden" style={{ height: 'clamp(3rem, 8vw, 7rem)' }}>
             <div ref={wordmarkRef} style={{ transform: 'translateY(100%)' }}>
               <svg viewBox="0 0 430.12 48.96" className="w-full" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <g>
