@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { urlFor } from '@/sanity/lib/image'
 import { sanityImageLoader } from '@/sanity/lib/loader'
 import { PageMorphBlobs, WORK_BLOBS } from '@/components/MorphBlobs'
@@ -161,9 +161,133 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
   )
 }
 
+function InlineFilter({
+  openFilter,
+  setOpenFilter,
+  serviceFilter,
+  setServiceFilter,
+  industryFilter,
+  setIndustryFilter,
+  allServices,
+  allIndustries,
+}: {
+  openFilter: 'services' | 'industry' | null
+  setOpenFilter: (v: 'services' | 'industry' | null) => void
+  serviceFilter: string
+  setServiceFilter: (v: string) => void
+  industryFilter: string
+  setIndustryFilter: (v: string) => void
+  allServices: string[]
+  allIndustries: string[]
+}) {
+  const labelClass =
+    'text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-text-secondary cursor-pointer transition-colors duration-200 hover:text-white'
+  const itemClass =
+    'text-[0.7rem] font-medium uppercase tracking-[0.1em] text-text-tertiary cursor-pointer transition-colors duration-200 hover:text-white whitespace-nowrap'
+
+  const items = openFilter === 'services'
+    ? allServices.filter((s) => s !== 'All')
+    : allIndustries.filter((s) => s !== 'All')
+
+  const handleSelect = (value: string) => {
+    if (openFilter === 'services') {
+      setServiceFilter(value === serviceFilter ? 'All' : value)
+    } else {
+      setIndustryFilter(value === industryFilter ? 'All' : value)
+    }
+    setOpenFilter(null)
+  }
+
+  return (
+    <motion.div
+      className="mt-6 flex items-center gap-5 overflow-hidden"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <AnimatePresence mode="wait">
+        {openFilter === null ? (
+          /* ── Collapsed: show both labels ── */
+          <motion.div
+            key="collapsed"
+            className="flex items-center gap-5"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <button
+              onClick={() => setOpenFilter('services')}
+              className={labelClass}
+            >
+              Services{serviceFilter !== 'All' ? `: ${serviceFilter}` : ''}
+            </button>
+            <span className="text-[0.5rem] text-text-tertiary">/</span>
+            <button
+              onClick={() => setOpenFilter('industry')}
+              className={labelClass}
+            >
+              Industry{industryFilter !== 'All' ? `: ${industryFilter}` : ''}
+            </button>
+          </motion.div>
+        ) : (
+          /* ── Expanded: label + items + X ── */
+          <motion.div
+            key={`expanded-${openFilter}`}
+            className="flex items-center gap-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <span className="text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-white whitespace-nowrap">
+              {openFilter === 'services' ? 'Services' : 'Industry'}
+            </span>
+            <span className="h-3 w-px bg-border" />
+            <div className="flex items-center gap-3 overflow-x-auto">
+              {items.map((item, i) => (
+                <motion.button
+                  key={item}
+                  onClick={() => handleSelect(item)}
+                  className={itemClass}
+                  initial={{ opacity: 0, x: 12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{
+                    duration: 0.35,
+                    delay: i * 0.04,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                >
+                  {item}
+                </motion.button>
+              ))}
+              <motion.button
+                onClick={() => setOpenFilter(null)}
+                className="ml-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border border-border text-text-tertiary transition-colors duration-200 hover:border-text-secondary hover:text-white"
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{
+                  duration: 0.3,
+                  delay: items.length * 0.04,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+              >
+                <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
+                  <path d="M1 1l8 8M9 1l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )
+}
+
 export default function WorkPageClient({ projects, initialService, initialIndustry }: WorkPageClientProps) {
   const [serviceFilter, setServiceFilter] = useState(initialService || 'All')
   const [industryFilter, setIndustryFilter] = useState(initialIndustry || 'All')
+  const [openFilter, setOpenFilter] = useState<'services' | 'industry' | null>(null)
 
   const allServices = useMemo(() => {
     const set = new Set<string>()
@@ -194,73 +318,60 @@ export default function WorkPageClient({ projects, initialService, initialIndust
       <PageMorphBlobs blobs={WORK_BLOBS} />
 
       {/* ── Hero ── */}
-      <section className="px-[var(--gutter)] pt-40 pb-[var(--space-xl)]">
-        <div className="flex flex-col gap-[var(--space-xl)] md:flex-row md:items-end md:justify-between">
-          <motion.h1
-            className="font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[0.95] tracking-[-0.03em] text-white"
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      <section className="flex h-[65vh] min-h-[500px] flex-col justify-end px-[var(--gutter)]">
+        <div>
+          <motion.p
+            className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
-            Bold Builds Brands<span className="text-accent">.</span>
-          </motion.h1>
+            Our Work
+          </motion.p>
+
+          {/* Title row — h1 left, description right-aligned to bottom of h1 */}
+          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <motion.h1
+              className="font-display text-[clamp(2.5rem,6vw,5.5rem)] font-bold leading-[1] tracking-[-0.03em] text-white"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            >
+              Bold<br />
+              Builds<br />
+              Brands<span className="text-accent">.</span>
+            </motion.h1>
+
+            <motion.p
+              className="max-w-[400px] text-[0.95rem] leading-[1.7] text-text-secondary md:text-right"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            >
+              A curated collection of brand identities, campaigns, and visual systems built for ambitious brands. Every project is a partnership — crafted with intention, delivered with precision.
+            </motion.p>
+          </div>
 
           {/* Filters */}
-          <motion.div
-            className="flex flex-wrap gap-3"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <div className="relative">
-              <select
-                value={serviceFilter}
-                onChange={(e) => setServiceFilter(e.target.value)}
-                className="cursor-pointer appearance-none rounded-[var(--radius-pill)] border border-border bg-transparent px-5 py-[0.6rem] pr-10 text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-text-secondary transition-all duration-200 hover:border-text-secondary hover:text-white focus:border-text-secondary focus:text-white focus:outline-none"
-              >
-                {allServices.map((s) => (
-                  <option key={s} value={s} className="bg-bg text-text-primary">
-                    {s === 'All' ? 'Service: All' : s}
-                  </option>
-                ))}
-              </select>
-              <svg
-                className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2"
-                width="10" height="10" viewBox="0 0 12 12" fill="none"
-              >
-                <path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </div>
-
-            <div className="relative">
-              <select
-                value={industryFilter}
-                onChange={(e) => setIndustryFilter(e.target.value)}
-                className="cursor-pointer appearance-none rounded-[var(--radius-pill)] border border-border bg-transparent px-5 py-[0.6rem] pr-10 text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-text-secondary transition-all duration-200 hover:border-text-secondary hover:text-white focus:border-text-secondary focus:text-white focus:outline-none"
-              >
-                {allIndustries.map((ind) => (
-                  <option key={ind} value={ind} className="bg-bg text-text-primary">
-                    {ind === 'All' ? 'Industry: All' : ind}
-                  </option>
-                ))}
-              </select>
-              <svg
-                className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2"
-                width="10" height="10" viewBox="0 0 12 12" fill="none"
-              >
-                <path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </div>
-          </motion.div>
+          <InlineFilter
+            openFilter={openFilter}
+            setOpenFilter={setOpenFilter}
+            serviceFilter={serviceFilter}
+            setServiceFilter={setServiceFilter}
+            industryFilter={industryFilter}
+            setIndustryFilter={setIndustryFilter}
+            allServices={allServices}
+            allIndustries={allIndustries}
+          />
         </div>
 
         {/* Divider */}
-        <div className="mt-[var(--space-xl)] h-px w-full bg-border" />
+        <div className="mt-10 h-px w-full bg-border" />
       </section>
 
       {/* ── Project Grid ── */}
-      <section className="px-[var(--gutter)] pb-[var(--space-3xl)]">
-        <div className="grid grid-cols-1 gap-x-6 gap-y-14 md:grid-cols-2 lg:gap-x-8">
+      <section className="px-[var(--gutter)] pt-[var(--space-xl)] pb-[var(--space-3xl)]">
+        <div className="grid grid-cols-1 gap-x-6 gap-y-14 md:grid-cols-2 lg:grid-cols-3 lg:gap-x-8">
           {filtered.map((project, i) => (
             <ProjectCard key={project._id} project={project} index={i} />
           ))}

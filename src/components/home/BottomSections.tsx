@@ -471,7 +471,7 @@ export function HomeDiary({ diaryPosts }: { diaryPosts: DiaryPost[] }) {
   return <DiarySection posts={diaryPosts} />
 }
 
-/** Team + Coffee — lives outside the ColorTransitionZone (dark bg) */
+/** Team + Coffee CTA — lives outside the ColorTransitionZone (dark bg) */
 export default function BottomSections({ members }: { members: TeamMember[] }) {
   return (
     <>
