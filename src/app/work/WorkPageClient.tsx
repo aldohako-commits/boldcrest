@@ -161,6 +161,94 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
   )
 }
 
+function ProjectListRow({ project, index }: { project: Project; index: number }) {
+  const { ref, isVisible } = useInViewOnce()
+  const [hovered, setHovered] = useState(false)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const rowRef = useRef<HTMLAnchorElement>(null)
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!rowRef.current) return
+    const rect = rowRef.current.getBoundingClientRect()
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    })
+  }
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 20 }}
+      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+      transition={{
+        duration: 0.5,
+        delay: Math.min(index, 8) * 0.05,
+        ease: [0.16, 1, 0.3, 1],
+      }}
+    >
+      <Link
+        ref={rowRef}
+        href={`/work/${project.slug?.current}`}
+        className="group relative flex items-center justify-between border-b border-border py-5 transition-colors duration-200 hover:border-text-tertiary"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onMouseMove={handleMouseMove}
+      >
+        <div className="flex items-baseline gap-3">
+          <h3 className="font-display text-[clamp(1.1rem,2vw,1.5rem)] font-bold text-text-primary transition-colors duration-200 group-hover:text-white">
+            {project.client || project.name}
+          </h3>
+          {(project.tagline || (project.client && project.name)) && (
+            <span className="font-display text-[clamp(1.1rem,2vw,1.5rem)] font-normal text-text-primary">
+              {project.tagline || project.name}
+            </span>
+          )}
+        </div>
+
+        <div className="hidden items-center gap-3 md:flex">
+          {project.services?.slice(0, 2).map((service) => (
+            <span
+              key={service}
+              className="text-[0.7rem] font-medium uppercase tracking-[0.1em] text-text-tertiary"
+            >
+              {service}
+            </span>
+          ))}
+        </div>
+
+        {/* Hover thumbnail */}
+        <AnimatePresence>
+          {hovered && project.thumbnail?.asset && (
+            <motion.div
+              className="pointer-events-none absolute z-30"
+              style={{
+                left: mousePos.x,
+                top: mousePos.y - 120,
+              }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div className="relative h-[160px] w-[240px] overflow-hidden rounded-lg shadow-2xl">
+                <Image
+                  loader={sanityImageLoader}
+                  src={urlFor(project.thumbnail).width(480).height(320).url()}
+                  alt={project.name}
+                  fill
+                  className="object-cover"
+                  sizes="240px"
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </Link>
+    </motion.div>
+  )
+}
+
 function InlineFilter({
   openFilter,
   setOpenFilter,
@@ -183,7 +271,7 @@ function InlineFilter({
   const labelClass =
     'text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-text-secondary cursor-pointer transition-colors duration-200 hover:text-white'
   const itemClass =
-    'text-[0.7rem] font-medium uppercase tracking-[0.1em] text-text-tertiary cursor-pointer transition-colors duration-200 hover:text-white whitespace-nowrap'
+    'text-[0.7rem] font-medium uppercase tracking-[0.1em] cursor-pointer transition-colors duration-200 hover:text-white whitespace-nowrap'
 
   const items = openFilter === 'services'
     ? allServices.filter((s) => s !== 'All')
@@ -200,7 +288,7 @@ function InlineFilter({
 
   return (
     <motion.div
-      className="mt-6 flex items-center gap-5 overflow-hidden"
+      className="flex items-center gap-5 overflow-hidden"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
@@ -218,17 +306,39 @@ function InlineFilter({
           >
             <button
               onClick={() => setOpenFilter('services')}
-              className={labelClass}
+              className={`${labelClass} flex items-center gap-2`}
             >
-              Services{serviceFilter !== 'All' ? `: ${serviceFilter}` : ''}
+              Services
+              {serviceFilter !== 'All' && (
+                <span className="text-[#a3a3a3]">{serviceFilter}</span>
+              )}
             </button>
+            {serviceFilter !== 'All' && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setServiceFilter('All') }}
+                className="-ml-1 text-[1rem] leading-none text-[#a3a3a3] transition-colors duration-200 hover:text-white"
+              >
+                &times;
+              </button>
+            )}
             <span className="text-[0.5rem] text-text-tertiary">/</span>
             <button
               onClick={() => setOpenFilter('industry')}
-              className={labelClass}
+              className={`${labelClass} flex items-center gap-2`}
             >
-              Industry{industryFilter !== 'All' ? `: ${industryFilter}` : ''}
+              Industry
+              {industryFilter !== 'All' && (
+                <span className="text-[#a3a3a3]">{industryFilter}</span>
+              )}
             </button>
+            {industryFilter !== 'All' && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setIndustryFilter('All') }}
+                className="-ml-1 text-[1rem] leading-none text-[#a3a3a3] transition-colors duration-200 hover:text-white"
+              >
+                &times;
+              </button>
+            )}
           </motion.div>
         ) : (
           /* ── Expanded: label + items + X ── */
@@ -244,12 +354,15 @@ function InlineFilter({
               {openFilter === 'services' ? 'Services' : 'Industry'}
             </span>
             <span className="h-3 w-px bg-border" />
-            <div className="flex items-center gap-3 overflow-x-auto">
+            <div className="flex items-center gap-3">
               {items.map((item, i) => (
                 <motion.button
                   key={item}
                   onClick={() => handleSelect(item)}
                   className={itemClass}
+                  style={{ color: '#a3a3a3' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = '#ffffff' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = '#a3a3a3' }}
                   initial={{ opacity: 0, x: 12 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{
@@ -263,7 +376,10 @@ function InlineFilter({
               ))}
               <motion.button
                 onClick={() => setOpenFilter(null)}
-                className="ml-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border border-border text-text-tertiary transition-colors duration-200 hover:border-text-secondary hover:text-white"
+                className="ml-1 flex-shrink-0 text-[1rem] leading-none transition-colors duration-200 focus:outline-none"
+                style={{ color: '#a3a3a3' }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = '#ffffff' }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = '#a3a3a3' }}
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{
@@ -272,9 +388,7 @@ function InlineFilter({
                   ease: [0.16, 1, 0.3, 1],
                 }}
               >
-                <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
-                  <path d="M1 1l8 8M9 1l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+                &times;
               </motion.button>
             </div>
           </motion.div>
@@ -288,6 +402,7 @@ export default function WorkPageClient({ projects, initialService, initialIndust
   const [serviceFilter, setServiceFilter] = useState(initialService || 'All')
   const [industryFilter, setIndustryFilter] = useState(initialIndustry || 'All')
   const [openFilter, setOpenFilter] = useState<'services' | 'industry' | null>(null)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   const allServices = useMemo(() => {
     const set = new Set<string>()
@@ -318,7 +433,7 @@ export default function WorkPageClient({ projects, initialService, initialIndust
       <PageMorphBlobs blobs={WORK_BLOBS} />
 
       {/* ── Hero ── */}
-      <section className="flex h-[65vh] min-h-[500px] flex-col justify-end px-[var(--gutter)]">
+      <section className="flex flex-col justify-between px-[var(--gutter)] pt-[120px] pb-0 md:h-[50vh] md:min-h-[380px] lg:h-[60vh] lg:min-h-[480px]">
         <div>
           <motion.p
             className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
@@ -352,7 +467,10 @@ export default function WorkPageClient({ projects, initialService, initialIndust
             </motion.p>
           </div>
 
-          {/* Filters */}
+        </div>
+
+        {/* Filters + View Toggle */}
+        <div className="mt-10 flex items-center justify-between md:mt-0">
           <InlineFilter
             openFilter={openFilter}
             setOpenFilter={setOpenFilter}
@@ -363,19 +481,71 @@ export default function WorkPageClient({ projects, initialService, initialIndust
             allServices={allServices}
             allIndustries={allIndustries}
           />
+
+          {/* Grid / List toggle */}
+          <div className="hidden items-center gap-3 md:flex">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`transition-colors duration-200 ${viewMode === 'grid' ? 'text-white' : 'text-text-tertiary hover:text-white'}`}
+              aria-label="Grid view"
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <rect x="0.5" y="0.5" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.2" />
+                <rect x="10.5" y="0.5" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.2" />
+                <rect x="0.5" y="10.5" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.2" />
+                <rect x="10.5" y="10.5" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.2" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`transition-colors duration-200 ${viewMode === 'list' ? 'text-white' : 'text-text-tertiary hover:text-white'}`}
+              aria-label="List view"
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <line x1="0" y1="2" x2="18" y2="2" stroke="currentColor" strokeWidth="1.2" />
+                <line x1="0" y1="7" x2="18" y2="7" stroke="currentColor" strokeWidth="1.2" />
+                <line x1="0" y1="12" x2="18" y2="12" stroke="currentColor" strokeWidth="1.2" />
+                <line x1="0" y1="17" x2="18" y2="17" stroke="currentColor" strokeWidth="1.2" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Divider */}
-        <div className="mt-10 h-px w-full bg-border" />
+        <div className="mt-4 h-px w-full bg-border" />
       </section>
 
-      {/* ── Project Grid ── */}
+      {/* ── Projects ── */}
       <section className="px-[var(--gutter)] pt-[var(--space-xl)] pb-[var(--space-3xl)]">
-        <div className="grid grid-cols-1 gap-x-6 gap-y-14 md:grid-cols-2 lg:grid-cols-3 lg:gap-x-8">
-          {filtered.map((project, i) => (
-            <ProjectCard key={project._id} project={project} index={i} />
-          ))}
-        </div>
+        <AnimatePresence mode="wait">
+          {viewMode === 'grid' ? (
+            <motion.div
+              key="grid"
+              className="grid grid-cols-1 gap-x-6 gap-y-14 md:grid-cols-2 lg:grid-cols-3 lg:gap-x-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {filtered.map((project, i) => (
+                <ProjectCard key={project._id} project={project} index={i} />
+              ))}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="list"
+              className="border-t border-border"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {filtered.map((project, i) => (
+                <ProjectListRow key={project._id} project={project} index={i} />
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {filtered.length === 0 && (
           <div className="py-20 text-center text-text-tertiary">
