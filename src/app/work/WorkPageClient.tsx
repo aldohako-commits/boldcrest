@@ -433,7 +433,7 @@ export default function WorkPageClient({ projects, initialService, initialIndust
       <PageMorphBlobs blobs={WORK_BLOBS} />
 
       {/* ── Hero ── */}
-      <section className="flex flex-col justify-between px-[var(--gutter)] pt-[120px] pb-0 md:h-[50vh] md:min-h-[380px] lg:h-[60vh] lg:min-h-[480px]">
+      <section className="flex flex-col justify-between px-[var(--gutter)] pt-[120px] pb-0 md:h-auto md:pb-0 lg:h-[55vh] lg:min-h-[460px]">
         <div>
           <motion.p
             className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
@@ -469,50 +469,52 @@ export default function WorkPageClient({ projects, initialService, initialIndust
 
         </div>
 
-        {/* Filters + View Toggle */}
-        <div className="mt-10 flex items-center justify-between md:mt-0">
-          <InlineFilter
-            openFilter={openFilter}
-            setOpenFilter={setOpenFilter}
-            serviceFilter={serviceFilter}
-            setServiceFilter={setServiceFilter}
-            industryFilter={industryFilter}
-            setIndustryFilter={setIndustryFilter}
-            allServices={allServices}
-            allIndustries={allIndustries}
-          />
+        {/* Filters + View Toggle + Divider — grouped so justify-between only splits title vs. this block */}
+        <div className="mt-10 md:mt-0">
+          <div className="flex items-center justify-between">
+            <InlineFilter
+              openFilter={openFilter}
+              setOpenFilter={setOpenFilter}
+              serviceFilter={serviceFilter}
+              setServiceFilter={setServiceFilter}
+              industryFilter={industryFilter}
+              setIndustryFilter={setIndustryFilter}
+              allServices={allServices}
+              allIndustries={allIndustries}
+            />
 
-          {/* Grid / List toggle */}
-          <div className="hidden items-center gap-3 md:flex">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`transition-colors duration-200 ${viewMode === 'grid' ? 'text-white' : 'text-text-tertiary hover:text-white'}`}
-              aria-label="Grid view"
-            >
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                <rect x="0.5" y="0.5" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.2" />
-                <rect x="10.5" y="0.5" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.2" />
-                <rect x="0.5" y="10.5" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.2" />
-                <rect x="10.5" y="10.5" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.2" />
-              </svg>
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`transition-colors duration-200 ${viewMode === 'list' ? 'text-white' : 'text-text-tertiary hover:text-white'}`}
-              aria-label="List view"
-            >
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                <line x1="0" y1="2" x2="18" y2="2" stroke="currentColor" strokeWidth="1.2" />
-                <line x1="0" y1="7" x2="18" y2="7" stroke="currentColor" strokeWidth="1.2" />
-                <line x1="0" y1="12" x2="18" y2="12" stroke="currentColor" strokeWidth="1.2" />
-                <line x1="0" y1="17" x2="18" y2="17" stroke="currentColor" strokeWidth="1.2" />
-              </svg>
-            </button>
+            {/* Grid / List toggle */}
+            <div className="hidden items-center gap-3 md:flex">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`transition-colors duration-200 ${viewMode === 'grid' ? 'text-white' : 'text-text-tertiary hover:text-white'}`}
+                aria-label="Grid view"
+              >
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <rect x="0.5" y="0.5" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.2" />
+                  <rect x="10.5" y="0.5" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.2" />
+                  <rect x="0.5" y="10.5" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.2" />
+                  <rect x="10.5" y="10.5" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.2" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`transition-colors duration-200 ${viewMode === 'list' ? 'text-white' : 'text-text-tertiary hover:text-white'}`}
+                aria-label="List view"
+              >
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <line x1="0" y1="2" x2="18" y2="2" stroke="currentColor" strokeWidth="1.2" />
+                  <line x1="0" y1="7" x2="18" y2="7" stroke="currentColor" strokeWidth="1.2" />
+                  <line x1="0" y1="12" x2="18" y2="12" stroke="currentColor" strokeWidth="1.2" />
+                  <line x1="0" y1="17" x2="18" y2="17" stroke="currentColor" strokeWidth="1.2" />
+                </svg>
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Divider */}
-        <div className="mt-4 h-px w-full bg-border" />
+          {/* Divider */}
+          <div className="mt-4 h-px w-full bg-border" />
+        </div>
       </section>
 
       {/* ── Projects ── */}
