@@ -212,40 +212,31 @@ function WordItem({
   )
 }
 
-/* ── Horizontal scroll capabilities ── */
-function HorizontalCapabilities({
+/* ── Capabilities Cards (static boxes) ── */
+function CapabilitiesCards({
   categories,
 }: {
   categories: CategoryGroup[]
 }) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start start', 'end end'],
-  })
-
-  // 3 panels at 50vw each = 150vw total. Offset = 150vw - 100vw = 50vw = 33.33% of total
-  const x = useTransform(scrollYProgress, [0, 1], ['0%', '-33.333%'])
+  const ref = useRef<HTMLElement>(null)
+  const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
-    <section ref={containerRef} className="relative h-[250vh]">
-      <div className="sticky top-0 flex h-screen flex-col overflow-hidden">
-        {/* Label */}
-        <div className="flex items-center justify-between px-[var(--gutter)] pt-8 pb-6">
-          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
-            Three Disciplines. One Standard.
-          </p>
-        </div>
-
-        {/* Top separator line */}
-        <div className="mx-[var(--gutter)] h-px bg-border" />
-
-        {/* Horizontal panels */}
-        <motion.div
-          className="flex flex-1"
-          style={{ x }}
+    <section ref={ref} className="px-[var(--gutter)] py-[var(--space-3xl)]">
+      <div className="mx-auto max-w-[var(--max-width)]">
+        {/* Section label */}
+        <motion.p
+          className="mb-[var(--space-xl)] text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.6 }}
         >
-          {capabilities.map((cap, index) => {
+          Three Disciplines. One Standard.
+        </motion.p>
+
+        {/* Cards grid */}
+        <div className="grid gap-5 md:grid-cols-3">
+          {capabilities.map((cap, i) => {
             const sanityServices =
               categories.find((c) => c.category === cap.category)
                 ?.services || []
@@ -255,20 +246,31 @@ function HorizontalCapabilities({
                 : cap.tags
 
             return (
-              <div
+              <motion.div
                 key={cap.category}
-                className="relative flex shrink-0 flex-col"
-                style={{
-                  width: '50vw',
-                  minWidth: '480px',
-                  borderRight: '1px solid rgba(255,255,255,0.06)',
+                initial={{ opacity: 0, y: 30 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                transition={{
+                  duration: 0.7,
+                  delay: 0.15 + i * 0.1,
+                  ease: [0.16, 1, 0.3, 1],
                 }}
               >
-                <div className="flex h-full flex-col justify-between overflow-hidden px-8 py-10 lg:px-12 lg:py-14">
-                  {/* Top section */}
-                  <div className="min-h-0 flex-1 overflow-y-auto">
+                <Link
+                  href={cap.href}
+                  className="group flex min-h-[420px] flex-col justify-between rounded-2xl border border-border/40 p-8 transition-all duration-500 hover:border-white/20 lg:p-10"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = `${cap.color}12`
+                    e.currentTarget.style.borderColor = `${cap.color}40`
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                    e.currentTarget.style.borderColor = ''
+                  }}
+                >
+                  <div>
                     {/* Number + Abbreviation */}
-                    <div className="mb-8 flex items-center gap-4">
+                    <div className="mb-6 flex items-center gap-4">
                       <span
                         className="text-[0.65rem] font-bold tracking-[0.15em]"
                         style={{ color: cap.color }}
@@ -281,74 +283,44 @@ function HorizontalCapabilities({
                     </div>
 
                     {/* Heading */}
-                    <h2 className="mb-6 font-display text-[clamp(3rem,6vw,6rem)] font-bold leading-[0.9] tracking-[-0.04em] text-white whitespace-pre-line">
+                    <h3 className="mb-4 font-display text-[clamp(1.6rem,2.5vw,2.2rem)] font-bold leading-[1.05] tracking-[-0.02em] text-text-primary whitespace-pre-line">
                       {cap.heading}
-                    </h2>
+                    </h3>
 
                     {/* Description */}
-                    <p className="mb-8 max-w-[420px] text-[0.9rem] leading-[1.7] text-text-secondary">
+                    <p className="mb-6 text-[0.85rem] leading-[1.7] text-text-secondary">
                       {cap.description}
                     </p>
 
                     {/* Tags */}
                     <div className="flex flex-wrap gap-2">
                       {tags.map((tag) => (
-                        <Link
+                        <span
                           key={tag}
-                          href={`/work?service=${encodeURIComponent(tag)}`}
-                          className="rounded-full border px-3.5 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.06em] transition-all duration-300"
+                          className="rounded-full border px-3 py-1 text-[0.6rem] font-medium uppercase tracking-[0.06em] transition-all duration-300"
                           style={{
                             borderColor: `${cap.color}25`,
-                            color: 'rgba(255,255,255,0.5)',
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = cap.color
-                            e.currentTarget.style.backgroundColor = `${cap.color}15`
-                            e.currentTarget.style.color = 'rgba(255,255,255,0.9)'
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = `${cap.color}25`
-                            e.currentTarget.style.backgroundColor = 'transparent'
-                            e.currentTarget.style.color = 'rgba(255,255,255,0.5)'
+                            color: 'rgba(255,255,255,0.45)',
                           }}
                         >
                           {tag}
-                        </Link>
+                        </span>
                       ))}
                     </div>
                   </div>
 
-                  {/* Bottom: CTA button */}
-                  <div className="shrink-0 pt-8">
-                    <Link
-                      href={cap.href}
-                      className="group inline-flex items-center gap-3 rounded-[var(--radius-pill)] border px-5 py-[0.55rem] text-[0.7rem] font-semibold uppercase tracking-[0.12em] transition-all duration-500"
-                      style={{
-                        borderColor: `${cap.color}40`,
-                        color: 'rgba(255,255,255,0.7)',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = cap.color
-                        e.currentTarget.style.color = '#fff'
-                        e.currentTarget.style.backgroundColor = `${cap.color}18`
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = `${cap.color}40`
-                        e.currentTarget.style.color = 'rgba(255,255,255,0.7)'
-                        e.currentTarget.style.backgroundColor = 'transparent'
-                      }}
-                    >
-                      {cap.ctaLabel}
-                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="transition-transform duration-300 group-hover:translate-x-1">
-                        <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </Link>
+                  {/* CTA */}
+                  <div className="mt-8 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.1em] text-text-tertiary transition-colors duration-300 group-hover:text-text-primary">
+                    <span>{cap.ctaLabel}</span>
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="transition-transform duration-300 group-hover:translate-x-1">
+                      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
                   </div>
-                </div>
-              </div>
+                </Link>
+              </motion.div>
             )
           })}
-        </motion.div>
+        </div>
       </div>
     </section>
   )
@@ -834,8 +806,8 @@ export default function ServicesPageClient({
         </div>
       </section>
 
-      {/* ── Horizontal Scroll Capabilities ── */}
-      <HorizontalCapabilities categories={categories} />
+      {/* ── Capabilities Cards ── */}
+      <CapabilitiesCards categories={categories} />
 
       {/* ── Process ── */}
       <ProcessSection />
