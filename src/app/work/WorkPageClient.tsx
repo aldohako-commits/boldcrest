@@ -269,7 +269,7 @@ function InlineFilter({
   allIndustries: string[]
 }) {
   const labelClass =
-    'text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-text-secondary cursor-pointer transition-colors duration-200 hover:text-white'
+    'text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-text-secondary cursor-pointer transition-colors duration-200 hover:text-[#a3a3a3]'
   const itemClass =
     'text-[0.7rem] font-medium uppercase tracking-[0.1em] cursor-pointer transition-colors duration-200 hover:text-white whitespace-nowrap'
 

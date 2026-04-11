@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { urlFor } from '@/sanity/lib/image'
 import { sanityImageLoader } from '@/sanity/lib/loader'
 import ScrollReveal from '@/components/ScrollReveal'
@@ -161,100 +161,108 @@ export default function DiaryPageClient({ posts }: DiaryPageClientProps) {
       <PageMorphBlobs blobs={DIARY_BLOBS} />
 
       {/* Hero */}
-      <section className="relative px-[var(--gutter)] pt-40 pb-[var(--space-xl)]">
-        <div className="mx-auto max-w-[var(--max-width)]">
+      <section className="flex flex-col px-[var(--gutter)] pt-[120px] pb-0">
+        <div>
           <motion.p
-            className="mb-6 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
+            className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
             Diary
           </motion.p>
 
-          <motion.h1
-            className="max-w-[900px] font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[1.05]"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          >
-            The latest from
-            <br />
-            our world<span className="text-accent">.</span>
-          </motion.h1>
+          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <motion.h1
+              className="font-display text-[clamp(2.5rem,6vw,5.5rem)] font-bold leading-[1] tracking-[-0.03em] text-white"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            >
+              The Latest<br />
+              From Our<br />
+              World<span className="text-accent">.</span>
+            </motion.h1>
 
-          <motion.p
-            className="mt-[var(--space-lg)] max-w-[550px] text-[1.1rem] leading-[1.7] text-text-secondary"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.8,
-              delay: 0.3,
-              ease: [0.16, 1, 0.3, 1],
-            }}
-          >
-            Read deeper into what we do, think, and create at BoldCrest.
-          </motion.p>
+            <motion.p
+              className="max-w-[400px] text-[0.95rem] leading-[1.7] text-text-secondary md:text-right"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            >
+              Read deeper into what we do, think, and create at BoldCrest.
+            </motion.p>
+          </div>
         </div>
-      </section>
 
-      {/* Filters */}
-      <section className="px-[var(--gutter)] pb-[var(--space-lg)]">
-        <div className="mx-auto max-w-[var(--max-width)]">
+        {/* Filters + Divider */}
+        <div className="mt-10 md:mt-12 lg:mt-16">
           <motion.div
-            className="flex flex-wrap items-center gap-6 border-b border-border pb-6"
+            className="flex flex-wrap items-center gap-3"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.8,
-              delay: 0.4,
-              ease: [0.16, 1, 0.3, 1],
-            }}
+            transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           >
-            <span className="text-[0.85rem] text-text-tertiary">
-              {filtered.length} {filtered.length === 1 ? 'Result' : 'Results'}
-            </span>
-
-            <div className="flex flex-wrap gap-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveFilter(cat)}
-                  className={`rounded-[var(--radius-pill)] border px-4 py-[0.4rem] text-[0.75rem] font-semibold uppercase tracking-[0.1em] transition-all duration-200 ${
-                    activeFilter === cat
-                      ? 'border-white bg-white text-bg'
-                      : 'border-border text-text-secondary hover:border-text-secondary hover:text-white'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveFilter(cat)}
+                className="text-[0.75rem] font-semibold uppercase tracking-[0.15em] transition-colors duration-200"
+                style={{ color: activeFilter === cat ? '#a3a3a3' : '#ffffff' }}
+                onMouseEnter={(e) => { if (activeFilter !== cat) e.currentTarget.style.color = '#a3a3a3' }}
+                onMouseLeave={(e) => { if (activeFilter !== cat) e.currentTarget.style.color = '#ffffff' }}
+              >
+                {cat}
+              </button>
+            ))}
           </motion.div>
+          <div className="mt-4 h-px w-full bg-border" />
         </div>
       </section>
 
       {/* Posts Grid */}
-      <section className="px-[var(--gutter)] pb-[var(--space-3xl)]">
+      <section className="px-[var(--gutter)] pt-[var(--space-xl)] pb-[var(--space-3xl)]">
         <div className="mx-auto max-w-[var(--max-width)]">
-          {filtered.length === 0 ? (
-            <div className="flex min-h-[300px] items-center justify-center">
-              <p className="text-[1rem] text-text-tertiary">
-                No posts yet. Check back soon.
-              </p>
-            </div>
-          ) : (
-            <ScrollRevealStagger
-              className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-              staggerDelay={0.08}
-            >
-              {filtered.map((post) => (
-                <ScrollRevealItem key={post._id}>
-                  <DiaryCard post={post} />
-                </ScrollRevealItem>
-              ))}
-            </ScrollRevealStagger>
-          )}
+          <AnimatePresence mode="wait">
+            {filtered.length === 0 ? (
+              <motion.div
+                key="empty"
+                className="flex min-h-[300px] items-center justify-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <p className="text-[1rem] text-text-tertiary">
+                  No posts yet. Check back soon.
+                </p>
+              </motion.div>
+            ) : (
+              <motion.div
+                key={activeFilter}
+                className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {filtered.map((post, i) => (
+                  <motion.div
+                    key={post._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: 0.5,
+                      delay: Math.min(i, 8) * 0.06,
+                      ease: [0.16, 1, 0.3, 1],
+                    }}
+                  >
+                    <DiaryCard post={post} />
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </section>
     </main>
