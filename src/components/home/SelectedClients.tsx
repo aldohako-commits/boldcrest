@@ -73,12 +73,12 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
           width={375}
           height={150}
           className="h-[150px] w-auto object-contain"
-          style={{ filter: 'brightness(0)' }}
+          style={{ filter: 'var(--zone-logo-filter, brightness(0))' }}
         />
       ) : (
         <span
           className="font-display text-[clamp(1.2rem,2.5vw,2rem)] font-semibold uppercase tracking-[0.08em]"
-          style={{ color: '#0a0a0a' }}
+          style={{ color: 'var(--zone-fg)' }}
         >
           {partner.name}
         </span>
@@ -89,10 +89,10 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
   return (
     <section className="pb-[var(--space-2xl)] overflow-hidden">
       <div className="px-[var(--gutter)] mb-[var(--space-lg)]">
-        <h2 className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-[#0a0a0a]/50">
+        <h2 className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--zone-fg-half)' }}>
           Trusted by the ambitious<span className="text-accent">.</span>
         </h2>
-        <div className="h-px bg-[#0a0a0a]/10" />
+        <div className="h-px" style={{ backgroundColor: 'var(--zone-fg-subtle)' }} />
       </div>
 
       {/* Row 1 — scrolls left */}

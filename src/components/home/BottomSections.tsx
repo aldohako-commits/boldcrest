@@ -350,7 +350,8 @@ function DiaryCardImage({ post, index }: { post: DiaryPost; index: number }) {
         {/* Category pill — neutral by default, colored on hover */}
         {post.category && (
           <span
-            className="category-pill mb-2 inline-block rounded-[var(--radius-pill)] border border-[#0a0a0a]/15 px-2 py-0.5 text-[0.5rem] font-semibold uppercase tracking-[0.12em] text-[#0a0a0a]/50 transition-all duration-200 md:mb-3 md:px-3 md:py-1 md:text-[0.6rem]"
+            className="category-pill mb-2 inline-block rounded-[var(--radius-pill)] border px-2 py-0.5 text-[0.5rem] font-semibold uppercase tracking-[0.12em] transition-all duration-200 md:mb-3 md:px-3 md:py-1 md:text-[0.6rem]"
+            style={{ borderColor: 'var(--zone-fg-faint)', color: 'var(--zone-fg-half)' }}
             onMouseEnter={(e) => {
               const el = e.currentTarget
               el.style.backgroundColor = color
@@ -360,8 +361,8 @@ function DiaryCardImage({ post, index }: { post: DiaryPost; index: number }) {
             onMouseLeave={(e) => {
               const el = e.currentTarget
               el.style.backgroundColor = 'transparent'
-              el.style.borderColor = ''
-              el.style.color = ''
+              el.style.borderColor = 'var(--zone-fg-faint)'
+              el.style.color = 'var(--zone-fg-half)'
             }}
           >
             {post.category}
@@ -369,13 +370,13 @@ function DiaryCardImage({ post, index }: { post: DiaryPost; index: number }) {
         )}
 
         {/* Title */}
-        <h3 className="font-display text-[0.7rem] font-bold uppercase leading-[1.3] tracking-[0.02em] text-[#0a0a0a] transition-colors duration-200 group-hover:text-[#0a0a0a]/50 md:text-[clamp(1rem,1.5vw,1.3rem)]">
+        <h3 className="font-display text-[0.7rem] font-bold uppercase leading-[1.3] tracking-[0.02em] transition-colors duration-200 md:text-[clamp(1rem,1.5vw,1.3rem)]" style={{ color: 'var(--zone-fg)' }}>
           {post.title}
         </h3>
 
         {/* Excerpt — hidden on mobile */}
         {post.excerpt && (
-          <p className="mt-2 line-clamp-2 hidden text-[0.8rem] leading-[1.6] text-[#0a0a0a]/45 md:block">
+          <p className="mt-2 line-clamp-2 hidden text-[0.8rem] leading-[1.6] md:block" style={{ color: 'var(--zone-fg-muted)' }}>
             {post.excerpt}
           </p>
         )}
@@ -395,13 +396,13 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
       {/* Diary header — matching Selected Works style */}
       <div className="px-[var(--gutter)]">
         <div className="mb-[var(--space-lg)] flex items-center justify-between">
-          <h2 className="font-display text-[0.75rem] font-semibold uppercase tracking-[0.2em]" style={{ color: 'rgba(10,10,10,0.6)' }}>
+          <h2 className="font-display text-[0.75rem] font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--zone-fg-half)' }}>
             The Diary
           </h2>
           <Link
             href="/diary"
             className="group/link flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.15em] transition-all duration-[0.5s] hover:gap-3"
-            style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)', color: 'rgba(10,10,10,0.4)' }}
+            style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)', color: 'var(--zone-fg-muted)' }}
           >
             <span className="inline-flex overflow-hidden" style={{ height: '1.2em' }}>
               <span className="flex flex-col transition-transform duration-[0.5s] group-hover/link:-translate-y-1/2" style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}>
@@ -416,7 +417,7 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
         </div>
       </div>
 
-      <div className="mx-[var(--gutter)] mb-[var(--space-lg)] h-px" style={{ backgroundColor: 'rgba(10,10,10,0.1)' }} />
+      <div className="mx-[var(--gutter)] mb-[var(--space-lg)] h-px" style={{ backgroundColor: 'var(--zone-border)' }} />
 
       {/* Post grid — 4 in one row */}
       <div className="grid grid-cols-1 gap-6 px-[var(--gutter)] sm:grid-cols-2 md:grid-cols-4 md:gap-5">
@@ -455,7 +456,7 @@ function CoffeeCTA() {
             What are you waiting for?
           </p>
           <p className="font-display text-[clamp(2rem,8vw,8rem)] font-bold leading-[1.1] tracking-[-0.03em]">
-            Let&apos;s drink{' '}
+            Let&apos;s have{' '}
             <InlineButton href="/contact" label="A Coffee" showArrow />{' '}
             together<span className="text-accent">.</span>
           </p>

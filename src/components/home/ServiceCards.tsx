@@ -108,13 +108,13 @@ export default function ServiceCards() {
       <div className="sticky top-0 h-screen overflow-hidden">
         {/* Label */}
         <div className="flex items-center px-[var(--gutter)] pt-8 pb-6">
-          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-[#0a0a0a]/50">
+          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--zone-fg-half)' }}>
             What We Do
           </p>
         </div>
 
         {/* Top separator */}
-        <div className="mx-[var(--gutter)] h-px bg-[#0a0a0a]/10" />
+        <div className="mx-[var(--gutter)] h-px" style={{ backgroundColor: 'var(--zone-fg-subtle)' }} />
 
         {/* Horizontal panels */}
         <motion.div
@@ -129,7 +129,7 @@ export default function ServiceCards() {
               style={{
                 width: '33.333vw',
                 minWidth: '400px',
-                borderRight: '1px solid #0a0a0a10',
+                borderRight: '1px solid var(--zone-fg-subtle)',
               }}
             >
               <div
@@ -141,10 +141,10 @@ export default function ServiceCards() {
               >
                 {/* Top: heading + description */}
                 <div>
-                  <h2 className="mb-4 font-display text-[clamp(2.5rem,5vw,5.5rem)] font-bold leading-[0.95] tracking-[-0.03em] text-[#0a0a0a]">
+                  <h2 className="mb-4 font-display text-[clamp(2.5rem,5vw,5.5rem)] font-bold leading-[0.95] tracking-[-0.03em]" style={{ color: 'var(--zone-fg)' }}>
                     {cap.heading}
                   </h2>
-                  <p className="max-w-[320px] text-[0.85rem] leading-[1.6] text-[#0a0a0a]/45">
+                  <p className="max-w-[320px] text-[0.85rem] leading-[1.6]" style={{ color: 'var(--zone-fg-muted)' }}>
                     {cap.description}
                   </p>
                 </div>
@@ -157,18 +157,18 @@ export default function ServiceCards() {
                       href={`/work?service=${encodeURIComponent(tag)}`}
                       className="rounded-full border px-3.5 py-1.5 text-[0.7rem] font-medium uppercase tracking-[0.05em] transition-all duration-200"
                       style={{
-                        borderColor: '#0a0a0a20',
-                        color: '#0a0a0a99',
+                        borderColor: 'var(--zone-fg-faint)',
+                        color: 'var(--zone-fg-half)',
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.borderColor = cap.color
                         e.currentTarget.style.backgroundColor = `${cap.color}15`
-                        e.currentTarget.style.color = '#0a0a0a'
+                        e.currentTarget.style.color = 'var(--zone-fg)'
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = '#0a0a0a20'
+                        e.currentTarget.style.borderColor = 'var(--zone-fg-faint)'
                         e.currentTarget.style.backgroundColor = 'transparent'
-                        e.currentTarget.style.color = '#0a0a0a99'
+                        e.currentTarget.style.color = 'var(--zone-fg-half)'
                       }}
                     >
                       {tag}
