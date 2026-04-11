@@ -433,7 +433,7 @@ export default function WorkPageClient({ projects, initialService, initialIndust
       <PageMorphBlobs blobs={WORK_BLOBS} />
 
       {/* ── Hero ── */}
-      <section className="flex flex-col justify-between px-[var(--gutter)] pt-[120px] pb-0 md:h-auto md:pb-0 lg:h-[55vh] lg:min-h-[460px]">
+      <section className="flex flex-col px-[var(--gutter)] pt-[120px] pb-0">
         <div>
           <motion.p
             className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
@@ -470,7 +470,7 @@ export default function WorkPageClient({ projects, initialService, initialIndust
         </div>
 
         {/* Filters + View Toggle + Divider — grouped so justify-between only splits title vs. this block */}
-        <div className="mt-10 md:mt-0">
+        <div className="mt-10 md:mt-12 lg:mt-16">
           <div className="flex items-center justify-between">
             <InlineFilter
               openFilter={openFilter}
