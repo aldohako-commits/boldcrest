@@ -518,7 +518,7 @@ export default function WorkPageClient({ projects, initialService, initialIndust
       </section>
 
       {/* ── Projects ── */}
-      <section className="px-[var(--gutter)] pt-[var(--space-xl)] pb-[var(--space-3xl)]">
+      <section className={`px-[var(--gutter)] pb-[var(--space-3xl)] ${viewMode === 'grid' ? 'pt-[var(--space-xl)]' : 'pt-0'}`}>
         <AnimatePresence mode="wait">
           {viewMode === 'grid' ? (
             <motion.div
@@ -536,7 +536,6 @@ export default function WorkPageClient({ projects, initialService, initialIndust
           ) : (
             <motion.div
               key="list"
-              className="border-t border-border"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
