@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — Ergys Zhabjaku Redesign Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg-alt: #f7f7f5;
+    --text: #1a1a17;
+    --text-mid: #6b6960;
+    --text-light: #9e9a90;
+    --text-faint: #c5c0b6;
+    --divider: rgba(0,0,0,0.08);
+    --font-serif: 'Cormorant Garamond', Georgia, serif;
+    --font-sans: 'Inter', Helvetica, sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  .header {
+    position: fixed; top: 0; left: 0; right: 0; height: 100px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 56px; z-index: 100;
+    background: rgba(255,255,255,0.95); backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--divider);
+  }
+  .logo { font-family: var(--font-serif); font-size: 22px; font-weight: 400; color: var(--text); }
+  .nav { display: flex; gap: 40px; }
+  .nav a { font-family: var(--font-sans); font-size: 12px; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-light); transition: color 0.3s ease; }
+  .nav a:hover, .nav a.active { color: var(--text); }
+
+  /* ── PAGE HEADER ── */
+  .page-header {
+    padding: 160px 56px 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .page-header h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(52px, 5.5vw, 88px);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 0.95;
+  }
+  .page-header-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    padding-bottom: 8px;
+  }
+  .page-header-meta span {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-light);
+  }
+
+  .divider { margin: 0 56px; border: none; border-top: 1px solid var(--divider); }
+
+  /* ── PORTRAIT ── */
+  .about-portrait {
+    padding: 0 56px;
+  }
+  .about-portrait-inner {
+    width: 100%;
+    height: 88vh;
+    overflow: hidden;
+    position: relative;
+    border-radius: 2px;
+  }
+  .about-portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .about-portrait-caption {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 40px;
+    background: linear-gradient(to top, rgba(26,26,23,0.5) 0%, transparent 100%);
+    color: rgba(255,255,255,0.5);
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* ── BIO ── */
+  .bio {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 120px 56px;
+  }
+  .bio-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 40px;
+  }
+  .bio p {
+    font-size: 17px;
+    line-height: 1.9;
+    font-weight: 300;
+    color: var(--text-mid);
+    margin-bottom: 28px;
+  }
+  .bio p:last-child { margin-bottom: 0; }
+
+  /* ── PRACTICE SPLIT ── */
+  .practice {
+    display: grid;
+    grid-template-columns: 44% 56%;
+    min-height: 500px;
+  }
+  .practice-text {
+    background: var(--text);
+    color: var(--bg);
+    padding: 80px 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .practice-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 48px;
+  }
+  .practice-heading {
+    font-family: var(--font-serif);
+    font-size: clamp(32px, 4vw, 56px);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.1;
+    color: var(--bg);
+    margin-bottom: 48px;
+  }
+  .practice-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .practice-list span {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+  }
+  .practice-image {
+    overflow: hidden;
+  }
+  .practice-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ── EXHIBITIONS ── */
+  .exhibitions {
+    padding: 120px 56px;
+  }
+  .exh-grid {
+    display: grid;
+    grid-template-columns: 30% 70%;
+    gap: 80px;
+  }
+  .exh-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-light);
+  }
+  .exh-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 0;
+    border-top: 1px solid var(--divider);
+  }
+  .exh-row:last-child { border-bottom: 1px solid var(--divider); }
+  .exh-year {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    min-width: 60px;
+  }
+  .exh-title {
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--text);
+    flex: 1;
+    text-align: center;
+  }
+  .exh-location {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    min-width: 100px;
+    text-align: right;
+  }
+
+  /* ── PRESS ── */
+  .press {
+    padding: 0 56px 120px;
+  }
+  .press-grid {
+    display: grid;
+    grid-template-columns: 30% 35% 35%;
+    gap: 80px;
+  }
+  .press-col-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 16px;
+  }
+  .press-list {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 2.2;
+    color: var(--text);
+  }
+
+  /* ── GALLERY CTA ── */
+  .gallery-cta {
+    padding: 56px;
+  }
+  .gallery-cta-inner {
+    width: 100%;
+    min-height: 400px;
+    overflow: hidden;
+    position: relative;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 80px;
+  }
+  .gallery-cta-inner img {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    object-fit: cover;
+    z-index: 0;
+  }
+  .gallery-cta-inner::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(26,26,23,0.7);
+    z-index: 1;
+  }
+  .gallery-cta-inner > * { position: relative; z-index: 2; }
+  .gallery-cta-text {
+    max-width: 400px;
+  }
+  .gallery-cta-text .label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 20px;
+  }
+  .gallery-cta-text h2 {
+    font-family: var(--font-serif);
+    font-size: clamp(36px, 5vw, 72px);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.08;
+    color: var(--bg);
+    margin-bottom: 10px;
+  }
+  .gallery-cta-text .sub {
+    font-size: 13px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.4);
+  }
+  .btn-cta {
+    display: inline-block;
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--bg);
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 14px 32px;
+    transition: border-color 0.3s ease;
+  }
+  .btn-cta:hover { border-color: rgba(255,255,255,0.7); }
+
+  /* ── FOOTER ── */
+  .footer {
+    padding: 100px 56px; background: var(--bg); color: var(--text);
+    display: flex; justify-content: space-between; align-items: flex-end;
+    border-top: 1px solid var(--divider);
+  }
+  .foot-name { font-family: var(--font-serif); font-size: clamp(48px, 6vw, 88px); font-weight: 300; font-style: italic; line-height: 0.92; margin-bottom: 24px; }
+  .foot-tagline { font-size: 13px; line-height: 1.7; color: var(--text-light); max-width: 320px; }
+  .foot-right { text-align: right; display: flex; flex-direction: column; gap: 24px; }
+  .foot-links { display: flex; gap: 28px; }
+  .foot-links a { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-light); transition: color 0.3s ease; }
+  .foot-links a:hover { color: var(--text); }
+  .foot-copy { font-size: 11px; color: var(--text-faint); }
+
+  .preview-banner {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--text); color: var(--bg); font-family: var(--font-sans);
+    font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 10px 28px; border-radius: 100px; z-index: 200; white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <a href="#" class="logo">Ergys Zhabjaku</a>
+  <nav class="nav">
+    <a href="#" class="active">About</a>
+    <a href="#">Photography</a>
+    <a href="#">Contact</a>
+  </nav>
+</header>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <h1>Ergys<br>Zhabjaku</h1>
+  <div class="page-header-meta">
+    <span>Tirana, Albania &mdash; b. 1991</span>
+    <span>Fine Art &middot; Editorial &middot; Commercial</span>
+    <span>Fine Art &middot; Editorial &middot; Commercial</span>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- PORTRAIT -->
+<div class="about-portrait">
+  <div class="about-portrait-inner">
+    <img src="http://localhost:8882/wp-content/uploads/2026/02/cinematic-dawn-01.jpg" alt="">
+    <div class="about-portrait-caption">
+      <span>Self Portrait &mdash; Tirana, 2024</span>
+      <span>&copy; Ergys Zhabjaku</span>
+    </div>
+  </div>
+</div>
+
+<!-- BIO -->
+<div class="bio">
+  <div class="bio-label">Biography</div>
+  <p>Ergys Zhabjaku is an Albanian photographer working across fine art, editorial, and commercial disciplines. Born in Tirana in 1991, he studied visual arts before developing a practice rooted in the tension between landscape and identity — exploring how place shapes image and image reshapes memory.</p>
+  <p>His work is characterised by long exposures, restrained palettes, and an editorial precision that moves between the intimate and the monumental. Campaigns and commissions coexist with ongoing personal series.</p>
+  <p>Editorial clients include Icon Magazine, Living Magazine, and various Albanian cultural institutions. Commercial work spans fashion, architecture, and brand identity.</p>
+</div>
+
+<!-- EXHIBITIONS -->
+<div class="exhibitions">
+  <div class="exh-grid">
+    <div class="exh-label">Selected Exhibitions</div>
+    <div>
+      <div class="exh-row">
+        <span class="exh-year">2024</span>
+        <span class="exh-title">Group Exhibition &mdash; Tirana</span>
+        <span class="exh-location">Tirana, AL</span>
+      </div>
+      <div class="exh-row">
+        <span class="exh-year">2023</span>
+        <span class="exh-title">Fish Tank &mdash; Solo Exhibition, Galeria Komb&euml;tare</span>
+        <span class="exh-location">Tirana, AL</span>
+      </div>
+      <div class="exh-row">
+        <span class="exh-year">2022</span>
+        <span class="exh-title">Running Out of Water &mdash; Photo Festival Shkod&euml;r</span>
+        <span class="exh-location">Shkod&euml;r, AL</span>
+      </div>
+      <div class="exh-row">
+        <span class="exh-year">2021</span>
+        <span class="exh-title">Belt and Road &mdash; Cultural Exchange Exhibition, NAMOC</span>
+        <span class="exh-location">Beijing, CN</span>
+      </div>
+      <div class="exh-row">
+        <span class="exh-year">2019</span>
+        <span class="exh-title">Albanian Identity &mdash; National Arts Center</span>
+        <span class="exh-location">Tirana, AL</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRESS -->
+<div class="press">
+  <div class="press-grid">
+    <div class="exh-label">Press &amp; Clients</div>
+    <div>
+      <div class="press-col-label">Editorial</div>
+      <div class="press-list">Icon Magazine<br>Living Magazine<br>Panorama Albania<br>Revista Shqip<br>Ekran Cultural Review</div>
+    </div>
+    <div>
+      <div class="press-col-label">Commercial</div>
+      <div class="press-list">Doruntina Bridal<br>Tirana International Hotel<br>Albanian National Theatre<br>Banka Komb&euml;tare Tregtare<br>Ministry of Culture, Albania</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div>
+    <div class="foot-name">Zhabjaku</div>
+    <p class="foot-tagline">Photography studio based in Tirana, Albania.</p>
+  </div>
+  <div class="foot-right">
+    <div class="foot-links">
+      <a href="#">Instagram</a>
+      <a href="#">Email</a>
+      <a href="#">Behance</a>
+    </div>
+    <div class="foot-copy">&copy; 2026 Ergys Zhabjaku</div>
+  </div>
+</footer>
+
+<div class="preview-banner">About Page &mdash; Redesign Preview</div>
+
+</body>
+</html>

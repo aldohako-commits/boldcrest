@@ -74,7 +74,7 @@ const capabilities = [
     category: 'Communications',
     number: '03',
     color: '#004c95',
-    heading: 'Commu-\nnication',
+    heading: 'Communication',
     abbr: 'COMMS',
     href: '/services/communication',
     ctaLabel: 'Explore',
@@ -258,7 +258,7 @@ function CapabilitiesCards({
               >
                 <Link
                   href={cap.href}
-                  className="group flex min-h-[420px] flex-col justify-between rounded-2xl border border-border/40 p-8 transition-all duration-500 hover:border-white/20 lg:p-10"
+                  className="group flex h-full flex-col justify-between rounded-2xl border border-border/40 p-8 transition-all duration-500 hover:border-white/20 lg:p-10"
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = `${cap.color}12`
                     e.currentTarget.style.borderColor = `${cap.color}40`
@@ -283,7 +283,7 @@ function CapabilitiesCards({
                     </div>
 
                     {/* Heading */}
-                    <h3 className="mb-4 font-display text-[clamp(1.6rem,2.5vw,2.2rem)] font-bold leading-[1.05] tracking-[-0.02em] text-text-primary whitespace-pre-line">
+                    <h3 className="mb-4 font-display text-[clamp(1.4rem,2vw,1.8rem)] font-bold leading-[1.1] tracking-[-0.02em] text-text-primary whitespace-pre-line">
                       {cap.heading}
                     </h3>
 
@@ -683,52 +683,67 @@ const PROCESS_STEPS = [
   { number: '05', title: 'Ongoing Partnership', description: 'Brands evolve. Campaigns rotate. Content never stops. We stay with you, managing, optimizing, and scaling your creative output month after month.' },
 ]
 
+const PROCESS_CARD_TOPS = [134, 200, 272, 344, 416, 134]
+
 function ProcessSection() {
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
-    <section ref={ref} className="px-[var(--gutter)] py-[var(--space-3xl)]">
-      <div className="mx-auto max-w-[var(--max-width)]">
-        <motion.p
-          className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.6 }}
-        >
-          Process
-        </motion.p>
-        <motion.h2
-          className="mb-4 max-w-[700px] font-display text-[clamp(1.8rem,3.5vw,2.8rem)] font-bold leading-[1.1] tracking-[-0.02em]"
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        >
-          How Every BoldCrest Project Works
-        </motion.h2>
-        <motion.p
-          className="mb-[var(--space-xl)] max-w-[600px] text-[0.95rem] leading-[1.7] text-text-secondary"
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-        >
-          Regardless of discipline, every engagement follows the same framework.
-          Clarity at each stage, no surprises, and a dedicated team from start to finish.
-        </motion.p>
-        <div className="mt-[var(--space-xl)]">
-          {PROCESS_STEPS.map((step, i) => (
-            <motion.div
-              key={step.number}
-              className="group grid grid-cols-[60px_1fr] gap-6 border-t border-border/40 py-8 last:border-b md:grid-cols-[80px_200px_1fr]"
+    <section ref={ref} style={{ padding: '112px 0' }}>
+      <div className="mx-auto max-w-[var(--max-width)] px-[var(--gutter)]">
+        <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between md:gap-5">
+          {/* Left column — sticky heading */}
+          <div className="md:w-[48%] md:sticky md:top-[134px]">
+            <motion.p
+              className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.6 }}
+            >
+              Process
+            </motion.p>
+            <motion.h2
+              className="mb-4 max-w-[700px] font-display text-[clamp(1.8rem,3.5vw,2.8rem)] font-bold leading-[1.1] tracking-[-0.02em]"
+              initial={{ opacity: 0, y: 30 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            >
+              How Every BoldCrest Project Works
+            </motion.h2>
+            <motion.p
+              className="max-w-[600px] text-[0.95rem] leading-[1.7] text-text-secondary"
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.2 + i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
             >
-              <span className="font-display text-[0.75rem] font-semibold text-text-tertiary">{step.number}</span>
-              <h3 className="text-[0.95rem] font-semibold text-text-primary">{step.title}</h3>
-              <p className="col-span-2 text-[0.85rem] leading-[1.7] text-text-secondary md:col-span-1">{step.description}</p>
-            </motion.div>
-          ))}
+              Regardless of discipline, every engagement follows the same framework.
+              Clarity at each stage, no surprises, and a dedicated team from start to finish.
+            </motion.p>
+          </div>
+
+          {/* Right column — stacking sticky cards */}
+          <div className="flex flex-col gap-[18px] md:w-[48%]">
+            {PROCESS_STEPS.map((step, i) => (
+              <motion.div
+                key={step.number}
+                className="rounded-lg border border-border/40 bg-[var(--bg)] p-8"
+                style={{
+                  position: 'sticky',
+                  top: `${PROCESS_CARD_TOPS[i] ?? PROCESS_CARD_TOPS[PROCESS_CARD_TOPS.length - 1]}px`,
+                }}
+                initial={{ opacity: 0, y: 30 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6, delay: 0.2 + i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <div className="flex flex-col gap-3">
+                  <span className="font-display text-[0.75rem] font-semibold text-text-tertiary">{step.number}</span>
+                  <h3 className="text-[0.95rem] font-semibold text-text-primary">{step.title}</h3>
+                  <p className="text-[0.85rem] leading-[1.7] text-text-secondary">{step.description}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

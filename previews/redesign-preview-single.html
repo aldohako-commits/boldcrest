@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prani — Portfolio Single — Redesign Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg-alt: #f7f7f5;
+    --text: #1a1a17;
+    --text-mid: #6b6960;
+    --text-light: #9e9a90;
+    --text-faint: #c5c0b6;
+    --divider: rgba(0,0,0,0.08);
+    --font-serif: 'Cormorant Garamond', Georgia, serif;
+    --font-sans: 'Inter', Helvetica, sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  .header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 56px;
+    z-index: 100;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--divider);
+  }
+  .logo {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--text);
+  }
+  .nav { display: flex; gap: 40px; }
+  .nav a {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    transition: color 0.3s ease;
+  }
+  .nav a:hover { color: var(--text); }
+
+  /* ── PROJECT HEADER ── */
+  .proj-header {
+    padding: 160px 56px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .proj-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .proj-breadcrumb {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-light);
+  }
+  .proj-title {
+    font-family: var(--font-serif);
+    font-size: clamp(48px, 5.5vw, 88px);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 0.95;
+    color: var(--text);
+  }
+  .proj-header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    padding-bottom: 8px;
+  }
+  .proj-tagline {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-light);
+  }
+  .proj-year {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-light);
+  }
+
+  .divider {
+    margin: 0 56px;
+    border: none;
+    border-top: 1px solid var(--divider);
+  }
+
+  /* ── HERO IMAGE ── */
+  .proj-hero {
+    padding: 0 56px;
+    margin-top: 0;
+  }
+  .proj-hero-inner {
+    width: 100%;
+    height: 85vh;
+    overflow: hidden;
+    border-radius: 2px;
+  }
+  .proj-hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ── PROJECT CONTENT ── */
+  .proj-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 100px 56px;
+  }
+
+  /* ── META TABLE ── */
+  .proj-meta {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 56px 80px;
+  }
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-top: 1px solid var(--divider);
+  }
+  .meta-row:last-child {
+    border-bottom: 1px solid var(--divider);
+  }
+  .meta-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-light);
+  }
+  .meta-value {
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--text);
+  }
+
+  /* ── GALLERY ── */
+  .proj-gallery {
+    padding: 0 56px 80px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .proj-gallery img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 2px;
+    display: block;
+  }
+  .proj-gallery .full {
+    grid-column: 1 / -1;
+    max-height: 70vh;
+    overflow: hidden;
+  }
+  .proj-gallery .full img {
+    height: 70vh;
+  }
+
+  /* ── NAV ── */
+  .proj-nav {
+    padding: 48px 56px;
+    border-top: 1px solid var(--divider);
+    border-bottom: 1px solid var(--divider);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .proj-nav a {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    transition: color 0.3s ease;
+  }
+  .proj-nav a:hover { color: var(--text); }
+  .proj-nav .nav-title {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--text);
+    display: block;
+    margin-top: 4px;
+  }
+
+  /* ── BACK ── */
+  .back-bar {
+    padding: 60px 56px 100px;
+    text-align: center;
+  }
+  .btn-outline {
+    display: inline-block;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text);
+    border: 1px solid var(--divider);
+    padding: 14px 36px;
+    transition: border-color 0.3s ease;
+  }
+  .btn-outline:hover { border-color: var(--text); }
+
+  /* ── FOOTER ── */
+  .footer {
+    padding: 100px 56px;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-top: 1px solid var(--divider);
+  }
+  .foot-name {
+    font-family: var(--font-serif);
+    font-size: clamp(48px, 6vw, 88px);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 0.92;
+    margin-bottom: 24px;
+  }
+  .foot-tagline { font-size: 13px; line-height: 1.7; color: var(--text-light); max-width: 320px; }
+  .foot-right { text-align: right; display: flex; flex-direction: column; gap: 24px; }
+  .foot-links { display: flex; gap: 28px; }
+  .foot-links a { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-light); transition: color 0.3s ease; }
+  .foot-links a:hover { color: var(--text); }
+  .foot-copy { font-size: 11px; color: var(--text-faint); }
+
+  .preview-banner {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--text); color: var(--bg); font-family: var(--font-sans);
+    font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 10px 28px; border-radius: 100px; z-index: 200; white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <a href="#" class="logo">Ergys Zhabjaku</a>
+  <nav class="nav">
+    <a href="#">About</a>
+    <a href="#">Photography</a>
+    <a href="#">Contact</a>
+  </nav>
+</header>
+
+<!-- PROJECT HEADER -->
+<div class="proj-header">
+  <div class="proj-header-left">
+    <a href="#" class="proj-breadcrumb">Work</a>
+    <h1 class="proj-title">Prani</h1>
+  </div>
+  <div class="proj-header-right">
+    <span class="proj-tagline">Art &mdash; Solo Exhibition</span>
+    <span class="proj-year">2025</span>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- HERO IMAGE -->
+<div class="proj-hero">
+  <div class="proj-hero-inner">
+    <img src="http://localhost:8882/wp-content/uploads/2026/02/portrait-backlit-01.jpg" alt="Prani">
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="proj-content">
+  <p style="font-size: 17px; line-height: 1.9; font-weight: 300; color: var(--text-mid); margin-bottom: 28px;">
+    Prani is a solo exhibition presented in Tirana, exploring the intersection of portraiture and natural light. The series captures subjects in moments of unguarded stillness, using long exposures and restrained palettes to reveal the quiet tension between presence and absence.
+  </p>
+  <p style="font-size: 17px; line-height: 1.9; font-weight: 300; color: var(--text-mid);">
+    Shot across three months in the Albanian countryside, the project examines how landscape shapes identity and how the photographic frame transforms lived experience into memory. Each image is a meditation on time — the slow accumulation of light on film, the gradual erosion of certainty.
+  </p>
+</div>
+
+<!-- META -->
+<div class="proj-meta">
+  <div class="meta-row">
+    <span class="meta-label">Year</span>
+    <span class="meta-value">2025</span>
+  </div>
+  <div class="meta-row">
+    <span class="meta-label">Category</span>
+    <span class="meta-value">Art</span>
+  </div>
+  <div class="meta-row">
+    <span class="meta-label">Client</span>
+    <span class="meta-value">Personal</span>
+  </div>
+  <div class="meta-row">
+    <span class="meta-label">Location</span>
+    <span class="meta-value">Tirana, Albania</span>
+  </div>
+</div>
+
+<!-- GALLERY -->
+<div class="proj-gallery">
+  <div class="full"><img src="http://localhost:8882/wp-content/uploads/2026/02/landscape-alpine-dusk-01.jpg" alt=""></div>
+  <img src="http://localhost:8882/wp-content/uploads/2026/02/portrait-editorial-01.jpg" alt="">
+  <img src="http://localhost:8882/wp-content/uploads/2026/02/portrait-blue-01.jpg" alt="">
+  <div class="full"><img src="http://localhost:8882/wp-content/uploads/2026/02/cinematic-dusk-01.jpg" alt=""></div>
+  <img src="http://localhost:8882/wp-content/uploads/2026/02/landscape-golden-hour-01.jpg" alt="">
+  <img src="http://localhost:8882/wp-content/uploads/2026/02/street-fog-01.jpg" alt="">
+</div>
+
+<!-- NAV -->
+<div class="proj-nav">
+  <a href="#">&larr; Prev<span class="nav-title">Brand Campaign</span></a>
+  <a href="#" style="text-align: right;">Next &rarr;<span class="nav-title">Fish Tank</span></a>
+</div>
+
+<!-- BACK -->
+<div class="back-bar">
+  <a href="#" class="btn-outline">Back to Work</a>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div>
+    <div class="foot-name">Zhabjaku</div>
+    <p class="foot-tagline">Photography studio based in Tirana, Albania.</p>
+  </div>
+  <div class="foot-right">
+    <div class="foot-links">
+      <a href="#">Instagram</a>
+      <a href="#">Email</a>
+      <a href="#">Behance</a>
+    </div>
+    <div class="foot-copy">&copy; 2026 Ergys Zhabjaku</div>
+  </div>
+</footer>
+
+<div class="preview-banner">Single Portfolio &mdash; Redesign Preview</div>
+
+</body>
+</html>

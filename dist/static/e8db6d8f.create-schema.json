@@ -1,0 +1,663 @@
+[
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "options": {
+          "source": "name",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "slug",
+        "type": "slug"
+      },
+      {
+        "name": "tagline",
+        "type": "string"
+      },
+      {
+        "name": "client",
+        "type": "string"
+      },
+      {
+        "options": {
+          "list": [
+            {
+              "title": "Construction",
+              "value": "Construction"
+            },
+            {
+              "title": "Fashion",
+              "value": "Fashion"
+            },
+            {
+              "title": "Finance",
+              "value": "Finance"
+            },
+            {
+              "title": "Food & Beverage",
+              "value": "Food & Beverage"
+            },
+            {
+              "title": "Health & Beauty",
+              "value": "Health & Beauty"
+            },
+            {
+              "title": "Home & Appliances",
+              "value": "Home & Appliances"
+            },
+            {
+              "title": "HoReCa",
+              "value": "HoReCa"
+            },
+            {
+              "title": "NGO",
+              "value": "NGO"
+            },
+            {
+              "title": "Our Crests",
+              "value": "Our Crests"
+            },
+            {
+              "title": "Services",
+              "value": "Services"
+            },
+            {
+              "title": "Tech",
+              "value": "Tech"
+            }
+          ]
+        },
+        "name": "industry",
+        "type": "string"
+      },
+      {
+        "name": "year",
+        "type": "string"
+      },
+      {
+        "of": [
+          {
+            "options": {
+              "list": [
+                {
+                  "title": "Ads Management",
+                  "value": "Ads Management"
+                },
+                {
+                  "title": "Branding",
+                  "value": "Branding"
+                },
+                {
+                  "title": "Creative Advertising",
+                  "value": "Creative Advertising"
+                },
+                {
+                  "title": "Packaging",
+                  "value": "Packaging"
+                },
+                {
+                  "title": "Photography",
+                  "value": "Photography"
+                },
+                {
+                  "title": "Social Media Management",
+                  "value": "Social Media Management"
+                },
+                {
+                  "title": "Television Commercials",
+                  "value": "Television Commercials"
+                },
+                {
+                  "title": "Videography",
+                  "value": "Videography"
+                }
+              ]
+            },
+            "type": "string"
+          }
+        ],
+        "name": "services",
+        "type": "array"
+      },
+      {
+        "of": [
+          {
+            "marks": {
+              "annotations": [
+                {
+                  "i18nTitleKey": "inputs.portable-text.annotation.link",
+                  "options": {
+                    "modal": {
+                      "type": "popover"
+                    }
+                  },
+                  "fields": [
+                    {
+                      "validation": [
+                        {
+                          "rules": [
+                            {
+                              "flag": "uri",
+                              "constraint": {
+                                "options": {
+                                  "scheme": [
+                                    "/^http$/",
+                                    "/^https$/",
+                                    "/^tel$/",
+                                    "/^mailto$/"
+                                  ],
+                                  "allowRelative": true,
+                                  "relativeOnly": false,
+                                  "allowCredentials": false
+                                }
+                              }
+                            }
+                          ],
+                          "level": "error"
+                        }
+                      ],
+                      "description": "A valid web, email, phone, or relative link.",
+                      "name": "href",
+                      "type": "url",
+                      "title": "Link"
+                    }
+                  ],
+                  "name": "link",
+                  "type": "object"
+                }
+              ],
+              "decorators": [
+                {
+                  "value": "strong",
+                  "title": "Strong"
+                },
+                {
+                  "value": "em",
+                  "title": "Italic"
+                },
+                {
+                  "value": "code",
+                  "title": "Code"
+                },
+                {
+                  "value": "underline",
+                  "title": "Underline"
+                },
+                {
+                  "value": "strike-through",
+                  "title": "Strike"
+                }
+              ]
+            },
+            "lists": [
+              {
+                "value": "bullet",
+                "title": "Bulleted list"
+              },
+              {
+                "value": "number",
+                "title": "Numbered list"
+              }
+            ],
+            "styles": [
+              {
+                "value": "normal",
+                "title": "Normal"
+              },
+              {
+                "value": "h1",
+                "title": "Heading 1"
+              },
+              {
+                "value": "h2",
+                "title": "Heading 2"
+              },
+              {
+                "value": "h3",
+                "title": "Heading 3"
+              },
+              {
+                "value": "h4",
+                "title": "Heading 4"
+              },
+              {
+                "value": "h5",
+                "title": "Heading 5"
+              },
+              {
+                "value": "h6",
+                "title": "Heading 6"
+              },
+              {
+                "value": "blockquote",
+                "title": "Quote"
+              }
+            ],
+            "of": [],
+            "type": "block"
+          }
+        ],
+        "name": "overview",
+        "type": "array"
+      },
+      {
+        "options": {
+          "list": [
+            {
+              "title": "Image",
+              "value": "image"
+            },
+            {
+              "title": "Vimeo Video",
+              "value": "video"
+            }
+          ],
+          "layout": "radio"
+        },
+        "initialValue": "image",
+        "name": "thumbnailType",
+        "type": "string"
+      },
+      {
+        "options": {
+          "hotspot": true
+        },
+        "hidden": "conditional",
+        "name": "thumbnail",
+        "type": "image",
+        "title": "Thumbnail Image"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "uri",
+                "constraint": {
+                  "options": {
+                    "scheme": [
+                      "/^http$/",
+                      "/^https$/"
+                    ],
+                    "allowRelative": false,
+                    "relativeOnly": false,
+                    "allowCredentials": false
+                  }
+                }
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "hidden": "conditional",
+        "name": "thumbnailVideo",
+        "type": "url",
+        "title": "Thumbnail Vimeo URL"
+      },
+      {
+        "of": [
+          {
+            "fields": [
+              {
+                "initialValue": "video",
+                "readOnly": true,
+                "hidden": true,
+                "name": "type",
+                "type": "string"
+              },
+              {
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "uri",
+                        "constraint": {
+                          "options": {
+                            "scheme": [
+                              "/^http$/",
+                              "/^https$/"
+                            ],
+                            "allowRelative": false,
+                            "relativeOnly": false,
+                            "allowCredentials": false
+                          }
+                        }
+                      },
+                      {
+                        "flag": "presence",
+                        "constraint": "required"
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "name": "vimeoUrl",
+                "type": "url",
+                "title": "Vimeo URL"
+              }
+            ],
+            "type": "object",
+            "name": "videoMedia",
+            "title": "Video"
+          },
+          {
+            "fields": [
+              {
+                "initialValue": "image",
+                "readOnly": true,
+                "hidden": true,
+                "name": "type",
+                "type": "string"
+              },
+              {
+                "options": {
+                  "hotspot": true
+                },
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "presence",
+                        "constraint": "required"
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "name": "image",
+                "type": "image"
+              },
+              {
+                "options": {
+                  "list": [
+                    {
+                      "title": "4:3",
+                      "value": "4:3"
+                    },
+                    {
+                      "title": "16:9",
+                      "value": "16:9"
+                    },
+                    {
+                      "title": "21:9",
+                      "value": "21:9"
+                    }
+                  ],
+                  "layout": "radio"
+                },
+                "initialValue": "16:9",
+                "name": "aspectRatio",
+                "type": "string"
+              }
+            ],
+            "type": "object",
+            "name": "imageMedia",
+            "title": "Image"
+          }
+        ],
+        "name": "media",
+        "type": "array"
+      },
+      {
+        "name": "order",
+        "type": "number"
+      }
+    ],
+    "name": "project",
+    "type": "document"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "options": {
+          "source": "name",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "slug",
+        "type": "slug"
+      },
+      {
+        "options": {
+          "list": [
+            {
+              "title": "Brand Dev",
+              "value": "Brand Dev"
+            },
+            {
+              "title": "Still & Motion",
+              "value": "Still & Motion"
+            },
+            {
+              "title": "Communications",
+              "value": "Communications"
+            }
+          ],
+          "layout": "radio"
+        },
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "valid",
+                "constraint": [
+                  "Brand Dev",
+                  "Still & Motion",
+                  "Communications"
+                ]
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "category",
+        "type": "string"
+      },
+      {
+        "name": "order",
+        "type": "number"
+      }
+    ],
+    "name": "service",
+    "type": "document"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "name": "role",
+        "type": "string"
+      },
+      {
+        "options": {
+          "hotspot": true
+        },
+        "name": "image",
+        "type": "image"
+      },
+      {
+        "name": "order",
+        "type": "number"
+      }
+    ],
+    "name": "teamMember",
+    "type": "document"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error"
+          }
+        ],
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "name": "logo",
+        "type": "image"
+      },
+      {
+        "name": "order",
+        "type": "number"
+      }
+    ],
+    "name": "partner",
+    "type": "document"
+  },
+  {
+    "fields": [
+      {
+        "name": "heroSubtitle",
+        "type": "string"
+      },
+      {
+        "name": "footerBigText",
+        "type": "string"
+      },
+      {
+        "name": "contactEmail",
+        "type": "string"
+      },
+      {
+        "of": [
+          {
+            "fields": [
+              {
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "presence",
+                        "constraint": "required"
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "name": "platform",
+                "type": "string"
+              },
+              {
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "uri",
+                        "constraint": {
+                          "options": {
+                            "scheme": [
+                              "/^http$/",
+                              "/^https$/"
+                            ],
+                            "allowRelative": false,
+                            "relativeOnly": false,
+                            "allowCredentials": false
+                          }
+                        }
+                      },
+                      {
+                        "flag": "presence",
+                        "constraint": "required"
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "name": "url",
+                "type": "url",
+                "title": "URL"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "name": "socialLinks",
+        "type": "array"
+      }
+    ],
+    "name": "siteSettings",
+    "type": "document"
+  }
+]

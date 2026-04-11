@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BoldCrest — Site Review</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#0a0a0a;--card:#141414;--el:#1e1e1e;--brd:#2a2a2a;--t:#e5e5e5;--td:#777;--accent:#DA291C;--yellow:#f9b311}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t);height:100vh;overflow:hidden}
+
+  .app{display:grid;grid-template-columns:1fr 320px;grid-template-rows:48px 1fr auto;height:100vh}
+
+  /* Top */
+  .top{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid var(--brd);background:var(--card)}
+  .top h1{font-size:13px;font-weight:700;letter-spacing:.04em;margin-right:auto}
+  .top h1 b{color:var(--accent)}
+  .tabs{display:flex;gap:2px;background:var(--bg);border-radius:7px;padding:2px}
+  .tabs button{background:none;border:none;color:var(--td);font-size:11px;padding:4px 12px;border-radius:5px;cursor:pointer;font-weight:600;transition:.15s}
+  .tabs button.on{background:var(--el);color:var(--t)}
+
+  .sel-btn{padding:5px 16px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:none;transition:.2s}
+  .sel-btn.off{background:var(--accent);color:#fff}
+  .sel-btn.off:hover{opacity:.85}
+  .sel-btn.on{background:#f9b311;color:#000;animation:glow 1.5s infinite}
+  @keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(249,179,17,.4)}50%{box-shadow:0 0 0 6px rgba(249,179,17,0)}}
+  .hint{font-size:10px;color:var(--td)}
+
+  /* Preview */
+  .preview{position:relative;display:flex;align-items:center;justify-content:center;background:#050505;overflow:hidden}
+  .wrap{position:relative;border-radius:10px;border:2px solid var(--brd);overflow:hidden;background:#000;transition:.4s cubic-bezier(.16,1,.3,1)}
+  .wrap.desktop{width:95%;height:95%}
+  .wrap.mobile{width:375px;height:90%;max-height:750px}
+  .wrap iframe{width:100%;height:100%;border:none}
+
+  /* Selection overlay */
+  .sel-overlay{position:absolute;inset:0;z-index:5;cursor:crosshair;display:none}
+  .sel-overlay.on{display:block}
+
+  /* Drawn rectangles */
+  .sel-rect{position:absolute;border:2px solid var(--accent);background:rgba(218,41,28,.12);border-radius:3px;z-index:6;pointer-events:none}
+  .sel-rect .sel-num{position:absolute;top:-10px;left:-10px;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  /* Active selection being drawn */
+  .drawing-rect{position:absolute;border:2px dashed var(--yellow);background:rgba(249,179,17,.1);border-radius:3px;z-index:7;pointer-events:none}
+
+  /* Inline comment popover */
+  .popover{position:absolute;z-index:10;background:var(--card);border:1px solid var(--brd);border-radius:8px;padding:10px;width:260px;box-shadow:0 8px 30px rgba(0,0,0,.5);animation:pop .2s ease}
+  @keyframes pop{from{opacity:0;transform:translateY(6px)scale(.97)}}
+  .popover textarea{width:100%;background:var(--bg);border:1px solid var(--brd);border-radius:5px;color:var(--t);font-family:inherit;font-size:12px;padding:7px 9px;resize:none;height:60px;outline:none}
+  .popover textarea:focus{border-color:var(--accent)}
+  .popover textarea::placeholder{color:#444}
+  .popover .po-actions{display:flex;gap:5px;margin-top:6px}
+  .popover .po-save{flex:1;padding:5px;background:var(--accent);color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer}
+  .popover .po-cancel{padding:5px 10px;background:none;border:1px solid var(--brd);color:var(--td);border-radius:5px;font-size:11px;cursor:pointer}
+
+  /* Right panel */
+  .panel{border-left:1px solid var(--brd);background:var(--card);display:flex;flex-direction:column;overflow:hidden}
+  .panel-head{padding:10px 14px;border-bottom:1px solid var(--brd);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--td);display:flex;align-items:center;justify-content:space-between}
+  .panel-head .badge{background:var(--accent);color:#fff;font-size:9px;padding:1px 6px;border-radius:10px;font-weight:700}
+
+  .clist{flex:1;overflow-y:auto}
+  .ccard{padding:10px 14px;border-bottom:1px solid var(--brd);position:relative;cursor:pointer;transition:background .1s}
+  .ccard:hover{background:rgba(255,255,255,.02)}
+  .ccard.on{background:rgba(218,41,28,.05)}
+  .ccard .cc-top{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+  .ccard .cc-n{width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .ccard .cc-pg{font-size:10px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+  .ccard .cc-view{font-size:9px;color:var(--td);margin-left:auto;text-transform:uppercase}
+  .ccard .cc-txt{font-size:12px;line-height:1.5;color:var(--t);background:var(--bg);border:1px solid var(--brd);border-radius:5px;padding:6px 8px}
+  .ccard .cc-del{position:absolute;top:8px;right:10px;background:none;border:none;color:#444;cursor:pointer;font-size:12px;padding:2px 4px;border-radius:4px;transition:.15s}
+  .ccard .cc-del:hover{color:var(--accent);background:rgba(218,41,28,.08)}
+  .empty-s{padding:40px 16px;text-align:center;color:#444;font-size:11px;line-height:1.8}
+
+  /* Prompt */
+  .pbar{grid-column:1/-1;border-top:1px solid var(--brd);background:var(--card);padding:10px 14px;display:flex;gap:10px;align-items:stretch;min-height:60px;max-height:140px}
+  .pout{flex:1;background:var(--bg);border:1px solid var(--brd);border-radius:7px;padding:8px 10px;font-family:'SF Mono','Fira Code',monospace;font-size:11px;line-height:1.6;color:var(--td);overflow-y:auto;white-space:pre-wrap;word-break:break-word}
+  .pout .hl{color:var(--t)}
+  .pout .em{color:#333;font-style:italic}
+  .pbtn{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+  .bcopy,.bclear{padding:5px 16px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:none;transition:.2s}
+  .bcopy{background:var(--accent);color:#fff}
+  .bcopy:hover{opacity:.85}
+  .bcopy.ok{background:#16a34a}
+  .bclear{background:var(--el);color:var(--td);border:1px solid var(--brd)}
+  .bclear:hover{color:var(--t)}
+
+  ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <h1>BOLD<b>CREST</b> Review</h1>
+    <div class="tabs" id="pages"></div>
+    <div class="tabs" id="views"></div>
+    <button class="sel-btn off" id="selBtn" onclick="toggleSelect()">Select Area</button>
+    <span class="hint" id="hint"></span>
+  </div>
+
+  <div class="preview" id="preview"></div>
+
+  <div class="panel">
+    <div class="panel-head">Feedback <span class="badge" id="badge">0</span></div>
+    <div class="clist" id="clist"></div>
+  </div>
+
+  <div class="pbar">
+    <div class="pout" id="pout"><span class="em">Draw selections on the preview and add commands to generate a prompt...</span></div>
+    <div class="pbtn">
+      <button class="bcopy" id="cbtn" onclick="copyP()">Copy Prompt</button>
+      <button class="bclear" onclick="clearAll()">Clear All</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SITE='https://boldcrest-seven.vercel.app';
+const PG=[{id:'home',l:'Home',p:'/'},{id:'people',l:'People',p:'/people'},{id:'work',l:'Work',p:'/work'},{id:'contact',l:'Contact',p:'/contact'}];
+const VW=['Desktop','Mobile'];
+
+let S={
+  pg:'home', vw:'Desktop', sel:false,
+  items:[], // {id,pg,pgLabel,x,y,w,h,text}
+  nid:1,
+  drawing:false, startX:0, startY:0,
+  pendingRect:null, // {x,y,w,h} pct-based
+  activeId:null,
+};
+
+// ── Tabs ──
+function rTabs(){
+  document.getElementById('pages').innerHTML=PG.map(p=>`<button class="${S.pg===p.id?'on':''}" onclick="setPg('${p.id}')">${p.l}</button>`).join('');
+  document.getElementById('views').innerHTML=VW.map(v=>`<button class="${S.vw===v?'on':''}" onclick="setVw('${v}')">${v}</button>`).join('');
+}
+
+// ── Preview ──
+function rPreview(){
+  const a=document.getElementById('preview');
+  const url=SITE+PG.find(p=>p.id===S.pg).p;
+  const cls=S.vw==='Desktop'?'desktop':'mobile';
+  a.innerHTML=`<div class="wrap ${cls}" id="deviceWrap">
+    <iframe src="${url}" id="siteFrame"></iframe>
+    <div class="sel-overlay${S.sel?' on':''}" id="overlay"></div>
+  </div>`;
+
+  const ov=document.getElementById('overlay');
+  ov.addEventListener('mousedown',onDown);
+  ov.addEventListener('mousemove',onMove);
+  ov.addEventListener('mouseup',onUp);
+
+  rRects();
+}
+
+// ── Drawing ──
+function onDown(e){
+  if(!S.sel)return;
+  const r=e.currentTarget.getBoundingClientRect();
+  S.drawing=true;
+  S.startX=(e.clientX-r.left)/r.width*100;
+  S.startY=(e.clientY-r.top)/r.height*100;
+
+  // Remove any existing drawing rect
+  const old=document.querySelector('.drawing-rect');
+  if(old)old.remove();
+
+  const d=document.createElement('div');
+  d.className='drawing-rect';
+  d.id='drawRect';
+  d.style.left=S.startX+'%';
+  d.style.top=S.startY+'%';
+  d.style.width='0';
+  d.style.height='0';
+  e.currentTarget.parentElement.appendChild(d);
+}
+
+function onMove(e){
+  if(!S.drawing)return;
+  const r=e.currentTarget.getBoundingClientRect();
+  const cx=(e.clientX-r.left)/r.width*100;
+  const cy=(e.clientY-r.top)/r.height*100;
+
+  const d=document.getElementById('drawRect');
+  if(!d)return;
+
+  const x=Math.min(S.startX,cx), y=Math.min(S.startY,cy);
+  const w=Math.abs(cx-S.startX), h=Math.abs(cy-S.startY);
+  d.style.left=x+'%'; d.style.top=y+'%';
+  d.style.width=w+'%'; d.style.height=h+'%';
+}
+
+function onUp(e){
+  if(!S.drawing)return;
+  S.drawing=false;
+
+  const r=e.currentTarget.getBoundingClientRect();
+  const cx=(e.clientX-r.left)/r.width*100;
+  const cy=(e.clientY-r.top)/r.height*100;
+
+  const x=Math.min(S.startX,cx), y=Math.min(S.startY,cy);
+  const w=Math.abs(cx-S.startX), h=Math.abs(cy-S.startY);
+
+  // Remove drawing rect
+  const d=document.getElementById('drawRect');
+  if(d)d.remove();
+
+  // Ignore tiny accidental clicks
+  if(w<1&&h<1)return;
+
+  // Store pending and show popover
+  S.pendingRect={x,y,w,h};
+  showPopover(x,y,w,h);
+}
+
+function showPopover(x,y,w,h){
+  // Remove existing
+  const old=document.querySelector('.popover');
+  if(old)old.remove();
+  const oldR=document.querySelector('.sel-rect.pending');
+  if(oldR)oldR.remove();
+
+  const wrap=document.getElementById('deviceWrap');
+
+  // Show the selection rect
+  const rect=document.createElement('div');
+  rect.className='sel-rect pending';
+  rect.style.left=x+'%'; rect.style.top=y+'%';
+  rect.style.width=w+'%'; rect.style.height=h+'%';
+  rect.style.borderColor='#f9b311';
+  rect.style.background='rgba(249,179,17,.1)';
+  wrap.appendChild(rect);
+
+  // Popover position
+  const po=document.createElement('div');
+  po.className='popover';
+
+  // Place below-right of selection
+  let pLeft=x+w+1, pTop=y;
+  if(pLeft>70) pLeft=x-30; // flip left if too far right
+  if(pTop>70) pTop=y+h-20; // adjust if too low
+
+  po.style.left=pLeft+'%'; po.style.top=pTop+'%';
+
+  po.innerHTML=`
+    <textarea id="poText" placeholder="e.g. remove this red line, make heading bigger, change the spacing..."></textarea>
+    <div class="po-actions">
+      <button class="po-save" onclick="saveSel()">Save</button>
+      <button class="po-cancel" onclick="cancelSel()">Cancel</button>
+    </div>`;
+  wrap.appendChild(po);
+
+  setTimeout(()=>{document.getElementById('poText')?.focus();},50);
+}
+
+function saveSel(){
+  const text=document.getElementById('poText')?.value.trim();
+  if(!text||!S.pendingRect)return;
+
+  const r=S.pendingRect;
+  S.items.push({
+    id:S.nid++,
+    pg:S.pg,
+    pgLabel:PG.find(p=>p.id===S.pg).l,
+    vw:S.vw,
+    x:r.x, y:r.y, w:r.w, h:r.h,
+    text
+  });
+
+  S.pendingRect=null;
+  // Remove popover + pending rect
+  document.querySelector('.popover')?.remove();
+  document.querySelector('.sel-rect.pending')?.remove();
+
+  rRects();
+  rList();
+  rPrompt();
+}
+
+function cancelSel(){
+  S.pendingRect=null;
+  document.querySelector('.popover')?.remove();
+  document.querySelector('.sel-rect.pending')?.remove();
+}
+
+// ── Render saved rects ──
+function rRects(){
+  document.querySelectorAll('.sel-rect:not(.pending)').forEach(e=>e.remove());
+  const wrap=document.getElementById('deviceWrap');
+  if(!wrap)return;
+
+  const pageItems=S.items.filter(i=>i.pg===S.pg);
+  pageItems.forEach((item,idx)=>{
+    const el=document.createElement('div');
+    el.className=`sel-rect${S.activeId===item.id?' active':''}`;
+    el.style.left=item.x+'%'; el.style.top=item.y+'%';
+    el.style.width=item.w+'%'; el.style.height=item.h+'%';
+    el.innerHTML=`<span class="sel-num">${idx+1}</span>`;
+    wrap.appendChild(el);
+  });
+}
+
+// ── Select mode ──
+function toggleSelect(){
+  S.sel=!S.sel;
+  const btn=document.getElementById('selBtn');
+  const hint=document.getElementById('hint');
+  btn.className=S.sel?'sel-btn on':'sel-btn off';
+  btn.textContent=S.sel?'Drawing...':'Select Area';
+  hint.textContent=S.sel?'Draw a rectangle on the preview, then type your command':'';
+
+  const ov=document.getElementById('overlay');
+  if(ov) ov.className=S.sel?'sel-overlay on':'sel-overlay';
+}
+
+// ── Comments list ──
+function rList(){
+  const el=document.getElementById('clist');
+  document.getElementById('badge').textContent=S.items.length;
+
+  if(!S.items.length){
+    el.innerHTML='<div class="empty-s">No feedback yet.<br>Click <b>Select Area</b>, draw a<br>rectangle, and type your command.</div>';
+    return;
+  }
+
+  el.innerHTML=S.items.map((item,i)=>`
+    <div class="ccard${S.activeId===item.id?' on':''}" onclick="focus(${item.id})">
+      <div class="cc-top">
+        <span class="cc-n">${i+1}</span>
+        <span class="cc-pg">${esc(item.pgLabel)}</span>
+        <span class="cc-view">${item.vw}</span>
+      </div>
+      <div class="cc-txt">${esc(item.text)}</div>
+      <button class="cc-del" onclick="event.stopPropagation();del(${item.id})" title="Remove">✕</button>
+    </div>
+  `).join('');
+}
+
+function focus(id){
+  S.activeId=S.activeId===id?null:id;
+  const item=S.items.find(i=>i.id===id);
+  if(item&&item.pg!==S.pg){S.pg=item.pg;rTabs();rPreview();}
+  rRects();
+  rList();
+}
+
+function del(id){
+  S.items=S.items.filter(i=>i.id!==id);
+  if(S.activeId===id)S.activeId=null;
+  rRects();rList();rPrompt();
+}
+
+// ── Prompt ──
+function rPrompt(){
+  const el=document.getElementById('pout');
+  if(!S.items.length){
+    el.innerHTML='<span class="em">Draw selections on the preview and add commands to generate a prompt...</span>';
+    el.dataset.raw='';
+    return;
+  }
+
+  const grouped={};
+  S.items.forEach(c=>{if(!grouped[c.pgLabel])grouped[c.pgLabel]=[];grouped[c.pgLabel].push(c);});
+
+  let p='';
+  const pages=Object.keys(grouped);
+
+  if(pages.length===1&&grouped[pages[0]].length===1){
+    const c=grouped[pages[0]][0];
+    p=`On the ${c.pgLabel} page: ${c.text}`;
+  } else {
+    p='I have feedback on the BoldCrest website:\n\n';
+    for(const[page,items]of Object.entries(grouped)){
+      p+=`**${page} page:**\n`;
+      items.forEach(c=>{p+=`- ${c.text}\n`;});
+      p+='\n';
+    }
+    p+='Please make these changes and push online.';
+  }
+
+  el.innerHTML=`<span class="hl">${esc(p)}</span>`;
+  el.dataset.raw=p;
+}
+
+function copyP(){
+  const raw=document.getElementById('pout').dataset.raw;
+  if(!raw)return;
+  navigator.clipboard.writeText(raw).then(()=>{
+    const b=document.getElementById('cbtn');
+    b.textContent='Copied!';b.classList.add('ok');
+    setTimeout(()=>{b.textContent='Copy Prompt';b.classList.remove('ok');},2000);
+  });
+}
+
+function clearAll(){
+  S.items=[];S.activeId=null;S.pendingRect=null;S.nid=1;
+  document.querySelector('.popover')?.remove();
+  document.querySelector('.sel-rect.pending')?.remove();
+  rRects();rList();rPrompt();
+}
+
+function setPg(id){S.pg=id;S.pendingRect=null;rTabs();rPreview();rList();}
+function setVw(v){S.vw=v;S.pendingRect=null;rTabs();rPreview();}
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(S.pendingRect)cancelSel();
+    else if(S.sel)toggleSelect();
+  }
+});
+
+rTabs();rPreview();rList();rPrompt();
+</script>
+</body>
+</html>
