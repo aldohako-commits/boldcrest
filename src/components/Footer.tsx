@@ -31,6 +31,10 @@ const socialLinks = [
 
 const linkClass = 'block py-1.5 text-[0.85rem] transition-colors duration-300 text-black/50 hover:text-black'
 
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 export default function Footer() {
   const pathname = usePathname()
   const spacerRef = useRef<HTMLDivElement>(null)
@@ -45,10 +49,10 @@ export default function Footer() {
         className="sticky bottom-0 z-0 flex flex-col"
         style={{ background: '#EDEDED', color: '#000000' }}
       >
-        {/* Columns */}
-        <div className="mx-auto w-full max-w-[var(--max-width)] px-[var(--gutter)] pt-14 pb-20">
-          <div className="grid grid-cols-2 gap-y-10 gap-x-8 md:grid-cols-[1.2fr_1fr_1.2fr_1fr_0.8fr]">
-            {/* Services — wider */}
+        {/* Columns + Back to top */}
+        <div className="w-full px-[var(--gutter)] pt-14 pb-20">
+          <div className="relative grid grid-cols-2 gap-y-10 gap-x-8 md:grid-cols-[1.2fr_1fr_1.2fr_1fr_0.8fr]">
+            {/* Services */}
             <div className="md:col-span-1">
               <h3 className="mb-5 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-black/30">Services</h3>
               {serviceLinks.map((link) => (
@@ -75,10 +79,10 @@ export default function Footer() {
                 Talk to us or ask us anything.
               </p>
               <a href="mailto:info@boldcrest.com" className={linkClass}>
-                &rarr; info@boldcrest.com
+                &#8250; info@boldcrest.com
               </a>
               <Link href="/contact" className={linkClass}>
-                &rarr; Contact Us
+                &#8250; Contact Us
               </Link>
             </div>
 
@@ -93,7 +97,7 @@ export default function Footer() {
                   rel="noopener noreferrer"
                   className={linkClass}
                 >
-                  &rarr; {link.label}
+                  &#8250; {link.label}
                 </a>
               ))}
             </div>
@@ -108,12 +112,22 @@ export default function Footer() {
                 Terms of Service
               </Link>
             </div>
+
+            {/* Back to top button — absolute top-right */}
+            <button
+              onClick={scrollToTop}
+              className="absolute right-0 top-0 h-[46px] w-[46px] transition-opacity duration-300 hover:opacity-70"
+              aria-label="Back to top"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/go-up.svg" alt="" width={46} height={46} />
+            </button>
           </div>
         </div>
 
         {/* Bottom section — motto + copyright */}
         <div className="border-t border-black/10 px-[var(--gutter)]">
-          <div className="mx-auto flex max-w-[var(--max-width)] items-end justify-between py-10 md:py-14">
+          <div className="flex items-end justify-between py-10 md:py-14">
             {/* Motto SVG — left aligned */}
             <div className="w-[clamp(200px,35vw,400px)]">
               <svg viewBox="0 0 493.02 210.71" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="w-full">
