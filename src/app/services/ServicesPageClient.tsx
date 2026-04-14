@@ -1,9 +1,8 @@
 'use client'
 
-import { useRef, useState, useEffect, useCallback } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import Link from 'next/link'
-import Image from 'next/image'
 import { CTAButton } from '@/components/MagneticButton'
 import { PageMorphBlobs, SERVICES_BLOBS } from '@/components/MorphBlobs'
 import FAQSection from '@/components/services/FAQSection'
@@ -91,21 +90,6 @@ const capabilities = [
   },
 ]
 
-const marqueeItems = [
-  'branding',
-  'still & motion',
-  'communications',
-  'branding',
-  'still & motion',
-  'communications',
-  'branding',
-  'still & motion',
-  'communications',
-  'branding',
-  'still & motion',
-  'communications',
-]
-
 const testimonials = [
   {
     quote:
@@ -142,18 +126,6 @@ const testimonials = [
     company: 'Luminary Co.',
     avatar: 'AO',
   },
-]
-
-/* ── Gallery placeholder images ── */
-const galleryImages = [
-  { width: 330, color: '#DA291C' },
-  { width: 500, color: '#f9b311' },
-  { width: 350, color: '#004c95' },
-  { width: 420, color: '#DA291C' },
-  { width: 460, color: '#f9b311' },
-  { width: 380, color: '#004c95' },
-  { width: 440, color: '#DA291C' },
-  { width: 360, color: '#f9b311' },
 ]
 
 /* ── Word-by-word reveal ── */
@@ -212,347 +184,141 @@ function WordItem({
   )
 }
 
-/* ── Capabilities Cards (static boxes) ── */
-function CapabilitiesCards({
-  categories,
-}: {
-  categories: CategoryGroup[]
-}) {
+/* ── Expandable Service Cards ── */
+function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
+  const [active, setActive] = useState(0)
   const ref = useRef<HTMLElement>(null)
-  const isInView = useInView(ref, { once: true, margin: '-100px' })
+  const isInView = useInView(ref, { once: true, margin: '-50px' })
 
   return (
-    <section ref={ref} className="px-[var(--gutter)] py-[var(--space-3xl)]">
-      <div className="mx-auto max-w-[var(--max-width)]">
-        {/* Section label */}
-        <motion.p
-          className="mb-[var(--space-xl)] text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.6 }}
-        >
-          Three Disciplines. One Standard.
-        </motion.p>
+    <section
+      ref={ref}
+      className="px-[var(--gutter)] pt-20 pb-[120px]"
+    >
+      <div>
+      {/* Section header */}
+      <motion.p
+        className="mb-10 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
+        initial={{ opacity: 0 }}
+        animate={isInView ? { opacity: 1 } : {}}
+        transition={{ duration: 0.6 }}
+      >
+        Disciplines
+      </motion.p>
 
-        {/* Cards grid */}
-        <div className="grid gap-5 md:grid-cols-3">
-          {capabilities.map((cap, i) => {
-            const sanityServices =
-              categories.find((c) => c.category === cap.category)
-                ?.services || []
-            const tags =
-              sanityServices.length > 0
-                ? sanityServices.map((s) => s.name)
-                : cap.tags
+      {/* Cards */}
+      <motion.div
+        className="flex h-[480px] gap-4 md:h-[540px]"
+        initial={{ opacity: 0, y: 30 }}
+        animate={isInView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+      >
+        {capabilities.map((cap, i) => {
+          const isActive = active === i
+          const sanityServices =
+            categories.find((c) => c.category === cap.category)?.services || []
+          const tags =
+            sanityServices.length > 0
+              ? sanityServices.map((s) => s.name)
+              : cap.tags
 
-            return (
+          return (
+            <motion.div
+              key={cap.category}
+              className="relative cursor-pointer rounded-xl"
+              style={{
+                background: '#0a0a0a',
+              }}
+              animate={{
+                flex: isActive ? 5 : 0.8,
+                borderColor: isActive ? cap.color : 'rgba(163,163,163,0.3)',
+                borderWidth: 1,
+                borderStyle: 'solid',
+              }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              onClick={() => setActive(i)}
+            >
+              {/* Collapsed state — vertical label */}
               <motion.div
-                key={cap.category}
-                initial={{ opacity: 0, y: 30 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{
-                  duration: 0.7,
-                  delay: 0.15 + i * 0.1,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
+                className="absolute inset-0 flex flex-col items-center justify-between py-8"
+                animate={{ opacity: isActive ? 0 : 1 }}
+                transition={{ duration: 0.3 }}
+                style={{ pointerEvents: isActive ? 'none' : 'auto' }}
               >
-                <Link
-                  href={cap.href}
-                  className="group flex h-full flex-col justify-between rounded-2xl border border-border/40 p-8 transition-all duration-500 hover:border-white/20 lg:p-10"
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = `${cap.color}12`
-                    e.currentTarget.style.borderColor = `${cap.color}40`
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent'
-                    e.currentTarget.style.borderColor = ''
-                  }}
+                <span className="sr-only">{cap.number}</span>
+                <span
+                  className="font-display text-[0.8rem] font-bold uppercase tracking-[0.18em] text-white/90"
+                  style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
                 >
-                  <div>
-                    {/* Number + Abbreviation */}
-                    <div className="mb-6 flex items-center gap-4">
+                  {cap.category}
+                </span>
+                <span
+                  className="text-[1.1rem] font-light"
+                  style={{ color: 'rgba(163,163,163,0.5)' }}
+                >
+                  +
+                </span>
+              </motion.div>
+
+              {/* Expanded state — full content */}
+              <motion.div
+                className="absolute inset-0 flex flex-col justify-between p-8 md:p-10"
+                animate={{ opacity: isActive ? 1 : 0 }}
+                transition={{ duration: 0.4, delay: isActive ? 0.2 : 0 }}
+                style={{ pointerEvents: isActive ? 'auto' : 'none' }}
+              >
+                {/* Top row: title left, tags right */}
+                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                  <h3 className="font-display text-[clamp(1.6rem,2.5vw,2.2rem)] font-bold leading-[1.1] tracking-[-0.02em] text-white">
+                    {cap.heading.replace('\n', ' ')}
+                  </h3>
+                  <div className="flex flex-wrap gap-2 md:max-w-[55%] md:justify-end">
+                    {tags.slice(0, 6).map((tag) => (
                       <span
-                        className="text-[0.65rem] font-bold tracking-[0.15em]"
-                        style={{ color: cap.color }}
+                        key={tag}
+                        className="rounded-full border px-3 py-1 text-[0.6rem] font-medium uppercase tracking-[0.06em]"
+                        style={{ borderColor: `${cap.color}50`, color: 'rgba(255,255,255,0.55)' }}
                       >
-                        {cap.number}
+                        {tag}
                       </span>
-                      <span className="text-[0.65rem] font-semibold uppercase tracking-[0.15em] text-text-tertiary/50">
-                        {cap.abbr}
-                      </span>
-                    </div>
-
-                    {/* Heading */}
-                    <h3 className="mb-4 font-display text-[clamp(1.4rem,2vw,1.8rem)] font-bold leading-[1.1] tracking-[-0.02em] text-text-primary whitespace-pre-line">
-                      {cap.heading}
-                    </h3>
-
-                    {/* Description */}
-                    <p className="mb-6 text-[0.85rem] leading-[1.7] text-text-secondary">
-                      {cap.description}
-                    </p>
-
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-2">
-                      {tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-full border px-3 py-1 text-[0.6rem] font-medium uppercase tracking-[0.06em] transition-all duration-300"
-                          style={{
-                            borderColor: `${cap.color}25`,
-                            color: 'rgba(255,255,255,0.45)',
-                          }}
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+                    ))}
                   </div>
+                </div>
 
-                  {/* CTA */}
-                  <div className="mt-8 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.1em] text-text-tertiary transition-colors duration-300 group-hover:text-text-primary">
+                {/* Bottom: description + CTA */}
+                <div>
+                  <p className="mb-6 max-w-[500px] text-[0.85rem] leading-[1.7] text-text-secondary">
+                    {cap.description}
+                  </p>
+                  <Link
+                    href={cap.href}
+                    className="group inline-flex w-fit items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.12em] transition-opacity duration-300 hover:opacity-70"
+                    style={{ color: cap.color }}
+                  >
                     <span>{cap.ctaLabel}</span>
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="transition-transform duration-300 group-hover:translate-x-1">
                       <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                  </div>
-                </Link>
-              </motion.div>
-            )
-          })}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ── Sliding gallery ── */
-function SlidingGallery() {
-  return (
-    <section className="py-[var(--space-3xl)]">
-      <div className="px-[var(--gutter)] pb-[var(--space-xl)]">
-        <div className="mx-auto max-w-[var(--max-width)]">
-          <p className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
-            Our People
-          </p>
-          <h2 className="max-w-[600px] font-display text-[clamp(1.8rem,3.5vw,2.8rem)] font-light leading-[1.1] tracking-[-0.02em] text-text-primary">
-            We brand, film, strategize, and have fun doing it.
-          </h2>
-        </div>
-      </div>
-
-      {/* Infinite sliding gallery */}
-      <div className="relative overflow-hidden">
-        <div className="flex animate-[marquee_40s_linear_infinite] gap-3">
-          {[...galleryImages, ...galleryImages].map((img, i) => (
-            <div
-              key={i}
-              className="relative shrink-0 overflow-hidden rounded-xl"
-              style={{
-                width: `${img.width}px`,
-                height: '420px',
-              }}
-            >
-              {/* Placeholder — gradient block with subtle pattern */}
-              <div
-                className="absolute inset-0"
-                style={{
-                  background: `linear-gradient(135deg, ${img.color}15 0%, ${img.color}08 100%)`,
-                }}
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <svg
-                  width="48"
-                  height="48"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="text-white/8"
-                >
-                  <rect
-                    x="3"
-                    y="3"
-                    width="18"
-                    height="18"
-                    rx="2"
-                    stroke="currentColor"
-                    strokeWidth="1"
-                  />
-                  <circle
-                    cx="8.5"
-                    cy="8.5"
-                    r="1.5"
-                    fill="currentColor"
-                  />
-                  <path
-                    d="M3 16l5-5 4 4 3-3 6 6"
-                    stroke="currentColor"
-                    strokeWidth="1"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </div>
-              <div
-                className="absolute right-0 bottom-0 left-0 h-[1px] opacity-20"
-                style={{ backgroundColor: img.color }}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ── Testimonials ── */
-function Testimonials() {
-  const [current, setCurrent] = useState(0)
-  const trackRef = useRef<HTMLDivElement>(null)
-
-  const next = useCallback(() => {
-    setCurrent((prev) => (prev + 1) % testimonials.length)
-  }, [])
-
-  // Auto-advance every 6s
-  useEffect(() => {
-    const timer = setInterval(next, 6000)
-    return () => clearInterval(timer)
-  }, [next])
-
-  return (
-    <section className="border-t border-border px-[var(--gutter)] py-[var(--space-3xl)]">
-      <div className="mx-auto max-w-[var(--max-width)]">
-        {/* Header row */}
-        <div className="mb-[var(--space-xl)] flex items-center justify-between">
-          <p className="text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
-            (Some) clients love us
-          </p>
-          <button
-            onClick={next}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 text-text-secondary transition-all duration-[0.5s] hover:border-white/60 hover:text-white"
-            style={{ transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)' }}
-            aria-label="Next testimonial"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M3 8h10M9 4l4 4-4 4"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        </div>
-
-        {/* Testimonial cards */}
-        <div className="relative overflow-hidden" ref={trackRef}>
-          <motion.div
-            className="flex"
-            animate={{ x: `${-current * 100}%` }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          >
-            {testimonials.map((t, i) => (
-              <div
-                key={i}
-                className="flex w-full shrink-0 flex-col justify-between pr-12"
-                style={{ minHeight: '340px' }}
-              >
-                {/* Quote */}
-                <p className="max-w-[900px] font-display text-[clamp(1.6rem,3.5vw,3.2rem)] font-light leading-[1.15] tracking-[-0.02em] text-text-primary">
-                  {t.quote}
-                </p>
-
-                {/* Attribution */}
-                <div className="mt-10 flex items-center gap-4">
-                  {/* Avatar placeholder */}
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-accent/15 text-[0.65rem] font-bold tracking-wider text-accent">
-                    {t.avatar}
-                  </div>
-                  <div>
-                    <p className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-text-primary">
-                      {t.name}
-                    </p>
-                    <p className="text-[0.6rem] uppercase tracking-[0.05em] text-text-tertiary">
-                      {t.company}
-                    </p>
-                  </div>
+                  </Link>
                 </div>
-              </div>
-            ))}
-          </motion.div>
-
-          {/* Progress dots */}
-          <div className="mt-8 flex gap-2">
-            {testimonials.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrent(i)}
-                className="h-1 rounded-full transition-all duration-300"
-                style={{
-                  width: current === i ? '24px' : '8px',
-                  backgroundColor:
-                    current === i
-                      ? 'var(--accent)'
-                      : 'var(--text-tertiary)',
-                  opacity: current === i ? 1 : 0.3,
-                }}
-                aria-label={`Go to testimonial ${i + 1}`}
-              />
-            ))}
-          </div>
-        </div>
+              </motion.div>
+            </motion.div>
+          )
+        })}
+      </motion.div>
       </div>
     </section>
   )
 }
 
-/* ═══════════════════════════════════════════
-   Worked On 200+ — Industries + Client Logos
-═══════════════════════════════════════════ */
+/* ── Stats + Testimonial (combined section per Option 2) ── */
+const INDUSTRY_TAGS = ['Tech', 'F&B', 'Finance', 'Real Estate', 'Hospitality', 'Healthcare', 'Retail', 'Education', 'Automotive', 'Non-Profit']
 
-const INDUSTRIES = [
-  'Construction',
-  'Fashion',
-  'Finance',
-  'Food & Beverage',
-  'Health & Beauty',
-  'Home & Appliances',
-  'HoReCa',
-  'NGO',
-  'Tech',
-  'Services',
-]
-
-const CLIENT_LOGOS = [
-  { name: 'Hako', src: '/logos/hako.svg' },
-  { name: 'JokaDent', src: '/logos/jokadent.svg' },
-  { name: 'AK Invest', src: '/logos/ak-invest.svg' },
-  { name: 'Magniflex', src: '/logos/magniflex.svg' },
-  { name: 'Palma', src: '/logos/palma.svg' },
-  { name: 'Tepelene', src: '/logos/tepelene.svg' },
-  { name: 'LoriCaffe', src: '/logos/loricaffe.svg' },
-  { name: 'Tirana Home Store', src: '/logos/tirana-home-store.svg' },
-  { name: 'Fentimans', src: '/logos/fentimans.svg' },
-  { name: 'Diamond', src: '/logos/diamond.svg' },
-  { name: 'Akses', src: '/logos/akses.svg' },
-  { name: 'ExpertCloud', src: '/logos/expertcloud.svg' },
-  { name: 'Anmetal', src: '/logos/anmetal.svg' },
-  { name: 'Wienna', src: '/logos/wienna.svg' },
-  { name: 'Baboon', src: '/logos/baboon.svg' },
-  { name: 'Berdica', src: '/logos/berdica.svg' },
-  { name: 'Perfect Fashion', src: '/logos/perfect-fashion.svg' },
-  { name: 'Alisadudaj', src: '/logos/alisadudaj.svg' },
-  { name: 'Matrix', src: '/logos/matrix.svg' },
-  { name: 'Red Bull', src: '/logos/redbull.svg' },
-]
-
-function WorkedOn() {
-  const sectionRef = useRef<HTMLElement>(null)
-  const isInView = useInView(sectionRef, { margin: '-15%', once: true })
-  const counterRef = useRef<HTMLSpanElement>(null)
+function StatsTestimonial() {
+  const ref = useRef<HTMLElement>(null)
+  const isInView = useInView(ref, { once: true, margin: '-100px' })
   const [count, setCount] = useState(0)
 
-  // Animate counter from 0 → 200
   useEffect(() => {
     if (!isInView) return
     let frame: number
@@ -561,7 +327,6 @@ function WorkedOn() {
     const animate = (now: number) => {
       const elapsed = now - start
       const progress = Math.min(elapsed / duration, 1)
-      // ease-out cubic
       const eased = 1 - Math.pow(1 - progress, 3)
       setCount(Math.round(eased * 300))
       if (progress < 1) frame = requestAnimationFrame(animate)
@@ -571,180 +336,180 @@ function WorkedOn() {
   }, [isInView])
 
   return (
-    <section
-      ref={sectionRef}
-      className="px-[var(--gutter)] py-[var(--space-3xl)]"
-    >
-      <div className="mx-auto max-w-[var(--max-width)]">
-        <div className="grid gap-[var(--space-2xl)] md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:items-start">
-          {/* ── Left: Stat + Industries ── */}
+    <section ref={ref} className="px-[var(--gutter)] py-[120px]">
+      <div>
+        <motion.div
+          className="grid items-center gap-16 md:grid-cols-2"
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {/* Left: Stat + industries */}
           <div>
-            <motion.p
-              className="mb-2 text-[0.75rem] font-semibold uppercase tracking-[0.25em] text-text-tertiary"
-              initial={{ opacity: 0 }}
-              animate={isInView ? { opacity: 1 } : {}}
-              transition={{ duration: 0.6 }}
+            <div
+              className="mb-2 font-display font-bold leading-[1] tracking-[-0.04em]"
+              style={{ fontSize: 'clamp(4rem, 8vw, 6rem)' }}
             >
-              Worked On
-            </motion.p>
-
-            <motion.div
-              className="mb-2"
-              initial={{ opacity: 0, y: 30 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <span
-                ref={counterRef}
-                className="font-display text-[clamp(5rem,12vw,9rem)] font-bold leading-[0.9] text-accent"
-              >
-                {count}+
-              </span>
-            </motion.div>
-
-            <motion.p
-              className="mb-[var(--space-xl)] text-[0.8rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
-              initial={{ opacity: 0 }}
-              animate={isInView ? { opacity: 1 } : {}}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              Projects for a variety of industries
-            </motion.p>
-
-            {/* Industry list */}
-            <div className="flex flex-col">
-              {INDUSTRIES.map((industry, i) => (
-                <motion.div
-                  key={industry}
-                  className="group flex items-center justify-between border-t border-border/40 py-3 last:border-b"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={isInView ? { opacity: 1, x: 0 } : {}}
-                  transition={{
-                    duration: 0.5,
-                    delay: 0.4 + i * 0.04,
-                    ease: [0.16, 1, 0.3, 1],
-                  }}
+              {count}+
+            </div>
+            <p className="mb-10 text-[0.85rem] font-medium text-text-secondary">
+              Projects delivered across industries
+            </p>
+            <p className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
+              Industries
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {INDUSTRY_TAGS.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full border px-4 py-1.5 text-[0.75rem] font-medium text-text-secondary transition-colors duration-300 hover:text-text-primary"
+                  style={{ borderColor: 'var(--border)' }}
                 >
-                  <span className="text-[0.9rem] font-medium text-text-secondary transition-colors duration-300 group-hover:text-text-primary">
-                    {industry}
-                  </span>
-                  <svg
-                    className="h-3.5 w-3.5 text-text-tertiary/50 transition-all duration-300 group-hover:translate-x-1 group-hover:text-accent"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </motion.div>
+                  {tag}
+                </span>
               ))}
             </div>
           </div>
 
-          {/* ── Right: Client Logos Grid ── */}
-          <div className="grid grid-cols-3 gap-x-[var(--space-lg)] gap-y-[var(--space-xl)] sm:grid-cols-4 lg:grid-cols-5">
-            {CLIENT_LOGOS.map((logo, i) => (
-              <motion.div
-                key={logo.name}
-                className="flex items-center justify-center"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={isInView ? { opacity: 0.5, scale: 1 } : {}}
-                whileHover={{ opacity: 1, scale: 1.08 }}
-                transition={{
-                  duration: 0.5,
-                  delay: 0.3 + i * 0.03,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-              >
-                {/* Placeholder — swap with <Image> when SVGs are added to /public/logos/ */}
-                <div
-                  className="flex h-16 w-full items-center justify-center"
-                  title={logo.name}
-                >
-                  <span className="text-center font-display text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-text-secondary">
-                    {logo.name}
-                  </span>
-                </div>
-              </motion.div>
-            ))}
+          {/* Right: Testimonial card */}
+          <div
+            className="rounded-2xl border p-12"
+            style={{ background: 'var(--card-bg)', borderColor: 'var(--border)' }}
+          >
+            <div className="mb-4 text-[3rem] font-bold leading-[1] text-accent">
+              &ldquo;
+            </div>
+            <p className="mb-8 text-[1.1rem] font-normal leading-[1.65] text-text-primary">
+              {testimonials[0].quote}
+            </p>
+            <p className="text-[0.85rem] font-semibold text-text-primary">
+              {testimonials[0].name}
+            </p>
+            <p className="mt-1 text-[0.8rem] text-text-secondary">
+              {testimonials[0].company}
+            </p>
           </div>
-        </div>
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
+/* ── Client Logos (centered flex-wrap names) ── */
+const CLIENT_NAMES = [
+  'Hako', 'JokaDent', 'AK Invest', 'Magniflex', 'Palma',
+  'Tepelene', 'LoriCaffe', 'Tirana Home Store', 'Fentimans', 'Diamond',
+  'Akses', 'ExpertCloud', 'Anmetal', 'Wienna', 'Baboon',
+  'Berdica', 'Perfect Fashion', 'Alisadudaj', 'Matrix', 'Red Bull',
+]
+
+function ClientLogos() {
+  const ref = useRef<HTMLElement>(null)
+  const isInView = useInView(ref, { once: true, margin: '-100px' })
+
+  return (
+    <section ref={ref} className="px-[var(--gutter)] pt-20 pb-[120px]">
+      <div>
+        <motion.p
+          className="mb-12 text-center text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.6 }}
+        >
+          Trusted By
+        </motion.p>
+        <motion.div
+          className="flex flex-wrap justify-center gap-0"
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {CLIENT_NAMES.map((name) => (
+            <span
+              key={name}
+              className="px-7 py-4 text-[0.8rem] font-medium tracking-[0.04em] text-text-tertiary transition-colors duration-300 hover:text-text-secondary"
+            >
+              {name}
+            </span>
+          ))}
+        </motion.div>
       </div>
     </section>
   )
 }
 
 const PROCESS_STEPS = [
-  { number: '01', title: 'Discovery & Brief', description: 'We meet face to face. We learn your business, your market, your ambitions. You get a dedicated account manager from day one who knows your project inside out.' },
-  { number: '02', title: 'Strategy & Direction', description: 'Before any creative begins, we define the territory: positioning, audience, competitive landscape, and the creative direction we\'ll pursue together.' },
-  { number: '03', title: 'Creative Development', description: 'Multiple concepts, real iterations, structured feedback. We present with rationale, not just aesthetics, and push back when a different direction will serve you better.' },
-  { number: '04', title: 'Production & Delivery', description: 'Final files, guidelines, content calendars, print-ready assets. Everything delivered production-ready with clear documentation and structured handoff.' },
-  { number: '05', title: 'Ongoing Partnership', description: 'Brands evolve. Campaigns rotate. Content never stops. We stay with you, managing, optimizing, and scaling your creative output month after month.' },
+  { number: '01', title: 'Discovery & Brief', description: 'We listen before we create. Deep immersion into your brand, audience, competitors, and goals to build a brief worth building from.' },
+  { number: '02', title: 'Strategy & Direction', description: 'Insights become a strategic foundation — positioning, messaging hierarchy, creative direction, and a clear plan of action.' },
+  { number: '03', title: 'Creative Development', description: 'Concepts, iterations, and refinement. We present, collaborate, and push until the work is something we\'re both proud of.' },
+  { number: '04', title: 'Production & Delivery', description: 'Pixel-perfect execution across every deliverable. Print, digital, motion — everything ships production-ready, on time.' },
+  { number: '05', title: 'Ongoing Partnership', description: 'Great brands evolve. We stay close to help you adapt, grow, and keep the work as sharp as the day it launched.' },
 ]
 
-const PROCESS_CARD_TOPS = [134, 200, 272, 344, 416, 134]
-
+/* ── Horizontal Timeline Process ── */
 function ProcessSection() {
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
-    <section ref={ref} style={{ padding: '112px 0' }}>
-      <div className="mx-auto max-w-[var(--max-width)] px-[var(--gutter)]">
-        <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between md:gap-5">
-          {/* Left column — sticky heading */}
-          <div className="md:w-[48%] md:sticky md:top-[134px]">
-            <motion.p
-              className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
-              initial={{ opacity: 0 }}
-              animate={isInView ? { opacity: 1 } : {}}
-              transition={{ duration: 0.6 }}
-            >
-              Process
-            </motion.p>
-            <motion.h2
-              className="mb-4 max-w-[700px] font-display text-[clamp(1.8rem,3.5vw,2.8rem)] font-bold leading-[1.1] tracking-[-0.02em]"
-              initial={{ opacity: 0, y: 30 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            >
-              How Every BoldCrest Project Works
-            </motion.h2>
-            <motion.p
-              className="max-w-[600px] text-[0.95rem] leading-[1.7] text-text-secondary"
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            >
-              Regardless of discipline, every engagement follows the same framework.
-              Clarity at each stage, no surprises, and a dedicated team from start to finish.
-            </motion.p>
-          </div>
+    <section ref={ref} className="px-[var(--gutter)] py-[120px]">
+      <div>
+        <motion.p
+          className="mb-6 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.6 }}
+        >
+          Process
+        </motion.p>
+        <motion.h2
+          className="mb-[72px] max-w-[600px] font-display text-[clamp(1.8rem,3.5vw,2.6rem)] font-bold leading-[1.08] tracking-[-0.03em]"
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
+          How Every BoldCrest<br />Project Works
+        </motion.h2>
 
-          {/* Right column — stacking sticky cards */}
-          <div className="flex flex-col gap-[18px] md:w-[48%]">
-            {PROCESS_STEPS.map((step, i) => (
-              <motion.div
-                key={step.number}
-                className="rounded-lg border border-border/40 bg-[var(--bg)] p-8"
-                style={{
-                  position: 'sticky',
-                  top: `${PROCESS_CARD_TOPS[i] ?? PROCESS_CARD_TOPS[PROCESS_CARD_TOPS.length - 1]}px`,
-                }}
-                initial={{ opacity: 0, y: 30 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: 0.2 + i * 0.08, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <div className="flex flex-col gap-3">
-                  <span className="font-display text-[0.75rem] font-semibold text-text-tertiary">{step.number}</span>
-                  <h3 className="text-[0.95rem] font-semibold text-text-primary">{step.title}</h3>
-                  <p className="text-[0.85rem] leading-[1.7] text-text-secondary">{step.description}</p>
+        {/* Horizontal scrollable timeline */}
+        <motion.div
+          className="flex gap-0 overflow-x-auto pb-6"
+          style={{
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(255,255,255,0.12) transparent',
+          }}
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {PROCESS_STEPS.map((step, i) => (
+            <div
+              key={step.number}
+              className="relative shrink-0 pr-6"
+              style={{ flex: '0 0 260px' }}
+            >
+              {/* Circle + connecting line */}
+              <div className="relative mb-7 flex items-center">
+                <div
+                  className="z-[2] flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-[0.8rem] font-bold"
+                  style={{ borderColor: 'var(--accent)', background: 'var(--bg)', color: 'var(--text-primary)' }}
+                >
+                  {step.number}
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+                {i < PROCESS_STEPS.length - 1 && (
+                  <div className="ml-0 h-px flex-1" style={{ background: 'var(--border)' }} />
+                )}
+              </div>
+              <h4 className="mb-2.5 text-[1rem] font-bold tracking-[-0.02em] text-text-primary">
+                {step.title}
+              </h4>
+              <p className="max-w-[220px] text-[0.85rem] leading-[1.65] text-text-secondary">
+                {step.description}
+              </p>
+            </div>
+          ))}
+        </motion.div>
       </div>
     </section>
   )
@@ -757,7 +522,7 @@ export default function ServicesPageClient({
   return (
     <main className="relative">
       <PageMorphBlobs blobs={SERVICES_BLOBS} />
-      {/* ── Hero ── */}
+      {/* ── Hero (Manifesto) ── */}
       <section className="flex flex-col px-[var(--gutter)] pt-[120px] pb-0">
         <div>
           <motion.p
@@ -766,72 +531,44 @@ export default function ServicesPageClient({
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
-            What We Do
+            Services
           </motion.p>
-
-          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <motion.h1
-              className="font-display text-[clamp(2.5rem,6vw,5.5rem)] font-bold leading-[1] tracking-[-0.03em] text-white"
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            >
-              What Gets<br />
-              Us Out<br />
-              of Bed<span className="text-accent">.</span>
-            </motion.h1>
-
-            <motion.p
-              className="max-w-[400px] text-[0.95rem] leading-[1.7] text-text-secondary md:text-right"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            >
-              Three disciplines, one obsession. From first concept to final delivery, we handle the details so your brand never has to compromise.
-            </motion.p>
-          </div>
+          <motion.h1
+            className="max-w-[1000px] font-display text-[clamp(2rem,4vw,3.2rem)] font-bold leading-[1.2] tracking-[-0.03em]"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <WordReveal text="We Design Brands, Craft Stories, and Build Campaigns That Don't Just Inform. They Pull People In." />
+          </motion.h1>
         </div>
-
         {/* Divider */}
         <div className="mt-10 md:mt-12 lg:mt-16">
           <div className="h-px w-full bg-border" />
         </div>
       </section>
 
-      {/* ── Manifesto ── */}
-      <section className="px-[var(--gutter)] py-[var(--space-3xl)]">
-        <div className="mx-auto max-w-[var(--max-width)]">
-          <h2 className="mb-10 max-w-[800px] font-display text-[clamp(1.8rem,4vw,3.5rem)] font-bold leading-[1.15] tracking-[-0.02em]">
-            <WordReveal text="We Design Brands, Craft Stories, and Build Campaigns That Don't Just Inform. They Pull People In." />
-          </h2>
-          <div className="max-w-[640px] space-y-6 text-[0.95rem] leading-[1.7] text-text-secondary">
-            <p>
-              BoldCrest is a Tirana-based creative agency working across brand
-              development, production, and communication. We&apos;ve spent 7+
-              years building identities, shooting campaigns, and running content
-              systems for 30+ brands.
-            </p>
-            <p>
-              We don&apos;t separate thinking from making. Strategy informs
-              every visual. Craft elevates every message. And every project,
-              whether it&apos;s a logo or a national TVC, gets the same
-              obsessive attention to detail.
-            </p>
-          </div>
-        </div>
-      </section>
+      {/* ── Service Showcase Cards ── */}
+      <ServiceShowcase categories={categories} />
 
-      {/* ── Capabilities Cards ── */}
-      <CapabilitiesCards categories={categories} />
-
-      {/* ── Process ── */}
+      {/* ── Process Timeline ── */}
       <ProcessSection />
 
-      {/* ── Worked On 300+ ── */}
-      <WorkedOn />
+      {/* Divider */}
+      <div className="px-[var(--gutter)]">
+        <div className="h-px w-full bg-border" />
+      </div>
 
-      {/* ── Testimonials ── */}
-      <Testimonials />
+      {/* ── Stats + Testimonial ── */}
+      <StatsTestimonial />
+
+      {/* Divider */}
+      <div className="px-[var(--gutter)]">
+        <div className="h-px w-full bg-border" />
+      </div>
+
+      {/* ── Client Logos ── */}
+      <ClientLogos />
 
       {/* ── FAQ ── */}
       {faqItems && faqItems.length > 0 && (
