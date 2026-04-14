@@ -285,64 +285,20 @@ const CATEGORY_COLORS: Record<string, string> = {
   Culture: '#f9b311',
 }
 
-/* ── Diary card with circle-reveal hover on image ── */
+/* ── Diary card ── */
 function DiaryCardImage({ post, index }: { post: DiaryPost; index: number }) {
-  const cardRef = useRef<HTMLDivElement>(null)
-  const [mouse, setMouse] = useState({ x: 0, y: 0 })
-  const [hovering, setHovering] = useState(false)
   const color = CATEGORY_COLORS[post.category || ''] || '#DA291C'
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = cardRef.current?.getBoundingClientRect()
-    if (!rect) return
-    setMouse({ x: e.clientX - rect.left, y: e.clientY - rect.top })
-  }
 
   return (
     <Link href={`/diary/${post.slug.current}`} className="group block">
-      {/* Image container with circle-reveal hover */}
-      <div
-        ref={cardRef}
-        className="relative aspect-square overflow-hidden rounded-2xl bg-[#1a1a1a]"
-        onMouseMove={handleMouseMove}
-        onMouseEnter={() => setHovering(true)}
-        onMouseLeave={() => setHovering(false)}
-      >
+      {/* Image container */}
+      <div className="relative aspect-square overflow-hidden rounded-2xl bg-[#1a1a1a]">
         {/* Placeholder image */}
         <div className="flex h-full w-full items-center justify-center">
           <span className="text-[1.2rem] font-bold uppercase leading-[1.1] tracking-[-0.02em] text-white/10 text-center px-4 md:text-[3rem] md:px-8">
             {post.title}
           </span>
         </div>
-
-        {/* Circle reveal overlay on hover — "Read More" marquee */}
-        <motion.div
-          className="pointer-events-none absolute flex items-center justify-center overflow-hidden rounded-full"
-          style={{
-            left: mouse.x,
-            top: mouse.y,
-            x: '-50%',
-            y: '-50%',
-            backgroundColor: '#0a0a0a',
-          }}
-          animate={{
-            width: hovering ? 600 : 0,
-            height: hovering ? 600 : 0,
-          }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        >
-          {/* Marquee text */}
-          <div className="flex shrink-0 animate-[marquee_4s_linear_infinite] items-center gap-8 whitespace-nowrap">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <span
-                key={i}
-                className="text-[1.2rem] font-semibold tracking-[0.1em] text-white"
-              >
-                Read More
-              </span>
-            ))}
-          </div>
-        </motion.div>
       </div>
 
       {/* Info below image */}

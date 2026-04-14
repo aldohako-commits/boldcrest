@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -36,27 +36,12 @@ const CATEGORY_COLORS: Record<string, string> = {
 }
 
 function DiaryCard({ post }: { post: DiaryPost }) {
-  const cardRef = useRef<HTMLDivElement>(null)
-  const [mouse, setMouse] = useState({ x: 0, y: 0 })
-  const [hovering, setHovering] = useState(false)
   const color = CATEGORY_COLORS[post.category || ''] || '#DA291C'
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = cardRef.current?.getBoundingClientRect()
-    if (!rect) return
-    setMouse({ x: e.clientX - rect.left, y: e.clientY - rect.top })
-  }
 
   return (
     <Link href={`/diary/${post.slug?.current}`} className="group block">
-      {/* Image container with circle-reveal hover */}
-      <div
-        ref={cardRef}
-        className="relative aspect-square overflow-hidden rounded-2xl bg-[#1a1a1a]"
-        onMouseMove={handleMouseMove}
-        onMouseEnter={() => setHovering(true)}
-        onMouseLeave={() => setHovering(false)}
-      >
+      {/* Image container */}
+      <div className="relative aspect-square overflow-hidden rounded-2xl bg-[#1a1a1a]">
         {post.coverImage?.asset ? (
           <Image
             loader={sanityImageLoader}
@@ -64,8 +49,8 @@ function DiaryCard({ post }: { post: DiaryPost }) {
             alt={post.title}
             fill
             loading="lazy"
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 20vw"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
@@ -74,34 +59,6 @@ function DiaryCard({ post }: { post: DiaryPost }) {
             </span>
           </div>
         )}
-
-        {/* Circle reveal overlay on hover — "Read More" marquee */}
-        <motion.div
-          className="pointer-events-none absolute flex items-center justify-center overflow-hidden rounded-full"
-          style={{
-            left: mouse.x,
-            top: mouse.y,
-            x: '-50%',
-            y: '-50%',
-            backgroundColor: '#0a0a0a',
-          }}
-          animate={{
-            width: hovering ? 600 : 0,
-            height: hovering ? 600 : 0,
-          }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <div className="flex shrink-0 animate-[marquee_4s_linear_infinite] items-center gap-8 whitespace-nowrap">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <span
-                key={i}
-                className="text-[1.2rem] font-semibold tracking-[0.1em] text-white"
-              >
-                Read More
-              </span>
-            ))}
-          </div>
-        </motion.div>
       </div>
 
       {/* Info below image */}
@@ -222,48 +179,46 @@ export default function DiaryPageClient({ posts }: DiaryPageClientProps) {
 
       {/* Posts Grid */}
       <section className="px-[var(--gutter)] pt-[var(--space-xl)] pb-[var(--space-3xl)]">
-        <div className="mx-auto max-w-[var(--max-width)]">
-          <AnimatePresence mode="wait">
-            {filtered.length === 0 ? (
-              <motion.div
-                key="empty"
-                className="flex min-h-[300px] items-center justify-center"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <p className="text-[1rem] text-text-tertiary">
-                  No posts yet. Check back soon.
-                </p>
-              </motion.div>
-            ) : (
-              <motion.div
-                key={activeFilter}
-                className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              >
-                {filtered.map((post, i) => (
-                  <motion.div
-                    key={post._id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      duration: 0.5,
-                      delay: Math.min(i, 8) * 0.06,
-                      ease: [0.16, 1, 0.3, 1],
-                    }}
-                  >
-                    <DiaryCard post={post} />
-                  </motion.div>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        <AnimatePresence mode="wait">
+          {filtered.length === 0 ? (
+            <motion.div
+              key="empty"
+              className="flex min-h-[300px] items-center justify-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <p className="text-[1rem] text-text-tertiary">
+                No posts yet. Check back soon.
+              </p>
+            </motion.div>
+          ) : (
+            <motion.div
+              key={activeFilter}
+              className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {filtered.map((post, i) => (
+                <motion.div
+                  key={post._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.5,
+                    delay: Math.min(i, 10) * 0.06,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                >
+                  <DiaryCard post={post} />
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
     </main>
   )
