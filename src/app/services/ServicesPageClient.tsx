@@ -207,7 +207,7 @@ function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
 
       {/* Cards */}
       <motion.div
-        className="flex h-[480px] gap-3 md:h-[560px]"
+        className="flex h-[480px] gap-3 md:h-[max(560px,100svh)]"
         initial={{ opacity: 0, y: 30 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
@@ -222,7 +222,6 @@ function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
               : cap.tags
 
           const darkShade = `color-mix(in srgb, ${cap.color} 50%, black)`
-          const lightShade = `color-mix(in srgb, ${cap.color} 60%, white)`
 
           return (
             <motion.div
@@ -326,13 +325,13 @@ function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
 }
 
 /* ── Stats Bar + Editorial Testimonial ── */
-const STATS = [
-  { value: 300, suffix: '+', label: 'Projects Delivered' },
-  { value: 50, suffix: '+', label: 'Brands Partnered' },
-  { value: 8, suffix: ' Yrs', label: 'In the Making' },
-]
+const ACTIVE_SINCE = new Date('2019-01-27T00:00:00')
 
-function CountUp({ to, suffix, active }: { to: number; suffix: string; active: boolean }) {
+function daysSince(date: Date): number {
+  return Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24))
+}
+
+function CountUp({ to, active }: { to: number; active: boolean }) {
   const [n, setN] = useState(0)
   useEffect(() => {
     if (!active) return
@@ -348,133 +347,57 @@ function CountUp({ to, suffix, active }: { to: number; suffix: string; active: b
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
   }, [active, to])
-  return <>{n}{suffix}</>
+  return <>{n.toLocaleString('en-US')}</>
 }
 
-function StatsTestimonial() {
+function Stats() {
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
-  const [active, setActive] = useState(0)
+  const [days, setDays] = useState(0)
 
-  const next = () => setActive((i) => (i + 1) % testimonials.length)
-  const prev = () => setActive((i) => (i - 1 + testimonials.length) % testimonials.length)
+  useEffect(() => {
+    const update = () => setDays(daysSince(ACTIVE_SINCE))
+    update()
+    const id = setInterval(update, 60_000)
+    return () => clearInterval(id)
+  }, [])
+
+  const stats = [
+    { value: 248, label: 'Projects delivered', bg: '#1f1f1f' },
+    { value: 92, label: 'Partners', bg: '#171717' },
+    { value: days, label: 'Days active', bg: '#0f0f0f' },
+  ]
 
   return (
     <section ref={ref} className="px-[var(--gutter)] py-[120px]">
       <div className="mx-auto max-w-[var(--max-width)]">
-        {/* Stats row */}
         <motion.div
-          className="grid grid-cols-1 gap-y-12 border-y md:grid-cols-3 md:gap-y-0 md:divide-x"
-          style={{ borderColor: 'var(--border)' }}
+          className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-5"
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          {STATS.map((s, i) => (
+          {stats.map((s) => (
             <div
               key={s.label}
-              className="flex flex-col gap-3 px-0 py-10 md:px-12"
-              style={{ borderColor: 'var(--border)' }}
+              className="flex flex-col justify-between gap-10 rounded-2xl p-8 md:p-10 md:min-h-[300px]"
+              style={{ background: s.bg }}
             >
               <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
-                {String(i + 1).padStart(2, '0')} / {String(STATS.length).padStart(2, '0')}
+                {s.label}
               </p>
               <div className="font-display text-[clamp(3.5rem,8vw,6.5rem)] font-bold leading-[0.95] tracking-[-0.04em]">
-                <CountUp to={s.value} suffix={s.suffix} active={isInView} />
-                <span className="text-accent">.</span>
+                <CountUp to={s.value} active={isInView} />
               </div>
-              <p className="text-[0.95rem] text-text-secondary">{s.label}</p>
             </div>
           ))}
-        </motion.div>
-
-        {/* Testimonial — editorial pull-quote */}
-        <motion.div
-          className="mt-[120px]"
-          initial={{ opacity: 0, y: 40 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <p className="mb-10 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
-            What they say
-          </p>
-
-          <div className="relative">
-            <span
-              className="pointer-events-none absolute -top-12 -left-2 select-none font-display text-[16rem] font-bold leading-none text-accent/15 md:text-[22rem]"
-              aria-hidden="true"
-            >
-              &ldquo;
-            </span>
-
-            <AnimatePresence mode="wait">
-              <motion.blockquote
-                key={active}
-                className="relative max-w-[1100px] font-display text-[clamp(1.6rem,3.4vw,2.8rem)] font-medium leading-[1.25] tracking-[-0.02em]"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              >
-                {testimonials[active].quote}
-              </motion.blockquote>
-            </AnimatePresence>
-          </div>
-
-          <div className="mt-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={active}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.4 }}
-              >
-                <p className="text-[0.95rem] font-semibold tracking-[-0.01em]">
-                  {testimonials[active].name}
-                </p>
-                <p className="mt-1 text-[0.85rem] text-text-secondary">
-                  {testimonials[active].company}
-                </p>
-              </motion.div>
-            </AnimatePresence>
-
-            {/* Slider controls */}
-            <div className="flex items-center gap-6">
-              <p className="text-[0.75rem] font-medium tracking-[0.08em] text-text-tertiary">
-                {String(active + 1).padStart(2, '0')} / {String(testimonials.length).padStart(2, '0')}
-              </p>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={prev}
-                  aria-label="Previous testimonial"
-                  className="flex h-11 w-11 items-center justify-center rounded-full border transition-colors duration-300 hover:border-white/40"
-                  style={{ borderColor: 'var(--border)' }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                    <path d="M13 8H3M7 4 3 8l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
-                <button
-                  onClick={next}
-                  aria-label="Next testimonial"
-                  className="flex h-11 w-11 items-center justify-center rounded-full border transition-colors duration-300 hover:border-white/40"
-                  style={{ borderColor: 'var(--border)' }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                    <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
         </motion.div>
       </div>
     </section>
   )
 }
 
-/* ── Client Logos (bordered grid) ── */
+/* ── Logos + Testimonial (combined) ── */
 const CLIENT_NAMES = [
   'Hako', 'JokaDent', 'AK Invest', 'Magniflex', 'Palma',
   'Tepelene', 'LoriCaffe', 'Tirana Home Store', 'Fentimans', 'Diamond',
@@ -483,54 +406,125 @@ const CLIENT_NAMES = [
 ]
 const ACCENTS = ['#DA291C', '#f9b311', '#004c95']
 
-function ClientLogos() {
+function LogosTestimonial() {
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
+  const [active, setActive] = useState(0)
+
+  const next = () => setActive((i) => (i + 1) % testimonials.length)
+  const prev = () => setActive((i) => (i - 1 + testimonials.length) % testimonials.length)
 
   return (
     <section ref={ref} className="px-[var(--gutter)] pt-20 pb-[120px]">
-      <div className="mx-auto max-w-[var(--max-width)]">
+      <div>
         <motion.div
-          className="mb-10 flex items-end justify-between gap-6"
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.6 }}
-        >
-          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
-            Trusted by
-          </p>
-          <p className="text-[0.7rem] font-medium tracking-[0.08em] text-text-tertiary">
-            {CLIENT_NAMES.length} brands &amp; counting
-          </p>
-        </motion.div>
-
-        <motion.div
-          className="grid grid-cols-2 border-t border-l sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-          style={{ borderColor: 'var(--border)' }}
-          initial={{ opacity: 0, y: 20 }}
+          className="grid grid-cols-1 gap-12 md:grid-cols-2 md:gap-14 lg:gap-20"
+          initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          {CLIENT_NAMES.map((name, i) => {
-            const accent = ACCENTS[i % ACCENTS.length]
-            return (
-              <div
-                key={name}
-                className="group relative flex h-[110px] items-center justify-center border-r border-b transition-colors duration-300 md:h-[130px]"
-                style={{ borderColor: 'var(--border)' }}
+          {/* LEFT — Logos */}
+          <div>
+            <p className="mb-6 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
+              Trusted by
+            </p>
+
+            <div className="grid grid-cols-2">
+              {CLIENT_NAMES.map((name, i) => {
+                const accent = ACCENTS[i % ACCENTS.length]
+                return (
+                  <div
+                    key={name}
+                    className="group relative flex h-[68px] items-center justify-center transition-colors duration-300 md:h-[78px]"
+                  >
+                    <span
+                      className="pointer-events-none absolute top-2 left-2 h-1.5 w-1.5 rounded-full opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                      style={{ background: accent }}
+                    />
+                    <span className="font-display text-[0.95rem] font-semibold tracking-[-0.01em] text-text-tertiary transition-colors duration-300 group-hover:text-text-primary md:text-[1.05rem]">
+                      {name}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* RIGHT — Testimonial */}
+          <div className="flex flex-col">
+            <p className="mb-6 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
+              What they say
+            </p>
+
+            <div className="relative flex-1">
+              <span
+                className="pointer-events-none absolute -top-8 -left-2 select-none font-display text-[12rem] font-bold leading-none text-accent/15 md:text-[16rem]"
+                aria-hidden="true"
               >
-                <span
-                  className="pointer-events-none absolute top-3 left-3 h-1.5 w-1.5 rounded-full opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                  style={{ background: accent }}
-                />
-                <span
-                  className="font-display text-[1rem] font-semibold tracking-[-0.01em] text-text-tertiary transition-colors duration-300 group-hover:text-text-primary md:text-[1.1rem]"
+                &ldquo;
+              </span>
+
+              <AnimatePresence mode="wait">
+                <motion.blockquote
+                  key={active}
+                  className="relative font-display text-[clamp(1.3rem,2vw,1.9rem)] font-medium leading-[1.3] tracking-[-0.02em]"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  {name}
-                </span>
+                  {testimonials[active].quote}
+                </motion.blockquote>
+              </AnimatePresence>
+            </div>
+
+            <div className="mt-10 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={active}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <p className="text-[0.95rem] font-semibold tracking-[-0.01em]">
+                    {testimonials[active].name}
+                  </p>
+                  <p className="mt-1 text-[0.85rem] text-text-secondary">
+                    {testimonials[active].company}
+                  </p>
+                </motion.div>
+              </AnimatePresence>
+
+              <div className="flex items-center gap-4">
+                <p className="text-[0.75rem] font-medium tracking-[0.08em] text-text-tertiary">
+                  {String(active + 1).padStart(2, '0')} / {String(testimonials.length).padStart(2, '0')}
+                </p>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={prev}
+                    aria-label="Previous testimonial"
+                    className="flex h-11 w-11 items-center justify-center rounded-full border transition-colors duration-300 hover:border-white/40"
+                    style={{ borderColor: 'var(--border)' }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                      <path d="M13 8H3M7 4 3 8l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={next}
+                    aria-label="Next testimonial"
+                    className="flex h-11 w-11 items-center justify-center rounded-full border transition-colors duration-300 hover:border-white/40"
+                    style={{ borderColor: 'var(--border)' }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                </div>
               </div>
-            )
-          })}
+            </div>
+          </div>
         </motion.div>
       </div>
     </section>
@@ -565,7 +559,6 @@ function ProcessRow({ step, index }: { step: typeof PROCESS_STEPS[number]; index
           className="font-display text-[clamp(4rem,9vw,8rem)] font-bold leading-[0.9] tracking-[-0.04em] text-text-tertiary/30 transition-colors duration-500 group-hover:text-accent"
         >
           {step.number}
-          <span className="text-accent">.</span>
         </span>
       </div>
 
@@ -589,20 +582,18 @@ function ProcessSection() {
   return (
     <section ref={ref} className="px-[var(--gutter)] py-[120px]">
       <div className="mx-auto max-w-[var(--max-width)]">
-        <div className="mb-16 grid grid-cols-12 items-end gap-6 md:mb-20 md:gap-10">
-          <motion.div
-            className="col-span-12 md:col-span-3"
+        <div className="mb-16 md:mb-20">
+          <motion.p
+            className="mb-6 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ duration: 0.6 }}
           >
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
-              Process
-            </p>
-          </motion.div>
+            Process
+          </motion.p>
 
           <motion.h2
-            className="col-span-12 font-display text-[clamp(2.2rem,5vw,4rem)] font-bold leading-[1] tracking-[-0.03em] md:col-span-9"
+            className="font-display text-[clamp(2.2rem,5vw,4rem)] font-bold leading-[1] tracking-[-0.03em]"
             initial={{ opacity: 0, y: 30 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
@@ -664,10 +655,10 @@ export default function ServicesPageClient({
       <ProcessSection />
 
       {/* ── Stats + Testimonial ── */}
-      <StatsTestimonial />
+      <Stats />
 
       {/* ── Client Logos ── */}
-      <ClientLogos />
+      <LogosTestimonial />
 
       {/* ── FAQ ── */}
       {faqItems && faqItems.length > 0 && (
