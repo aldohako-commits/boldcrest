@@ -1,334 +1,831 @@
 'use client'
 
-import { useState, useActionState } from 'react'
-import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { submitProjectForm } from './actions'
-import { SubmitButton } from '@/components/MagneticButton'
 
-const serviceOptions = [
-  { label: 'Branding', value: 'Branding' },
-  { label: 'TV - Commercials', value: 'TV - Commercials' },
-  { label: 'Social Media Management', value: 'Social Media Management' },
-  { label: 'Packaging', value: 'Packaging' },
-  { label: 'Marketing Campaigns', value: 'Marketing Campaigns' },
-  { label: 'Website', value: 'Website' },
-  { label: 'Other', value: 'Other' },
+/* ════════════════════════════════════════════════════
+   Types & data
+══════════════════════════════════════════════════════ */
+type Answers = {
+  name: string
+  position: string
+  company: string
+  services: string[]
+  message: string
+  kickoff: string
+  deadline: string
+  budget: string
+  email: string
+  source: string[]
+}
+
+const SERVICE_OPTIONS = [
+  'Branding',
+  'Packaging design',
+  'Photography',
+  'Videography',
+  'TV commercials',
+  'Social media',
+  'Website',
+  'Other',
 ]
 
-const budgetOptions = [
-  '< €5,000',
+const KICKOFF_OPTIONS = [
+  'ASAP — within the next two weeks.',
+  'Soon — next month would be great.',
+  'Within the next 3 months.',
+  'No rush. Whenever fits your team.',
+]
+
+const DEADLINE_OPTIONS = [
+  'Within 3 months.',
+  'Within 6 months.',
+  'In about a year.',
+  'Open-ended — quality over speed.',
+]
+
+const BUDGET_OPTIONS = [
+  'Under €5,000',
   '€5,000 – €15,000',
   '€15,000 – €50,000',
   '€50,000+',
+  'Not sure yet — let\'s figure it out.',
 ]
 
-const recentWork = [
-  {
-    name: "WECA's Evolution",
-    slug: 'wecas-evolution',
-    category: 'Branding',
-  },
-  {
-    name: 'Tirana Home Store',
-    slug: 'tirana-home-store',
-    category: 'Social Media Management',
-  },
+const SOURCE_OPTIONS = [
+  'A client referral',
+  'A friend or colleague',
+  'Google',
+  'Social media',
+  'I\'ve been following BoldCrest for a while',
+  'Somewhere else',
 ]
 
-export default function StartProjectClient() {
-  const [submitted, setSubmitted] = useState(false)
-  const [selectedServices, setSelectedServices] = useState<string[]>([])
+const EMPTY: Answers = {
+  name: '',
+  position: '',
+  company: '',
+  services: [],
+  message: '',
+  kickoff: '',
+  deadline: '',
+  budget: '',
+  email: '',
+  source: [],
+}
 
-  const toggleService = (service: string) => {
-    setSelectedServices((prev) =>
-      prev.includes(service)
-        ? prev.filter((s) => s !== service)
-        : [...prev, service]
-    )
-  }
+/* ════════════════════════════════════════════════════
+   Layout primitives
+══════════════════════════════════════════════════════ */
+const turnVariants = {
+  initial: { opacity: 0, y: 24 },
+  animate: { opacity: 1, y: 0 },
+}
 
-  const [, formAction, isPending] = useActionState(
-    async (_prevState: unknown, formData: FormData) => {
-      formData.set('service', selectedServices.join(', '))
-      const result = await submitProjectForm(formData)
-      if (result.success) setSubmitted(true)
-      return result
-    },
-    null,
-  )
+const turnTransition = { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }
 
+function AgencyTurn({ children }: { children: React.ReactNode }) {
   return (
-    <main className="relative">
-      {/* ═══════════════════════════════════════════
-          HERO — Start a New Project
-      ═══════════════════════════════════════════ */}
-      <section className="relative min-h-[70vh] px-[var(--gutter)] pt-40 pb-[var(--space-2xl)]">
-        <div className="mx-auto max-w-[var(--max-width)]">
-          <motion.p
-            className="mb-6 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            Start A New Project
-          </motion.p>
-
-          <motion.h1
-            className="max-w-[900px] font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[1.05]"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          >
-            Let&apos;s Work
-            <br />
-            Together<span className="text-[#004c95]">.</span>
-          </motion.h1>
-
-          <motion.p
-            className="mt-[var(--space-lg)] max-w-[650px] text-[1.1rem] leading-[1.7] text-[#004c95]"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          >
-            It doesn&apos;t matter how big your business is or weird your questions are, there&apos;re worth asking, and we will get back to you shortly.
-          </motion.p>
+    <motion.div
+      variants={turnVariants}
+      initial="initial"
+      animate="animate"
+      transition={turnTransition}
+      className="flex w-full flex-col items-start"
+    >
+      <div className="max-w-[560px]">
+        <header className="mb-4 flex items-baseline gap-3">
+          <h3 className="font-display text-[1.05rem] font-bold tracking-[-0.01em] text-text-primary">
+            Aldo
+          </h3>
+          <span className="text-[0.8rem] text-text-tertiary">
+            Founder, BoldCrest
+          </span>
+        </header>
+        <div className="flex flex-col items-start gap-2">{children}</div>
+        <div
+          className="mt-4 flex h-10 w-10 items-center justify-center rounded-full text-[0.85rem] font-bold text-white"
+          style={{ background: '#DA291C' }}
+        >
+          A
         </div>
-      </section>
+      </div>
+    </motion.div>
+  )
+}
 
-      {/* ═══════════════════════════════════════════
-          FORM — Two-column layout
-      ═══════════════════════════════════════════ */}
-      <section className="px-[var(--gutter)] pb-[var(--space-3xl)]">
-        <div className="mx-auto max-w-[var(--max-width)]">
-          {submitted ? (
-            <motion.div
-              className="flex min-h-[400px] flex-col items-center justify-center text-center"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+function UserTurn({
+  heading,
+  initial,
+  children,
+}: {
+  heading: string
+  initial?: string
+  children: React.ReactNode
+}) {
+  return (
+    <motion.div
+      variants={turnVariants}
+      initial="initial"
+      animate="animate"
+      transition={turnTransition}
+      className="flex w-full flex-col items-end"
+    >
+      <div className="flex w-full max-w-[560px] flex-col items-end">
+        <header className="mb-4 flex items-baseline gap-3">
+          <h3 className="font-display text-[1.05rem] font-bold tracking-[-0.01em] text-text-primary">
+            {heading}
+          </h3>
+        </header>
+        <div className="flex w-full flex-col items-end gap-2">{children}</div>
+        <div
+          className="mt-4 flex h-10 w-10 items-center justify-center rounded-full text-[0.85rem] font-bold text-white"
+          style={{ background: '#004c95' }}
+        >
+          {initial || 'You'.slice(0, 1)}
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+function Bubble({
+  side = 'left',
+  children,
+}: {
+  side?: 'left' | 'right'
+  children: React.ReactNode
+}) {
+  return (
+    <p
+      className={`rounded-2xl px-5 py-3 text-[0.95rem] leading-[1.5] ${
+        side === 'left'
+          ? 'rounded-bl-md bg-bg-card text-text-primary'
+          : 'rounded-br-md bg-[#1a1a1a] text-text-primary'
+      }`}
+    >
+      {children}
+    </p>
+  )
+}
+
+/* ════════════════════════════════════════════════════
+   Form-bubble shells
+══════════════════════════════════════════════════════ */
+function FormShell({
+  children,
+  active,
+}: {
+  children: React.ReactNode
+  active: boolean
+}) {
+  return (
+    <div
+      className={`w-full rounded-2xl rounded-br-md border p-5 transition-opacity duration-300 ${
+        active ? 'opacity-100' : 'opacity-50'
+      }`}
+      style={{
+        background: '#141414',
+        borderColor: active ? 'rgba(255,255,255,0.12)' : 'var(--border)',
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
+function OkButton({
+  disabled,
+  onClick,
+  type = 'button',
+}: {
+  disabled?: boolean
+  onClick?: () => void
+  type?: 'button' | 'submit'
+}) {
+  return (
+    <button
+      type={type}
+      disabled={disabled}
+      onClick={onClick}
+      className="mt-4 inline-flex items-center gap-2 self-end rounded-full px-5 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.18em] transition-all duration-300 enabled:hover:translate-x-0.5 disabled:cursor-not-allowed disabled:opacity-30"
+      style={{ background: '#DA291C', color: '#fff' }}
+    >
+      Ok
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <path
+          d="M3 8h10M9 4l4 4-4 4"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </button>
+  )
+}
+
+/* ════════════════════════════════════════════════════
+   Step inputs
+══════════════════════════════════════════════════════ */
+function InlineInput({
+  label,
+  placeholder,
+  value,
+  onChange,
+  onSubmit,
+  type = 'text',
+  active,
+}: {
+  label: string
+  placeholder: string
+  value: string
+  onChange: (v: string) => void
+  onSubmit: () => void
+  type?: 'text' | 'email'
+  active: boolean
+}) {
+  const ref = useRef<HTMLInputElement>(null)
+  useEffect(() => {
+    if (active && ref.current) ref.current.focus()
+  }, [active])
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="text-[0.75rem] uppercase tracking-[0.18em] text-text-tertiary">
+        {label}
+      </span>
+      <div className="flex items-center gap-3 border-b border-white/15 pb-2">
+        <input
+          ref={ref}
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && value.trim()) {
+              e.preventDefault()
+              onSubmit()
+            }
+          }}
+          placeholder={placeholder}
+          disabled={!active}
+          className="w-full bg-transparent text-[1.05rem] text-text-primary outline-none placeholder:text-text-tertiary disabled:cursor-default"
+        />
+      </div>
+    </div>
+  )
+}
+
+function CheckboxList({
+  options,
+  value,
+  onToggle,
+  active,
+}: {
+  options: string[]
+  value: string[]
+  onToggle: (v: string) => void
+  active: boolean
+}) {
+  return (
+    <div className="flex flex-col">
+      {options.map((opt) => {
+        const checked = value.includes(opt)
+        return (
+          <label
+            key={opt}
+            className={`flex cursor-pointer items-center justify-between gap-4 border-t border-white/8 py-3 text-[0.95rem] transition-colors duration-200 last:border-b ${
+              checked ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'
+            } ${active ? '' : 'pointer-events-none'}`}
+          >
+            <span>{opt}</span>
+            <input
+              type="checkbox"
+              checked={checked}
+              onChange={() => onToggle(opt)}
+              disabled={!active}
+              className="sr-only"
+            />
+            <span
+              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-all ${
+                checked ? 'bg-accent text-bg' : 'border-white/25'
+              }`}
+              style={checked ? { background: '#DA291C', borderColor: '#DA291C' } : undefined}
+              aria-hidden="true"
             >
-              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-accent">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 6L9 17l-5-5" />
-                </svg>
-              </div>
-              <h3 className="font-display text-[2rem] font-bold">Message Sent</h3>
-              <p className="mt-3 text-[1rem] text-text-secondary">
-                We&apos;ll get back to you shortly.
-              </p>
-            </motion.div>
-          ) : (
-            <form action={formAction}>
-              <div className="grid gap-[var(--space-2xl)] md:grid-cols-2">
-                {/* ── Left Column: Contact Info ── */}
-                <motion.div
-                  className="flex flex-col gap-[var(--space-md)]"
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <div className="border-b border-border pb-4">
-                    <input
-                      name="name"
-                      type="text"
-                      required
-                      placeholder="Full Name*"
-                      className="w-full bg-transparent text-[1rem] text-white placeholder:text-text-tertiary outline-none"
-                    />
-                  </div>
-
-                  <div className="border-b border-border pb-4">
-                    <input
-                      name="company"
-                      type="text"
-                      placeholder="Company*"
-                      className="w-full bg-transparent text-[1rem] text-white placeholder:text-text-tertiary outline-none"
-                    />
-                  </div>
-
-                  <div className="border-b border-border pb-4">
-                    <input
-                      name="email"
-                      type="email"
-                      required
-                      placeholder="Email*"
-                      className="w-full bg-transparent text-[1rem] text-white placeholder:text-text-tertiary outline-none"
-                    />
-                  </div>
-
-                  <div className="border-b border-border pb-4">
-                    <input
-                      name="phone"
-                      type="tel"
-                      placeholder="Phone*"
-                      className="w-full bg-transparent text-[1rem] text-white placeholder:text-text-tertiary outline-none"
-                    />
-                  </div>
-
-                  <p className="mt-2 text-[0.8rem] text-text-tertiary">
-                    By clicking Send you are agreeing to our Privacy Policy
-                  </p>
-                </motion.div>
-
-                {/* ── Right Column: Services + Budget + Message ── */}
-                <motion.div
-                  className="flex flex-col gap-[var(--space-lg)]"
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <div>
-                    <p className="mb-4 text-[0.85rem] font-medium text-text-secondary">
-                      I&apos;m looking for
-                    </p>
-                    <div className="flex flex-wrap gap-3">
-                      {serviceOptions.map((opt) => (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          onClick={() => toggleService(opt.value)}
-                          className={`rounded-[var(--radius-pill)] border px-4 py-2 text-[0.8rem] font-medium transition-all duration-200 ${
-                            selectedServices.includes(opt.value)
-                              ? 'border-accent bg-accent/10 text-accent'
-                              : 'border-border text-text-secondary hover:border-text-secondary hover:text-white'
-                          }`}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="relative">
-                      <select
-                        name="budget"
-                        defaultValue=""
-                        className="w-full appearance-none border-b border-border bg-transparent pb-4 text-[1rem] text-white outline-none"
-                      >
-                        <option value="" disabled className="bg-bg">
-                          Budget
-                        </option>
-                        {budgetOptions.map((b) => (
-                          <option key={b} value={b} className="bg-bg">
-                            {b}
-                          </option>
-                        ))}
-                      </select>
-                      <svg
-                        className="pointer-events-none absolute right-0 top-1 text-text-tertiary"
-                        width="14"
-                        height="14"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                      >
-                        <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                      </svg>
-                    </div>
-
-                    <div className="border-b border-border pb-4">
-                      <input
-                        name="deadline"
-                        type="text"
-                        placeholder="Deadline"
-                        className="w-full bg-transparent text-[1rem] text-white placeholder:text-text-tertiary outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="border-b border-border pb-4">
-                    <textarea
-                      name="message"
-                      required
-                      rows={3}
-                      placeholder="Message*"
-                      className="w-full resize-none bg-transparent text-[1rem] text-white placeholder:text-text-tertiary outline-none"
-                    />
-                  </div>
-                </motion.div>
-              </div>
-
-              {/* Submit Button */}
-              <motion.div
-                className="mt-[var(--space-xl)]"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <SubmitButton
-                  label="Submit"
-                  pendingLabel="Sending..."
-                  isPending={isPending}
-                />
-              </motion.div>
-            </form>
-          )}
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════
-          NOT SURE YET — Recent Work
-      ═══════════════════════════════════════════ */}
-      <section className="px-[var(--gutter)] pb-[var(--space-3xl)]">
-        <div className="mx-auto max-w-[var(--max-width)]">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <p className="mb-2 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
-              Not sure yet?
-            </p>
-            <h2 className="mb-[var(--space-xl)] font-display text-[clamp(1.5rem,3vw,2.5rem)] font-bold">
-              Check some more work
-            </h2>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              {recentWork.map((project) => (
-                <Link
-                  key={project.slug}
-                  href={`/work/${project.slug}`}
-                  className="group relative block aspect-[4/3] overflow-hidden rounded-[var(--radius-lg)] bg-bg-card"
-                >
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                    <h3 className="font-display text-[1.4rem] font-semibold transition-transform duration-500 group-hover:-translate-y-1">
-                      {project.name}
-                    </h3>
-                    <span className="mt-3 inline-block rounded-[var(--radius-pill)] bg-white/10 px-3 py-1 text-[0.7rem] font-medium uppercase tracking-[0.1em] text-text-secondary">
-                      {project.category}
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-
-            <div className="mt-[var(--space-lg)] text-center">
-              <Link
-                href="/work"
-                className="group inline-flex items-center gap-2 text-[0.9rem] font-medium text-text-secondary transition-colors duration-300 hover:text-white"
-              >
-                Discover Our Work
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  className="transition-transform duration-300 group-hover:translate-x-1"
-                >
+              {checked && (
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
                   <path
-                    d="M4 10h12M12 6l4 4-4 4"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
+                    d="M2.5 6.5l2.4 2.4L9.5 4"
+                    stroke="white"
+                    strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                 </svg>
-              </Link>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+              )}
+            </span>
+          </label>
+        )
+      })}
+    </div>
+  )
+}
+
+function RadioList({
+  options,
+  value,
+  onPick,
+  active,
+}: {
+  options: string[]
+  value: string
+  onPick: (v: string) => void
+  active: boolean
+}) {
+  return (
+    <div className="flex flex-col">
+      {options.map((opt) => {
+        const checked = value === opt
+        return (
+          <label
+            key={opt}
+            className={`flex cursor-pointer items-center justify-between gap-4 border-t border-white/8 py-3 text-[0.95rem] transition-colors duration-200 last:border-b ${
+              checked ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'
+            } ${active ? '' : 'pointer-events-none'}`}
+          >
+            <span>{opt}</span>
+            <input
+              type="radio"
+              checked={checked}
+              onChange={() => onPick(opt)}
+              disabled={!active}
+              className="sr-only"
+            />
+            <span
+              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-all ${
+                checked ? '' : 'border-white/25'
+              }`}
+              style={checked ? { borderColor: '#DA291C' } : undefined}
+              aria-hidden="true"
+            >
+              {checked && (
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ background: '#DA291C' }}
+                />
+              )}
+            </span>
+          </label>
+        )
+      })}
+    </div>
+  )
+}
+
+/* ════════════════════════════════════════════════════
+   Main client
+══════════════════════════════════════════════════════ */
+type Step =
+  | 'name'
+  | 'position'
+  | 'company'
+  | 'services'
+  | 'message'
+  | 'kickoff'
+  | 'deadline'
+  | 'budget'
+  | 'email'
+  | 'source'
+  | 'submitting'
+  | 'sent'
+
+const ORDER: Step[] = [
+  'name',
+  'position',
+  'company',
+  'services',
+  'message',
+  'kickoff',
+  'deadline',
+  'budget',
+  'email',
+  'source',
+  'submitting',
+  'sent',
+]
+
+export default function StartProjectClient() {
+  const [step, setStep] = useState<Step>('name')
+  const [a, setA] = useState<Answers>(EMPTY)
+  const bottomRef = useRef<HTMLDivElement>(null)
+
+  const isActive = (s: Step) => step === s
+  const isPast = (s: Step) => ORDER.indexOf(step) > ORDER.indexOf(s)
+  const isReached = (s: Step) => ORDER.indexOf(step) >= ORDER.indexOf(s)
+
+  const advance = () => {
+    const idx = ORDER.indexOf(step)
+    if (idx < ORDER.length - 1) setStep(ORDER[idx + 1])
+  }
+
+  // Auto-scroll new content into view
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+  }, [step])
+
+  const handleSubmit = async () => {
+    setStep('submitting')
+    const fd = new FormData()
+    fd.set('name', a.name)
+    fd.set('position', a.position)
+    fd.set('company', a.company)
+    fd.set('email', a.email)
+    fd.set('services', a.services.join(', '))
+    fd.set('message', a.message)
+    fd.set('kickoff', a.kickoff)
+    fd.set('deadline', a.deadline)
+    fd.set('budget', a.budget)
+    fd.set('source', a.source.join(', '))
+    const res = await submitProjectForm(fd)
+    if (res.success) setStep('sent')
+  }
+
+  const userHeading = (() => {
+    const parts: string[] = []
+    if (a.name) parts.push(a.name)
+    if (a.position) parts.push(a.position)
+    let label = parts.join(', ')
+    if (a.company) label = label ? `${label} @ ${a.company}` : `@ ${a.company}`
+    return label || 'You'
+  })()
+
+  const userInitial = a.name ? a.name.charAt(0).toUpperCase() : 'Y'
+
+  /* ── Identity sub-step gating ── */
+  const showIdentity = isReached('name')
+  const showIdentityPosition = isReached('position')
+  const showIdentityCompany = isReached('company')
+  const identitySubmitted = isReached('services')
+
+  return (
+    <main className="relative min-h-screen px-[var(--gutter)] pt-32 pb-32">
+      <div className="mx-auto flex max-w-[1100px] flex-col gap-14">
+        {/* ═══════════════════════════════════════════
+            Eyebrow
+        ═══════════════════════════════════════════ */}
+        <motion.p
+          className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+        >
+          Start a new project
+        </motion.p>
+
+        {/* ═══════════════════════════════════════════
+            Turn 1 — Aldo's greeting
+        ═══════════════════════════════════════════ */}
+        <AgencyTurn>
+          <Bubble>Hi there 👋</Bubble>
+          <Bubble>I&rsquo;m Aldo.</Bubble>
+        </AgencyTurn>
+
+        {/* Turn 1 — User identity */}
+        <UserTurn heading={userHeading} initial={userInitial}>
+          <Bubble side="right">👋</Bubble>
+          <Bubble side="right">Nice to meet you, Aldo!</Bubble>
+
+          <FormShell active={showIdentity && !identitySubmitted}>
+            <InlineInput
+              label="My name is"
+              placeholder="Paul McCartney"
+              value={a.name}
+              onChange={(v) => setA({ ...a, name: v })}
+              onSubmit={() => a.name.trim() && advance()}
+              active={isActive('name')}
+            />
+            {!isActive('name') && (
+              <div className="mt-4">
+                <InlineInput
+                  label="I'm a"
+                  placeholder="Founder"
+                  value={a.position}
+                  onChange={(v) => setA({ ...a, position: v })}
+                  onSubmit={() => a.position.trim() && advance()}
+                  active={isActive('position')}
+                />
+              </div>
+            )}
+            {showIdentityCompany && (
+              <div className="mt-4">
+                <InlineInput
+                  label="at"
+                  placeholder="Acme Co."
+                  value={a.company}
+                  onChange={(v) => setA({ ...a, company: v })}
+                  onSubmit={() => a.company.trim() && advance()}
+                  active={isActive('company')}
+                />
+              </div>
+            )}
+            {(isActive('name') || isActive('position') || isActive('company')) && (
+              <div className="flex justify-end">
+                <OkButton
+                  disabled={
+                    (isActive('name') && !a.name.trim()) ||
+                    (isActive('position') && !a.position.trim()) ||
+                    (isActive('company') && !a.company.trim())
+                  }
+                  onClick={advance}
+                />
+              </div>
+            )}
+          </FormShell>
+        </UserTurn>
+
+        {/* ═══════════════════════════════════════════
+            Turn 2 — Services
+        ═══════════════════════════════════════════ */}
+        {isReached('services') && (
+          <>
+            <AgencyTurn>
+              <Bubble>The pleasure is mine, {a.name}.</Bubble>
+              <Bubble>How can we help?</Bubble>
+            </AgencyTurn>
+
+            <UserTurn heading={userHeading} initial={userInitial}>
+              <FormShell active={isActive('services')}>
+                <span className="mb-3 block text-[0.75rem] uppercase tracking-[0.18em] text-text-tertiary">
+                  I&rsquo;m looking for
+                </span>
+                <CheckboxList
+                  options={SERVICE_OPTIONS}
+                  value={a.services}
+                  onToggle={(v) =>
+                    setA((prev) => ({
+                      ...prev,
+                      services: prev.services.includes(v)
+                        ? prev.services.filter((x) => x !== v)
+                        : [...prev.services, v],
+                    }))
+                  }
+                  active={isActive('services')}
+                />
+                {isActive('services') && (
+                  <div className="flex justify-end">
+                    <OkButton
+                      disabled={a.services.length === 0}
+                      onClick={advance}
+                    />
+                  </div>
+                )}
+              </FormShell>
+            </UserTurn>
+          </>
+        )}
+
+        {/* ═══════════════════════════════════════════
+            Turn 3 — Project description
+        ═══════════════════════════════════════════ */}
+        {isReached('message') && (
+          <>
+            <AgencyTurn>
+              <Bubble>You came to the right place.</Bubble>
+              <Bubble>
+                In a sentence or two — what are you trying to build?
+              </Bubble>
+            </AgencyTurn>
+
+            <UserTurn heading={userHeading} initial={userInitial}>
+              <FormShell active={isActive('message')}>
+                <span className="mb-3 block text-[0.75rem] uppercase tracking-[0.18em] text-text-tertiary">
+                  I want to&hellip;
+                </span>
+                <textarea
+                  value={a.message}
+                  onChange={(e) => setA({ ...a, message: e.target.value })}
+                  disabled={!isActive('message')}
+                  rows={3}
+                  placeholder="Build a brand that doesn't fade with the trend cycle."
+                  className="w-full resize-none border-b border-white/15 bg-transparent pb-2 text-[1.05rem] text-text-primary outline-none placeholder:text-text-tertiary disabled:cursor-default"
+                />
+                {isActive('message') && (
+                  <div className="flex justify-end">
+                    <OkButton
+                      disabled={!a.message.trim()}
+                      onClick={advance}
+                    />
+                  </div>
+                )}
+              </FormShell>
+            </UserTurn>
+          </>
+        )}
+
+        {/* ═══════════════════════════════════════════
+            Turn 4 — Kickoff timing
+        ═══════════════════════════════════════════ */}
+        {isReached('kickoff') && (
+          <>
+            <AgencyTurn>
+              <Bubble>Got it.</Bubble>
+              <Bubble>When would you like to kick this off?</Bubble>
+            </AgencyTurn>
+
+            <UserTurn heading={userHeading} initial={userInitial}>
+              <FormShell active={isActive('kickoff')}>
+                <span className="mb-3 block text-[0.75rem] uppercase tracking-[0.18em] text-text-tertiary">
+                  We can start
+                </span>
+                <RadioList
+                  options={KICKOFF_OPTIONS}
+                  value={a.kickoff}
+                  onPick={(v) => setA({ ...a, kickoff: v })}
+                  active={isActive('kickoff')}
+                />
+                {isActive('kickoff') && (
+                  <div className="flex justify-end">
+                    <OkButton disabled={!a.kickoff} onClick={advance} />
+                  </div>
+                )}
+              </FormShell>
+            </UserTurn>
+          </>
+        )}
+
+        {/* ═══════════════════════════════════════════
+            Turn 5 — Deadline
+        ═══════════════════════════════════════════ */}
+        {isReached('deadline') && (
+          <>
+            <AgencyTurn>
+              <Bubble>And when do you want it live?</Bubble>
+            </AgencyTurn>
+
+            <UserTurn heading={userHeading} initial={userInitial}>
+              <FormShell active={isActive('deadline')}>
+                <span className="mb-3 block text-[0.75rem] uppercase tracking-[0.18em] text-text-tertiary">
+                  I&rsquo;m aiming for
+                </span>
+                <RadioList
+                  options={DEADLINE_OPTIONS}
+                  value={a.deadline}
+                  onPick={(v) => setA({ ...a, deadline: v })}
+                  active={isActive('deadline')}
+                />
+                {isActive('deadline') && (
+                  <div className="flex justify-end">
+                    <OkButton disabled={!a.deadline} onClick={advance} />
+                  </div>
+                )}
+              </FormShell>
+            </UserTurn>
+          </>
+        )}
+
+        {/* ═══════════════════════════════════════════
+            Turn 6 — Budget
+        ═══════════════════════════════════════════ */}
+        {isReached('budget') && (
+          <>
+            <AgencyTurn>
+              <Bubble>To wrap up&hellip;</Bubble>
+              <Bubble>What budget range did you have in mind?</Bubble>
+            </AgencyTurn>
+
+            <UserTurn heading={userHeading} initial={userInitial}>
+              <FormShell active={isActive('budget')}>
+                <span className="mb-3 block text-[0.75rem] uppercase tracking-[0.18em] text-text-tertiary">
+                  I&rsquo;d say
+                </span>
+                <RadioList
+                  options={BUDGET_OPTIONS}
+                  value={a.budget}
+                  onPick={(v) => setA({ ...a, budget: v })}
+                  active={isActive('budget')}
+                />
+                {isActive('budget') && (
+                  <div className="flex justify-end">
+                    <OkButton disabled={!a.budget} onClick={advance} />
+                  </div>
+                )}
+              </FormShell>
+            </UserTurn>
+          </>
+        )}
+
+        {/* ═══════════════════════════════════════════
+            Turn 7 — Email
+        ═══════════════════════════════════════════ */}
+        {isReached('email') && (
+          <>
+            <AgencyTurn>
+              <Bubble>
+                Brilliant — I&rsquo;ll talk this over with the team and get
+                back to you.
+              </Bubble>
+              <Bubble>What&rsquo;s the best email to reach you on?</Bubble>
+            </AgencyTurn>
+
+            <UserTurn heading={userHeading} initial={userInitial}>
+              <FormShell active={isActive('email')}>
+                <InlineInput
+                  label="Reach me at"
+                  placeholder="aldo@boldcrest.com"
+                  value={a.email}
+                  type="email"
+                  onChange={(v) => setA({ ...a, email: v })}
+                  onSubmit={() => a.email.trim() && advance()}
+                  active={isActive('email')}
+                />
+                {isActive('email') && (
+                  <div className="flex justify-end">
+                    <OkButton
+                      disabled={!/^\S+@\S+\.\S+$/.test(a.email.trim())}
+                      onClick={advance}
+                    />
+                  </div>
+                )}
+              </FormShell>
+            </UserTurn>
+          </>
+        )}
+
+        {/* ═══════════════════════════════════════════
+            Turn 8 — Source
+        ═══════════════════════════════════════════ */}
+        {isReached('source') && (
+          <>
+            <AgencyTurn>
+              <Bubble>Thanks {a.name}.</Bubble>
+              <Bubble>One last thing before we go.</Bubble>
+            </AgencyTurn>
+
+            <UserTurn heading={userHeading} initial={userInitial}>
+              <FormShell active={isActive('source')}>
+                <span className="mb-3 block text-[0.75rem] uppercase tracking-[0.18em] text-text-tertiary">
+                  I found you through
+                </span>
+                <CheckboxList
+                  options={SOURCE_OPTIONS}
+                  value={a.source}
+                  onToggle={(v) =>
+                    setA((prev) => ({
+                      ...prev,
+                      source: prev.source.includes(v)
+                        ? prev.source.filter((x) => x !== v)
+                        : [...prev.source, v],
+                    }))
+                  }
+                  active={isActive('source')}
+                />
+                {isActive('source') && (
+                  <div className="flex justify-end">
+                    <OkButton
+                      disabled={a.source.length === 0}
+                      onClick={handleSubmit}
+                    />
+                  </div>
+                )}
+              </FormShell>
+            </UserTurn>
+          </>
+        )}
+
+        {/* ═══════════════════════════════════════════
+            Sent state
+        ═══════════════════════════════════════════ */}
+        <AnimatePresence>
+          {(step === 'submitting' || step === 'sent') && (
+            <motion.div
+              key="sent"
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={turnTransition}
+            >
+              <AgencyTurn>
+                {step === 'submitting' ? (
+                  <Bubble>Sending&hellip;</Bubble>
+                ) : (
+                  <>
+                    <Bubble>
+                      That&rsquo;s everything — message received.
+                    </Bubble>
+                    <Bubble>
+                      We&rsquo;ll get back to you within one business day at
+                      <span className="text-accent"> {a.email}</span>.
+                    </Bubble>
+                    <Bubble>Talk soon, {a.name} 🤝</Bubble>
+                  </>
+                )}
+              </AgencyTurn>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div ref={bottomRef} aria-hidden="true" />
+      </div>
     </main>
   )
 }
