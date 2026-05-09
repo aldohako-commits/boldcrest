@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
-import { motion, useScroll, useTransform, useInView, AnimatePresence } from 'framer-motion'
+import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import Link from 'next/link'
 import { CTAButton } from '@/components/MagneticButton'
 import FAQSection from '@/components/services/FAQSection'
@@ -72,7 +72,7 @@ const capabilities = [
     category: 'Communications',
     number: '03',
     color: '#004c95',
-    heading: 'Communication',
+    heading: 'Communications',
     abbr: 'COMMS',
     href: '/services/communication',
     ctaLabel: 'Explore',
@@ -86,44 +86,6 @@ const capabilities = [
     ],
     description:
       "A great brand in silence is a waste. We put yours where it belongs, in front of the right people, saying the right thing, at the right moment.",
-  },
-]
-
-const testimonials = [
-  {
-    quote:
-      'BoldCrest completely transformed how we present ourselves to the world. The rebrand exceeded every expectation we had.',
-    name: 'Sarah Mitchell',
-    company: 'Apex Ventures',
-    avatar: 'SM',
-  },
-  {
-    quote:
-      'Working with BoldCrest felt like having an in-house team that truly understood our vision. The results speak for themselves.',
-    name: 'James Rodriguez',
-    company: 'Meridian Group',
-    avatar: 'JR',
-  },
-  {
-    quote:
-      'The campaign they built drove a 200% increase in engagement within the first quarter. Incredible attention to detail.',
-    name: 'Priya Sharma',
-    company: 'NovaTech',
-    avatar: 'PS',
-  },
-  {
-    quote:
-      'From photography to brand identity, they handled everything with precision. Our brand has never looked stronger.',
-    name: 'David Kim',
-    company: 'Forge Studio',
-    avatar: 'DK',
-  },
-  {
-    quote:
-      'They don\'t just deliver projects — they deliver results. BoldCrest is the partner every ambitious brand needs.',
-    name: 'Amara Osei',
-    company: 'Luminary Co.',
-    avatar: 'AO',
   },
 ]
 
@@ -207,7 +169,7 @@ function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
 
       {/* Cards */}
       <motion.div
-        className="flex h-[480px] gap-3 md:h-[max(560px,100svh)]"
+        className="flex h-[480px] gap-3 md:h-[640px]"
         initial={{ opacity: 0, y: 30 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
@@ -369,7 +331,7 @@ function Stats() {
   ]
 
   return (
-    <section ref={ref} className="px-[var(--gutter)] py-[120px]">
+    <section ref={ref} className="px-[var(--gutter)] py-12 md:py-16">
       <div className="mx-auto max-w-[var(--max-width)]">
         <motion.div
           className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-5"
@@ -397,135 +359,116 @@ function Stats() {
   )
 }
 
-/* ── Logos + Testimonial (combined) ── */
+/* ── Client Logos (homepage-style two-row marquee) ── */
 const CLIENT_NAMES = [
   'Hako', 'JokaDent', 'AK Invest', 'Magniflex', 'Palma',
   'Tepelene', 'LoriCaffe', 'Tirana Home Store', 'Fentimans', 'Diamond',
   'Akses', 'ExpertCloud', 'Anmetal', 'Wienna', 'Baboon',
   'Berdica', 'Perfect Fashion', 'Alisadudaj', 'Matrix', 'Red Bull',
+  'Allure Beauty', 'Primera', 'WECA', 'Plenty', 'Tierr',
+  'Noble Cigars', 'Bazhur', 'Borghese', 'Albita', 'Karrige Pogradeci',
+  'Ina\'s Farm', 'EOS Mezze', 'NFMA', 'Baboon Delivery', 'Magniflex Albania',
 ]
-const ACCENTS = ['#DA291C', '#f9b311', '#004c95']
 
-function LogosTestimonial() {
+function ClientLogos() {
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
-  const [active, setActive] = useState(0)
+  const [colOffset, setColOffset] = useState(0)
+  const [hovered, setHovered] = useState<string | null>(null)
 
-  const next = () => setActive((i) => (i + 1) % testimonials.length)
-  const prev = () => setActive((i) => (i - 1 + testimonials.length) % testimonials.length)
+  const COLS_VISIBLE = 5
+  const ROWS = 4
+
+  // Group names into vertical columns of ROWS items each
+  const columns: string[][] = []
+  for (let i = 0; i < CLIENT_NAMES.length; i += ROWS) {
+    columns.push(CLIENT_NAMES.slice(i, i + ROWS))
+  }
+  const maxOffset = Math.max(0, columns.length - COLS_VISIBLE)
+  const canPrev = colOffset > 0
+  const canNext = colOffset < maxOffset
+
+  const next = () => setColOffset((o) => Math.min(o + 1, maxOffset))
+  const prev = () => setColOffset((o) => Math.max(o - 1, 0))
 
   return (
-    <section ref={ref} className="px-[var(--gutter)] pt-20 pb-[120px]">
-      <div>
+    <section ref={ref} className="px-[var(--gutter)] pt-20 pb-12">
+      <div className="mx-auto max-w-[var(--max-width)]">
         <motion.div
-          className="grid grid-cols-1 gap-12 md:grid-cols-2 md:gap-14 lg:gap-20"
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-[var(--space-lg)]"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.6 }}
         >
-          {/* LEFT — Logos */}
-          <div>
-            <p className="mb-6 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
-              Trusted by
-            </p>
+          <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
+            Trusted by the ambitious<span className="text-accent">.</span>
+          </p>
+          <div className="h-px w-full bg-border" />
+        </motion.div>
 
-            <div className="grid grid-cols-2">
-              {CLIENT_NAMES.map((name, i) => {
-                const accent = ACCENTS[i % ACCENTS.length]
-                return (
-                  <div
+        {/* Slidable column track — viewport shows COLS_VISIBLE columns; arrows shift one column */}
+        <div className="overflow-hidden [--logos-gap:1.5rem] md:[--logos-gap:2.5rem]">
+          <div
+            className="flex transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            style={{
+              gap: 'var(--logos-gap)',
+              transform: `translateX(calc(-1 * ${colOffset} * ((100% - 4 * var(--logos-gap)) / 5 + var(--logos-gap))))`,
+            }}
+            onMouseLeave={() => setHovered(null)}
+          >
+            {columns.map((col, i) => (
+              <div
+                key={i}
+                className="flex shrink-0 flex-col gap-y-12 md:gap-y-16"
+                style={{ width: 'calc((100% - 4 * var(--logos-gap)) / 5)' }}
+              >
+                {col.map((name) => (
+                  <span
                     key={name}
-                    className="group relative flex h-[68px] items-center justify-center transition-colors duration-300 md:h-[78px]"
+                    className="flex cursor-default items-center justify-center px-2 py-4 transition-opacity duration-300"
+                    style={{
+                      opacity: hovered ? (hovered === name ? 1 : 0.2) : 0.5,
+                    }}
+                    onMouseEnter={() => setHovered(name)}
                   >
-                    <span
-                      className="pointer-events-none absolute top-2 left-2 h-1.5 w-1.5 rounded-full opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                      style={{ background: accent }}
-                    />
-                    <span className="font-display text-[0.95rem] font-semibold tracking-[-0.01em] text-text-tertiary transition-colors duration-300 group-hover:text-text-primary md:text-[1.05rem]">
+                    <span className="font-display text-[clamp(1.2rem,2vw,1.7rem)] font-semibold uppercase tracking-[0.08em]">
                       {name}
                     </span>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* RIGHT — Testimonial */}
-          <div className="flex flex-col">
-            <p className="mb-6 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
-              What they say
-            </p>
-
-            <div className="relative flex-1">
-              <span
-                className="pointer-events-none absolute -top-8 -left-2 select-none font-display text-[12rem] font-bold leading-none text-accent/15 md:text-[16rem]"
-                aria-hidden="true"
-              >
-                &ldquo;
-              </span>
-
-              <AnimatePresence mode="wait">
-                <motion.blockquote
-                  key={active}
-                  className="relative font-display text-[clamp(1.3rem,2vw,1.9rem)] font-medium leading-[1.3] tracking-[-0.02em]"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  {testimonials[active].quote}
-                </motion.blockquote>
-              </AnimatePresence>
-            </div>
-
-            <div className="mt-10 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={active}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.4 }}
-                >
-                  <p className="text-[0.95rem] font-semibold tracking-[-0.01em]">
-                    {testimonials[active].name}
-                  </p>
-                  <p className="mt-1 text-[0.85rem] text-text-secondary">
-                    {testimonials[active].company}
-                  </p>
-                </motion.div>
-              </AnimatePresence>
-
-              <div className="flex items-center gap-4">
-                <p className="text-[0.75rem] font-medium tracking-[0.08em] text-text-tertiary">
-                  {String(active + 1).padStart(2, '0')} / {String(testimonials.length).padStart(2, '0')}
-                </p>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={prev}
-                    aria-label="Previous testimonial"
-                    className="flex h-11 w-11 items-center justify-center rounded-full border transition-colors duration-300 hover:border-white/40"
-                    style={{ borderColor: 'var(--border)' }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                      <path d="M13 8H3M7 4 3 8l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={next}
-                    aria-label="Next testimonial"
-                    className="flex h-11 w-11 items-center justify-center rounded-full border transition-colors duration-300 hover:border-white/40"
-                    style={{ borderColor: 'var(--border)' }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </button>
-                </div>
+                  </span>
+                ))}
               </div>
-            </div>
+            ))}
           </div>
-        </motion.div>
+        </div>
+
+        {/* Arrow controls (no indicator) */}
+        <div className="mt-12 flex items-center justify-end gap-3">
+          <button
+            onClick={prev}
+            aria-label="Previous logos"
+            disabled={!canPrev}
+            className="flex h-11 w-11 items-center justify-center rounded-full border transition-colors duration-300 hover:border-white/40 disabled:cursor-default disabled:opacity-40 disabled:hover:border-[var(--border)]"
+            style={{ borderColor: 'var(--border)' }}
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M13 8H3M7 4 3 8l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+          <button
+            onClick={next}
+            aria-label="Next logos"
+            disabled={!canNext}
+            className="flex h-11 w-11 items-center justify-center rounded-full border transition-colors duration-300 hover:border-white/40 disabled:cursor-default disabled:opacity-40 disabled:hover:border-[var(--border)]"
+            style={{ borderColor: 'var(--border)' }}
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Bottom hairline — mirrors the one above the grid */}
+        <div className="mt-[var(--space-lg)] h-px w-full bg-border" />
       </div>
     </section>
   )
@@ -580,7 +523,7 @@ function ProcessSection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
-    <section ref={ref} className="px-[var(--gutter)] py-[120px]">
+    <section ref={ref} className="px-[var(--gutter)] pt-12 pb-[120px] md:pt-16">
       <div className="mx-auto max-w-[var(--max-width)]">
         <div className="mb-16 md:mb-20">
           <motion.p
@@ -658,14 +601,15 @@ export default function ServicesPageClient({
       <Stats />
 
       {/* ── Client Logos ── */}
-      <LogosTestimonial />
+      <ClientLogos />
 
       {/* ── FAQ ── */}
       {faqItems && faqItems.length > 0 && (
         <FAQSection
           heading="Questions We Hear Most"
           items={faqItems}
-          ctaLabel="Start a Project"
+          noTopBorder
+          tightTop
         />
       )}
     </main>

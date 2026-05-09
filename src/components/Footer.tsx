@@ -1,6 +1,5 @@
 'use client'
 
-import { useRef, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -37,18 +36,14 @@ function scrollToTop() {
 
 export default function Footer() {
   const pathname = usePathname()
-  const spacerRef = useRef<HTMLDivElement>(null)
 
   if (pathname?.startsWith('/studio')) return null
 
   return (
-    <>
-      <div ref={spacerRef} className="h-[50vh]" />
-
-      <footer
-        className="sticky bottom-0 z-0 flex flex-col"
-        style={{ background: '#EDEDED', color: '#000000' }}
-      >
+    <footer
+      className="flex flex-col"
+      style={{ background: '#EDEDED', color: '#000000' }}
+    >
         {/* Columns + Back to top */}
         <div className="w-full px-[var(--gutter)] pt-14 pb-20">
           <div className="relative grid grid-cols-2 gap-y-10 gap-x-8 md:grid-cols-[1.2fr_1fr_1.2fr_1fr_0.8fr]">
@@ -172,7 +167,6 @@ export default function Footer() {
             </span>
           </div>
         </div>
-      </footer>
-    </>
+    </footer>
   )
 }

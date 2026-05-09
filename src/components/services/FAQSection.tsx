@@ -15,6 +15,8 @@ interface FAQSectionProps {
   items: FAQItem[]
   ctaLabel?: string
   ctaHref?: string
+  noTopBorder?: boolean
+  tightTop?: boolean
 }
 
 export default function FAQSection({
@@ -23,13 +25,17 @@ export default function FAQSection({
   items,
   ctaLabel,
   ctaHref = '/start-a-new-project',
+  noTopBorder = false,
+  tightTop = false,
 }: FAQSectionProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
+  const topPad = tightTop ? 'pt-[var(--space-lg)]' : 'pt-[var(--space-3xl)]'
+
   return (
-    <section ref={ref} className="border-t border-border px-[var(--gutter)] py-[var(--space-3xl)]">
+    <section ref={ref} className={`${noTopBorder ? '' : 'border-t border-border'} px-[var(--gutter)] ${topPad} pb-[var(--space-3xl)]`}>
       <div className="mx-auto max-w-[var(--max-width)]">
         <motion.p
           className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
@@ -66,7 +72,7 @@ export default function FAQSection({
                 className="flex w-full items-center justify-between py-6 text-left"
                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
               >
-                <span className="pr-8 text-[0.95rem] font-medium text-text-primary">
+                <span className="pr-8 text-[1.15rem] font-medium text-text-primary md:text-[1.25rem]">
                   {item.question}
                 </span>
                 <motion.span
