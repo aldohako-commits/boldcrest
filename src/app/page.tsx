@@ -26,7 +26,6 @@ const BottomSections = dynamic(
 const ColorTransitionZone = dynamic(
   () => import('@/components/home/ColorTransitionZone')
 )
-const MorphBlobs = dynamic(() => import('@/components/MorphBlobs'))
 
 export default async function Home() {
   const [projectsResult, partnersResult, membersResult, diaryResult, settingsResult] =
@@ -46,7 +45,6 @@ export default async function Home() {
 
   return (
     <main className="relative">
-      <MorphBlobs />
       <Hero />
       <SelectedWorks projects={projects} />
 

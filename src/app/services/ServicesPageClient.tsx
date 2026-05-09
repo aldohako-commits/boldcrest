@@ -4,7 +4,6 @@ import { useRef, useState, useEffect } from 'react'
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import Link from 'next/link'
 import { CTAButton } from '@/components/MagneticButton'
-import { PageMorphBlobs, SERVICES_BLOBS } from '@/components/MorphBlobs'
 import FAQSection from '@/components/services/FAQSection'
 
 interface Service {
@@ -521,7 +520,6 @@ export default function ServicesPageClient({
 }: ServicesPageClientProps) {
   return (
     <main className="relative">
-      <PageMorphBlobs blobs={SERVICES_BLOBS} />
       {/* ── Hero (Manifesto) ── */}
       <section className="flex flex-col px-[var(--gutter)] pt-[120px] pb-0">
         <div>

@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { submitProjectForm } from './actions'
 import { SubmitButton } from '@/components/MagneticButton'
-import { PageMorphBlobs, START_PROJECT_BLOBS } from '@/components/MorphBlobs'
 
 const serviceOptions = [
   { label: 'Branding', value: 'Branding' },
@@ -61,7 +60,6 @@ export default function StartProjectClient() {
 
   return (
     <main className="relative">
-      <PageMorphBlobs blobs={START_PROJECT_BLOBS} />
       {/* ═══════════════════════════════════════════
           HERO — Start a New Project
       ═══════════════════════════════════════════ */}

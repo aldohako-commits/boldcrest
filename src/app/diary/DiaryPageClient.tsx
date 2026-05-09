@@ -11,7 +11,6 @@ import {
   ScrollRevealStagger,
   ScrollRevealItem,
 } from '@/components/ScrollReveal'
-import { PageMorphBlobs, DIARY_BLOBS } from '@/components/MorphBlobs'
 
 interface DiaryPost {
   _id: string
@@ -115,8 +114,6 @@ export default function DiaryPageClient({ posts }: DiaryPageClientProps) {
 
   return (
     <main className="relative">
-      <PageMorphBlobs blobs={DIARY_BLOBS} />
-
       {/* Hero */}
       <section className="flex flex-col px-[var(--gutter)] pt-[120px] pb-0">
         <div>

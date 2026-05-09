@@ -6,7 +6,6 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { urlFor } from '@/sanity/lib/image'
 import { sanityImageLoader } from '@/sanity/lib/loader'
-import { PageMorphBlobs, WORK_BLOBS } from '@/components/MorphBlobs'
 
 interface Project {
   _id: string
@@ -444,8 +443,6 @@ export default function WorkPageClient({ projects, initialService, initialIndust
 
   return (
     <main className="relative">
-      <PageMorphBlobs blobs={WORK_BLOBS} />
-
       {/* ── Hero ── */}
       <section className="flex flex-col px-[var(--gutter)] pt-[120px] pb-0">
         <div>
