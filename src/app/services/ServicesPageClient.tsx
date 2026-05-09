@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
-import { motion, useScroll, useTransform, useInView } from 'framer-motion'
+import { motion, useScroll, useTransform, useInView, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { CTAButton } from '@/components/MagneticButton'
 import FAQSection from '@/components/services/FAQSection'
@@ -192,7 +192,7 @@ function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
   return (
     <section
       ref={ref}
-      className="px-[var(--gutter)] pt-20 pb-[120px]"
+      className="px-[var(--gutter)] pt-8 pb-[120px] md:pt-10"
     >
       <div>
       {/* Section header */}
@@ -207,7 +207,7 @@ function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
 
       {/* Cards */}
       <motion.div
-        className="flex h-[480px] gap-4 md:h-[540px]"
+        className="flex h-[480px] gap-3 md:h-[560px]"
         initial={{ opacity: 0, y: 30 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
@@ -221,85 +221,100 @@ function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
               ? sanityServices.map((s) => s.name)
               : cap.tags
 
+          const darkShade = `color-mix(in srgb, ${cap.color} 50%, black)`
+          const lightShade = `color-mix(in srgb, ${cap.color} 60%, white)`
+
           return (
             <motion.div
               key={cap.category}
-              className="relative cursor-pointer rounded-xl"
-              style={{
-                background: '#0a0a0a',
-              }}
-              animate={{
-                flex: isActive ? 5 : 0.8,
-                borderColor: isActive ? cap.color : 'rgba(163,163,163,0.3)',
-                borderWidth: 1,
-                borderStyle: 'solid',
-              }}
+              className="relative cursor-pointer overflow-hidden rounded-xl"
+              style={{ background: cap.color }}
+              animate={{ flex: isActive ? 5 : 0.85 }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               onClick={() => setActive(i)}
             >
-              {/* Collapsed state — vertical label */}
+              {/* Collapsed state */}
               <motion.div
-                className="absolute inset-0 flex flex-col items-center justify-between py-8"
+                className="absolute inset-0 flex flex-col"
                 animate={{ opacity: isActive ? 0 : 1 }}
                 transition={{ duration: 0.3 }}
                 style={{ pointerEvents: isActive ? 'none' : 'auto' }}
               >
                 <span className="sr-only">{cap.number}</span>
-                <span
-                  className="font-display text-[0.8rem] font-bold uppercase tracking-[0.18em] text-white/90"
-                  style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
+                <div className="flex flex-1 items-start justify-center pt-10 md:pt-12">
+                  <span
+                    className="font-display text-[clamp(1.3rem,1.9vw,1.9rem)] font-bold tracking-[-0.01em]"
+                    style={{
+                      writingMode: 'vertical-rl',
+                      color: darkShade,
+                    }}
+                  >
+                    {cap.category}
+                  </span>
+                </div>
+                <div
+                  className="flex h-[110px] items-center justify-center md:h-[130px]"
+                  style={{ background: darkShade }}
                 >
-                  {cap.category}
-                </span>
-                <span
-                  className="text-[1.1rem] font-light"
-                  style={{ color: 'rgba(163,163,163,0.5)' }}
-                >
-                  +
-                </span>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 4v16M4 12h16" stroke={cap.color} strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </div>
               </motion.div>
 
-              {/* Expanded state — full content */}
+              {/* Expanded state */}
               <motion.div
-                className="absolute inset-0 flex flex-col justify-between p-8 md:p-10"
+                className="absolute inset-0 flex flex-col"
                 animate={{ opacity: isActive ? 1 : 0 }}
                 transition={{ duration: 0.4, delay: isActive ? 0.2 : 0 }}
                 style={{ pointerEvents: isActive ? 'auto' : 'none' }}
               >
-                {/* Top row: title left, tags right */}
-                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                  <h3 className="font-display text-[clamp(1.6rem,2.5vw,2.2rem)] font-bold leading-[1.1] tracking-[-0.02em] text-white">
-                    {cap.heading.replace('\n', ' ')}
-                  </h3>
-                  <div className="flex flex-wrap gap-2 md:max-w-[55%] md:justify-end">
-                    {tags.slice(0, 6).map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full border px-3 py-1 text-[0.6rem] font-medium uppercase tracking-[0.06em]"
-                        style={{ borderColor: `${cap.color}50`, color: 'rgba(255,255,255,0.55)' }}
-                      >
-                        {tag}
-                      </span>
-                    ))}
+                {/* Top body */}
+                <div className="flex flex-1 flex-col justify-between p-8 md:p-12">
+                  <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+                    <h3
+                      className="font-display text-[clamp(2rem,4.2vw,4.5rem)] font-bold leading-[0.95] tracking-[-0.02em]"
+                      style={{ color: darkShade, whiteSpace: 'pre-line' }}
+                    >
+                      {cap.heading}
+                    </h3>
+                    <div className="flex flex-wrap gap-2 md:max-w-[55%] md:justify-end">
+                      {tags.slice(0, 6).map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-full border px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em]"
+                          style={{ borderColor: darkShade, color: darkShade }}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-
-                {/* Bottom: description + CTA */}
-                <div>
-                  <p className="mb-6 max-w-[500px] text-[0.85rem] leading-[1.7] text-text-secondary">
+                  <p
+                    className="max-w-[520px] text-[0.9rem] leading-[1.7]"
+                    style={{ color: darkShade }}
+                  >
                     {cap.description}
                   </p>
-                  <Link
-                    href={cap.href}
-                    className="group inline-flex w-fit items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.12em] transition-opacity duration-300 hover:opacity-70"
+                </div>
+
+                {/* Dark bottom bar — EXPLORE */}
+                <Link
+                  href={cap.href}
+                  onClick={(e) => e.stopPropagation()}
+                  className="group flex h-[110px] items-center px-8 md:h-[130px] md:px-12"
+                  style={{ background: darkShade }}
+                >
+                  <span
+                    className="inline-flex items-center gap-3 text-[0.95rem] font-semibold uppercase tracking-[0.2em]"
                     style={{ color: cap.color }}
                   >
                     <span>{cap.ctaLabel}</span>
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="transition-transform duration-300 group-hover:translate-x-1">
+                    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" className="transition-transform duration-300 group-hover:translate-x-1">
                       <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                  </Link>
-                </div>
+                  </span>
+                </Link>
               </motion.div>
             </motion.div>
           )
@@ -310,83 +325,148 @@ function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
   )
 }
 
-/* ── Stats + Testimonial (combined section per Option 2) ── */
-const INDUSTRY_TAGS = ['Tech', 'F&B', 'Finance', 'Real Estate', 'Hospitality', 'Healthcare', 'Retail', 'Education', 'Automotive', 'Non-Profit']
+/* ── Stats Bar + Editorial Testimonial ── */
+const STATS = [
+  { value: 300, suffix: '+', label: 'Projects Delivered' },
+  { value: 50, suffix: '+', label: 'Brands Partnered' },
+  { value: 8, suffix: ' Yrs', label: 'In the Making' },
+]
+
+function CountUp({ to, suffix, active }: { to: number; suffix: string; active: boolean }) {
+  const [n, setN] = useState(0)
+  useEffect(() => {
+    if (!active) return
+    let frame: number
+    const duration = 1800
+    const start = performance.now()
+    const tick = (now: number) => {
+      const p = Math.min((now - start) / duration, 1)
+      const eased = 1 - Math.pow(1 - p, 3)
+      setN(Math.round(eased * to))
+      if (p < 1) frame = requestAnimationFrame(tick)
+    }
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [active, to])
+  return <>{n}{suffix}</>
+}
 
 function StatsTestimonial() {
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
-  const [count, setCount] = useState(0)
+  const [active, setActive] = useState(0)
 
-  useEffect(() => {
-    if (!isInView) return
-    let frame: number
-    const duration = 1800
-    const start = performance.now()
-    const animate = (now: number) => {
-      const elapsed = now - start
-      const progress = Math.min(elapsed / duration, 1)
-      const eased = 1 - Math.pow(1 - progress, 3)
-      setCount(Math.round(eased * 300))
-      if (progress < 1) frame = requestAnimationFrame(animate)
-    }
-    frame = requestAnimationFrame(animate)
-    return () => cancelAnimationFrame(frame)
-  }, [isInView])
+  const next = () => setActive((i) => (i + 1) % testimonials.length)
+  const prev = () => setActive((i) => (i - 1 + testimonials.length) % testimonials.length)
 
   return (
     <section ref={ref} className="px-[var(--gutter)] py-[120px]">
-      <div>
+      <div className="mx-auto max-w-[var(--max-width)]">
+        {/* Stats row */}
         <motion.div
-          className="grid items-center gap-16 md:grid-cols-2"
+          className="grid grid-cols-1 gap-y-12 border-y md:grid-cols-3 md:gap-y-0 md:divide-x"
+          style={{ borderColor: 'var(--border)' }}
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          {/* Left: Stat + industries */}
-          <div>
+          {STATS.map((s, i) => (
             <div
-              className="mb-2 font-display font-bold leading-[1] tracking-[-0.04em]"
-              style={{ fontSize: 'clamp(4rem, 8vw, 6rem)' }}
+              key={s.label}
+              className="flex flex-col gap-3 px-0 py-10 md:px-12"
+              style={{ borderColor: 'var(--border)' }}
             >
-              {count}+
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
+                {String(i + 1).padStart(2, '0')} / {String(STATS.length).padStart(2, '0')}
+              </p>
+              <div className="font-display text-[clamp(3.5rem,8vw,6.5rem)] font-bold leading-[0.95] tracking-[-0.04em]">
+                <CountUp to={s.value} suffix={s.suffix} active={isInView} />
+                <span className="text-accent">.</span>
+              </div>
+              <p className="text-[0.95rem] text-text-secondary">{s.label}</p>
             </div>
-            <p className="mb-10 text-[0.85rem] font-medium text-text-secondary">
-              Projects delivered across industries
-            </p>
-            <p className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
-              Industries
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {INDUSTRY_TAGS.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full border px-4 py-1.5 text-[0.75rem] font-medium text-text-secondary transition-colors duration-300 hover:text-text-primary"
-                  style={{ borderColor: 'var(--border)' }}
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
+          ))}
+        </motion.div>
+
+        {/* Testimonial — editorial pull-quote */}
+        <motion.div
+          className="mt-[120px]"
+          initial={{ opacity: 0, y: 40 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <p className="mb-10 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
+            What they say
+          </p>
+
+          <div className="relative">
+            <span
+              className="pointer-events-none absolute -top-12 -left-2 select-none font-display text-[16rem] font-bold leading-none text-accent/15 md:text-[22rem]"
+              aria-hidden="true"
+            >
+              &ldquo;
+            </span>
+
+            <AnimatePresence mode="wait">
+              <motion.blockquote
+                key={active}
+                className="relative max-w-[1100px] font-display text-[clamp(1.6rem,3.4vw,2.8rem)] font-medium leading-[1.25] tracking-[-0.02em]"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {testimonials[active].quote}
+              </motion.blockquote>
+            </AnimatePresence>
           </div>
 
-          {/* Right: Testimonial card */}
-          <div
-            className="rounded-2xl border p-12"
-            style={{ background: 'var(--card-bg)', borderColor: 'var(--border)' }}
-          >
-            <div className="mb-4 text-[3rem] font-bold leading-[1] text-accent">
-              &ldquo;
+          <div className="mt-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={active}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.4 }}
+              >
+                <p className="text-[0.95rem] font-semibold tracking-[-0.01em]">
+                  {testimonials[active].name}
+                </p>
+                <p className="mt-1 text-[0.85rem] text-text-secondary">
+                  {testimonials[active].company}
+                </p>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Slider controls */}
+            <div className="flex items-center gap-6">
+              <p className="text-[0.75rem] font-medium tracking-[0.08em] text-text-tertiary">
+                {String(active + 1).padStart(2, '0')} / {String(testimonials.length).padStart(2, '0')}
+              </p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={prev}
+                  aria-label="Previous testimonial"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border transition-colors duration-300 hover:border-white/40"
+                  style={{ borderColor: 'var(--border)' }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                    <path d="M13 8H3M7 4 3 8l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                <button
+                  onClick={next}
+                  aria-label="Next testimonial"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border transition-colors duration-300 hover:border-white/40"
+                  style={{ borderColor: 'var(--border)' }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              </div>
             </div>
-            <p className="mb-8 text-[1.1rem] font-normal leading-[1.65] text-text-primary">
-              {testimonials[0].quote}
-            </p>
-            <p className="text-[0.85rem] font-semibold text-text-primary">
-              {testimonials[0].name}
-            </p>
-            <p className="mt-1 text-[0.8rem] text-text-secondary">
-              {testimonials[0].company}
-            </p>
           </div>
         </motion.div>
       </div>
@@ -394,13 +474,14 @@ function StatsTestimonial() {
   )
 }
 
-/* ── Client Logos (centered flex-wrap names) ── */
+/* ── Client Logos (bordered grid) ── */
 const CLIENT_NAMES = [
   'Hako', 'JokaDent', 'AK Invest', 'Magniflex', 'Palma',
   'Tepelene', 'LoriCaffe', 'Tirana Home Store', 'Fentimans', 'Diamond',
   'Akses', 'ExpertCloud', 'Anmetal', 'Wienna', 'Baboon',
   'Berdica', 'Perfect Fashion', 'Alisadudaj', 'Matrix', 'Red Bull',
 ]
+const ACCENTS = ['#DA291C', '#f9b311', '#004c95']
 
 function ClientLogos() {
   const ref = useRef<HTMLElement>(null)
@@ -408,29 +489,48 @@ function ClientLogos() {
 
   return (
     <section ref={ref} className="px-[var(--gutter)] pt-20 pb-[120px]">
-      <div>
-        <motion.p
-          className="mb-12 text-center text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
+      <div className="mx-auto max-w-[var(--max-width)]">
+        <motion.div
+          className="mb-10 flex items-end justify-between gap-6"
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
         >
-          Trusted By
-        </motion.p>
+          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
+            Trusted by
+          </p>
+          <p className="text-[0.7rem] font-medium tracking-[0.08em] text-text-tertiary">
+            {CLIENT_NAMES.length} brands &amp; counting
+          </p>
+        </motion.div>
+
         <motion.div
-          className="flex flex-wrap justify-center gap-0"
+          className="grid grid-cols-2 border-t border-l sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+          style={{ borderColor: 'var(--border)' }}
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
         >
-          {CLIENT_NAMES.map((name) => (
-            <span
-              key={name}
-              className="px-7 py-4 text-[0.8rem] font-medium tracking-[0.04em] text-text-tertiary transition-colors duration-300 hover:text-text-secondary"
-            >
-              {name}
-            </span>
-          ))}
+          {CLIENT_NAMES.map((name, i) => {
+            const accent = ACCENTS[i % ACCENTS.length]
+            return (
+              <div
+                key={name}
+                className="group relative flex h-[110px] items-center justify-center border-r border-b transition-colors duration-300 md:h-[130px]"
+                style={{ borderColor: 'var(--border)' }}
+              >
+                <span
+                  className="pointer-events-none absolute top-3 left-3 h-1.5 w-1.5 rounded-full opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                  style={{ background: accent }}
+                />
+                <span
+                  className="font-display text-[1rem] font-semibold tracking-[-0.01em] text-text-tertiary transition-colors duration-300 group-hover:text-text-primary md:text-[1.1rem]"
+                >
+                  {name}
+                </span>
+              </div>
+            )
+          })}
         </motion.div>
       </div>
     </section>
@@ -445,70 +545,78 @@ const PROCESS_STEPS = [
   { number: '05', title: 'Ongoing Partnership', description: 'Great brands evolve. We stay close to help you adapt, grow, and keep the work as sharp as the day it launched.' },
 ]
 
-/* ── Horizontal Timeline Process ── */
+/* ── Editorial Vertical Process Timeline ── */
+function ProcessRow({ step, index }: { step: typeof PROCESS_STEPS[number]; index: number }) {
+  const rowRef = useRef<HTMLDivElement>(null)
+  const inView = useInView(rowRef, { once: true, margin: '-15%' })
+
+  return (
+    <motion.div
+      ref={rowRef}
+      className="grid grid-cols-12 items-start gap-6 border-t py-12 md:gap-10 md:py-16"
+      style={{ borderColor: 'var(--border)' }}
+      initial={{ opacity: 0, y: 40 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.05 * index }}
+    >
+      {/* Number — huge, accent-tinted */}
+      <div className="col-span-12 md:col-span-3">
+        <span
+          className="font-display text-[clamp(4rem,9vw,8rem)] font-bold leading-[0.9] tracking-[-0.04em] text-text-tertiary/30 transition-colors duration-500 group-hover:text-accent"
+        >
+          {step.number}
+          <span className="text-accent">.</span>
+        </span>
+      </div>
+
+      {/* Title + description */}
+      <div className="col-span-12 md:col-span-9 md:flex md:gap-12">
+        <h4 className="mb-4 font-display text-[clamp(1.4rem,2.4vw,2rem)] font-bold leading-[1.1] tracking-[-0.02em] md:mb-0 md:w-[40%] md:max-w-[320px]">
+          {step.title}
+        </h4>
+        <p className="text-[0.95rem] leading-[1.7] text-text-secondary md:w-[60%] md:max-w-[520px]">
+          {step.description}
+        </p>
+      </div>
+    </motion.div>
+  )
+}
+
 function ProcessSection() {
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
     <section ref={ref} className="px-[var(--gutter)] py-[120px]">
-      <div>
-        <motion.p
-          className="mb-6 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.6 }}
-        >
-          Process
-        </motion.p>
-        <motion.h2
-          className="mb-[72px] max-w-[600px] font-display text-[clamp(1.8rem,3.5vw,2.6rem)] font-bold leading-[1.08] tracking-[-0.03em]"
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        >
-          How Every BoldCrest<br />Project Works
-        </motion.h2>
+      <div className="mx-auto max-w-[var(--max-width)]">
+        <div className="mb-16 grid grid-cols-12 items-end gap-6 md:mb-20 md:gap-10">
+          <motion.div
+            className="col-span-12 md:col-span-3"
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.6 }}
+          >
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
+              Process
+            </p>
+          </motion.div>
 
-        {/* Horizontal scrollable timeline */}
-        <motion.div
-          className="flex gap-0 overflow-x-auto pb-6"
-          style={{
-            WebkitOverflowScrolling: 'touch',
-            scrollbarWidth: 'thin',
-            scrollbarColor: 'rgba(255,255,255,0.12) transparent',
-          }}
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-        >
+          <motion.h2
+            className="col-span-12 font-display text-[clamp(2.2rem,5vw,4rem)] font-bold leading-[1] tracking-[-0.03em] md:col-span-9"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          >
+            How every BoldCrest project works<span className="text-accent">.</span>
+          </motion.h2>
+        </div>
+
+        {/* Steps — vertical editorial rows with hairline dividers */}
+        <div className="border-b" style={{ borderColor: 'var(--border)' }}>
           {PROCESS_STEPS.map((step, i) => (
-            <div
-              key={step.number}
-              className="relative shrink-0 pr-6"
-              style={{ flex: '0 0 260px' }}
-            >
-              {/* Circle + connecting line */}
-              <div className="relative mb-7 flex items-center">
-                <div
-                  className="z-[2] flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-[0.8rem] font-bold"
-                  style={{ borderColor: 'var(--accent)', background: 'var(--bg)', color: 'var(--text-primary)' }}
-                >
-                  {step.number}
-                </div>
-                {i < PROCESS_STEPS.length - 1 && (
-                  <div className="ml-0 h-px flex-1" style={{ background: 'var(--border)' }} />
-                )}
-              </div>
-              <h4 className="mb-2.5 text-[1rem] font-bold tracking-[-0.02em] text-text-primary">
-                {step.title}
-              </h4>
-              <p className="max-w-[220px] text-[0.85rem] leading-[1.65] text-text-secondary">
-                {step.description}
-              </p>
-            </div>
+            <ProcessRow key={step.number} step={step} index={i} />
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   )
@@ -532,12 +640,15 @@ export default function ServicesPageClient({
             Services
           </motion.p>
           <motion.h1
-            className="max-w-[1000px] font-display text-[clamp(2rem,4vw,3.2rem)] font-bold leading-[1.2] tracking-[-0.03em]"
+            className="font-display text-[clamp(2.5rem,6vw,5rem)] font-bold leading-[1.05] tracking-[-0.03em]"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            <WordReveal text="We Design Brands, Craft Stories, and Build Campaigns That Don't Just Inform. They Pull People In." />
+            <span className="block"><WordReveal text="We craft brands" /></span>
+            <span className="block"><WordReveal text="and tell stories" /></span>
+            <span className="block"><WordReveal text="that don't just inform." /></span>
+            <span className="block"><WordReveal text="They pull people in." /></span>
           </motion.h1>
         </div>
         {/* Divider */}
@@ -552,18 +663,8 @@ export default function ServicesPageClient({
       {/* ── Process Timeline ── */}
       <ProcessSection />
 
-      {/* Divider */}
-      <div className="px-[var(--gutter)]">
-        <div className="h-px w-full bg-border" />
-      </div>
-
       {/* ── Stats + Testimonial ── */}
       <StatsTestimonial />
-
-      {/* Divider */}
-      <div className="px-[var(--gutter)]">
-        <div className="h-px w-full bg-border" />
-      </div>
 
       {/* ── Client Logos ── */}
       <ClientLogos />
