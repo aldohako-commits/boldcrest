@@ -40,9 +40,9 @@ export default function OutcomesServices({
   return (
     <section ref={ref} className="px-[var(--gutter)] pt-[var(--space-lg)] pb-[var(--space-lg)]">
       <div className="mx-auto grid max-w-[var(--max-width)] gap-10 md:grid-cols-2 md:gap-16">
-        {/* LEFT — Outcomes square */}
+        {/* LEFT — Outcomes */}
         <motion.div
-          className="flex flex-col md:aspect-square"
+          className="flex flex-col"
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
@@ -54,7 +54,7 @@ export default function OutcomesServices({
             {outcomesHeading}
           </h2>
 
-          <div className="flex flex-1 flex-col gap-6">
+          <div className="flex flex-col gap-6">
             {outcomes.map((outcome, i) => (
               <motion.div
                 key={outcome.title}
@@ -78,9 +78,9 @@ export default function OutcomesServices({
           </div>
         </motion.div>
 
-        {/* RIGHT — Services accordion square */}
+        {/* RIGHT — Services accordion */}
         <motion.div
-          className="flex flex-col md:aspect-square"
+          className="flex flex-col"
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
@@ -92,7 +92,7 @@ export default function OutcomesServices({
             {servicesHeading}
           </h2>
 
-          <div className="flex flex-1 flex-col overflow-y-auto">
+          <div className="flex flex-col">
             {services.map((service, i) => {
               const isOpen = openIndex === i
               return (

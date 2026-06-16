@@ -300,9 +300,51 @@ function InlineFilter({
     setOpenFilter(null)
   }
 
+  // Drag-to-scroll for the filter row. Touch uses the browser's native
+  // horizontal scroll (overflow-x-auto); mouse drag is handled here. A real
+  // drag (moved > 4px) scrolls and swallows the trailing click so it doesn't
+  // also select a filter — a plain click still navigates normally.
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const drag = useRef({ down: false, moved: false, startX: 0, startScroll: 0 })
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === 'touch') return
+    const el = scrollRef.current
+    if (!el) return
+    drag.current = { down: true, moved: false, startX: e.clientX, startScroll: el.scrollLeft }
+  }
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!drag.current.down) return
+    const el = scrollRef.current
+    if (!el) return
+    const dx = e.clientX - drag.current.startX
+    if (!drag.current.moved && Math.abs(dx) > 4) {
+      drag.current.moved = true
+      el.setPointerCapture?.(e.pointerId)
+    }
+    if (drag.current.moved) el.scrollLeft = drag.current.startScroll - dx
+  }
+  const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (drag.current.moved) scrollRef.current?.releasePointerCapture?.(e.pointerId)
+    drag.current.down = false
+  }
+  const onClickCapture = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (drag.current.moved) {
+      e.preventDefault()
+      e.stopPropagation()
+      drag.current.moved = false
+    }
+  }
+
   return (
     <motion.div
-      className="flex items-center gap-5 overflow-hidden"
+      ref={scrollRef}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+      onClickCapture={onClickCapture}
+      className="flex select-none items-center gap-5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:cursor-grab md:active:cursor-grabbing"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
