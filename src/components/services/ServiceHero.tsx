@@ -19,7 +19,8 @@ export default function ServiceHero({
   return (
     <section className="flex flex-col px-[var(--gutter)] pt-[120px] pb-0">
       <div>
-        {/* Breadcrumb — matches the Work detail breadcrumb (ProjectHero) */}
+        {/* Breadcrumb — sits in place of the old eyebrow label, matching the
+            Work detail breadcrumb (ProjectHero) */}
         <nav
           aria-label="Breadcrumb"
           className="mb-4 flex items-center gap-2 text-[0.75rem] font-medium uppercase tracking-[0.15em] text-text-tertiary"
@@ -35,15 +36,6 @@ export default function ServiceHero({
             {label}
           </span>
         </nav>
-
-        <motion.p
-          className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        >
-          {label}
-        </motion.p>
 
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <motion.h1
