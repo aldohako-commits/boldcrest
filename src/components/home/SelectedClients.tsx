@@ -36,11 +36,12 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
   // logos so similar shapes aren't grouped together. Independent of the Sanity
   // `order` field (which the Services page still uses).
   const HOME_ORDER = [
-    // wide wordmark / compact-emblem alternating; beverages spread apart
-    'Coca-Cola', 'ITU', 'Magniflex', 'Hako', 'Sprite', 'Cipriani', 'Lori Caffè',
-    'Red Bull', 'Tepelene', 'Joka', 'SachPizza', 'AK Invest', 'Alisa Dudaj',
-    'Barbaroza', 'ACIES', 'Matrix', 'Wolt', 'IONA', 'AutoMita', 'Fanta',
-    "Let's Drive", 'Ventoro', 'Tomarchio',
+    // wide wordmark / compact-emblem alternating; beverages + auto brands spread apart
+    'Coca-Cola', 'ITU', 'Nissan', 'Magniflex', 'Hako', 'Vespa', 'Sprite',
+    'Cipriani', 'Renault', 'Lori Caffè', 'Red Bull', 'Piaggio', 'Tepelene',
+    'Joka', 'Dacia', 'SachPizza', 'AK Invest', 'Moto Guzzi', 'Alisa Dudaj',
+    'Barbaroza', 'Aprilia', 'ACIES', 'Matrix', 'Wolt', 'IONA', 'AutoMita',
+    'Fanta', "Let's Drive", 'Ventoro', 'Tomarchio',
   ]
   const rank = (name: string) => {
     const i = HOME_ORDER.indexOf(name)
