@@ -36,6 +36,7 @@ export const diaryPost = defineType({
       type: 'string',
       options: {
         list: [
+          { title: 'Insights', value: 'Insights' },
           { title: 'Branding', value: 'Branding' },
           { title: 'Design', value: 'Design' },
           { title: 'Motion', value: 'Motion' },
