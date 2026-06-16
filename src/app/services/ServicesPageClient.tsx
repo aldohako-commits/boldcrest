@@ -412,8 +412,7 @@ const CLIENT_NAMES = [
 function ClientLogos({ partners = [] }: { partners?: Partner[] }) {
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
-  const [colOffset, setColOffset] = useState(0)
-  const [hovered, setHovered] = useState<string | null>(null)
+  const [page, setPage] = useState(0)
 
   const ROWS = 4
   // Visible columns adapt to viewport so logos stay legible on small screens.
@@ -440,12 +439,19 @@ function ClientLogos({ partners = [] }: { partners?: Partner[] }) {
   for (let i = 0; i < items.length; i += ROWS) {
     columns.push(items.slice(i, i + ROWS))
   }
-  const maxOffset = Math.max(0, columns.length - colsVisible)
-  const canPrev = colOffset > 0
-  const canNext = colOffset < maxOffset
 
-  const next = () => setColOffset((o) => Math.min(o + 1, maxOffset))
-  const prev = () => setColOffset((o) => Math.max(o - 1, 0))
+  // Page-based navigation: each Next/Prev swaps the ENTIRE visible set
+  // (colsVisible columns) for the next/previous group, adapting to the
+  // breakpoint. The last page is clamped so no empty cells ever show.
+  const maxOffset = Math.max(0, columns.length - colsVisible)
+  const pageCount = Math.max(1, Math.ceil(columns.length / colsVisible))
+  const currentPage = Math.min(page, pageCount - 1)
+  const colOffset = Math.min(currentPage * colsVisible, maxOffset)
+  const canPrev = currentPage > 0
+  const canNext = currentPage < pageCount - 1
+
+  const next = () => setPage(Math.min(currentPage + 1, pageCount - 1))
+  const prev = () => setPage(Math.max(currentPage - 1, 0))
 
   return (
     <section ref={ref} className="px-[var(--gutter)] pt-20 pb-12">
@@ -462,7 +468,8 @@ function ClientLogos({ partners = [] }: { partners?: Partner[] }) {
           <div className="h-px w-full bg-border" />
         </motion.div>
 
-        {/* Slidable column track — viewport shows COLS_VISIBLE columns; arrows shift one column */}
+        {/* Slidable column track — viewport shows colsVisible columns; arrows
+            page by a full visible set at a time */}
         <div className="overflow-hidden [--logos-gap:1.5rem] md:[--logos-gap:2.5rem]">
           <div
             className="flex transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
@@ -470,7 +477,6 @@ function ClientLogos({ partners = [] }: { partners?: Partner[] }) {
               gap: 'var(--logos-gap)',
               transform: `translateX(calc(-1 * ${colOffset} * ((100% - ${colsVisible - 1} * var(--logos-gap)) / ${colsVisible} + var(--logos-gap))))`,
             }}
-            onMouseLeave={() => setHovered(null)}
           >
             {columns.map((col, i) => (
               <div
@@ -481,11 +487,7 @@ function ClientLogos({ partners = [] }: { partners?: Partner[] }) {
                 {col.map((p) => (
                   <span
                     key={p._id}
-                    className="flex cursor-default items-center justify-center px-2 py-4 transition-opacity duration-300"
-                    style={{
-                      opacity: hovered ? (hovered === p.name ? 1 : 0.2) : 0.5,
-                    }}
-                    onMouseEnter={() => setHovered(p.name)}
+                    className="flex items-center justify-center px-2 py-4 opacity-50"
                   >
                     {p.logo?.asset?._ref ? (
                       <Image

@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import Image from 'next/image'
 import { urlFor } from '@/sanity/lib/image'
 
@@ -16,8 +15,6 @@ interface SelectedClientsProps {
 }
 
 export default function SelectedClients({ partners }: SelectedClientsProps) {
-  const [hovered, setHovered] = useState<string | null>(null)
-
   const displayPartners =
     partners.length > 0
       ? partners
@@ -55,47 +52,43 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
   const row1 = ordered.slice(0, mid)
   const row2 = ordered.slice(mid)
 
-  const repeat = (arr: Partner[], times: number) => {
+  // Duplicate each row exactly twice. The marquee keyframes translate from 0 to
+  // -50%, so two identical copies make the loop perfectly seamless (the reset
+  // point is visually identical to the start — no jump, freeze, or restart).
+  const duplicate = (arr: Partner[]) => {
     const result: Partner[] = []
-    for (let t = 0; t < times; t++) {
+    for (let t = 0; t < 2; t++) {
       arr.forEach((p, i) => {
-        result.push({ ...p, _id: `${p._id}-r${t}-${i}` })
+        result.push({ ...p, _id: `${p._id}-c${t}-${i}` })
       })
     }
     return result
   }
 
-  const row1Items = repeat(row1, 4)
-  const row2Items = repeat(row2, 4)
+  const row1Items = duplicate(row1)
+  const row2Items = duplicate(row2)
 
   const hasLogo = (p: Partner) => !!p.logo?.asset?._ref
 
+  // No hover interaction — logos sit at a steady opacity.
   const renderPartner = (partner: Partner) => (
     <span
       key={partner._id}
-      className="shrink-0 cursor-default px-6 py-1 transition-opacity duration-300 flex items-center"
-      style={{
-        opacity: hovered
-          ? hovered === partner.name
-            ? 1
-            : 0.2
-          : 0.5,
-      }}
-      onMouseEnter={() => setHovered(partner.name)}
+      className="flex shrink-0 items-center px-6 py-1 opacity-50"
     >
       {hasLogo(partner) ? (
         <Image
           unoptimized
           src={urlFor(partner.logo!).url()}
           alt={partner.name}
-          width={375}
-          height={150}
-          className="h-[150px] w-auto max-w-[200px] object-contain"
+          width={240}
+          height={120}
+          className="h-[clamp(64px,7vw,96px)] w-auto object-contain"
           style={{ filter: 'var(--zone-logo-filter, brightness(0))' }}
         />
       ) : (
         <span
-          className="font-display text-[clamp(1.2rem,2.5vw,2rem)] font-semibold uppercase tracking-[0.08em]"
+          className="font-display text-[clamp(1rem,2vw,1.5rem)] font-semibold uppercase tracking-[0.08em]"
           style={{ color: 'var(--zone-fg)' }}
         >
           {partner.name}
@@ -105,30 +98,31 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
   )
 
   return (
-    <section className="pb-[var(--space-2xl)] overflow-hidden">
-      <div className="px-[var(--gutter)] mb-[var(--space-lg)]">
+    <section className="overflow-hidden pb-[var(--space-2xl)]">
+      <div className="mb-[var(--space-lg)] px-[var(--gutter)]">
         <h2 className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--zone-fg-half)' }}>
           Trusted by the ambitious<span className="text-accent">.</span>
         </h2>
         <div className="h-px" style={{ backgroundColor: 'var(--zone-fg-subtle)' }} />
       </div>
 
-      {/* Row 1 — scrolls left (kept tight to row 2 so they read as a pair) */}
-      <div
-        className="relative"
-        onMouseLeave={() => setHovered(null)}
-      >
-        <div className="flex animate-[marquee_35s_linear_infinite] will-change-transform items-center">
+      {/* Row 1 — scrolls left. Faster duration on small screens so new logos
+          appear sooner; both rows kept tight to read as a pair. */}
+      <div className="relative">
+        <div
+          className="flex w-max items-center will-change-transform [--mq:20s] md:[--mq:34s]"
+          style={{ animation: 'marquee var(--mq) linear infinite' }}
+        >
           {row1Items.map(renderPartner)}
         </div>
       </div>
 
       {/* Row 2 — scrolls right (reverse) */}
-      <div
-        className="relative"
-        onMouseLeave={() => setHovered(null)}
-      >
-        <div className="flex animate-[marquee-reverse_40s_linear_infinite] will-change-transform items-center">
+      <div className="relative">
+        <div
+          className="flex w-max items-center will-change-transform [--mq:24s] md:[--mq:40s]"
+          style={{ animation: 'marquee-reverse var(--mq) linear infinite' }}
+        >
           {row2Items.map(renderPartner)}
         </div>
       </div>
