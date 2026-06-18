@@ -90,7 +90,7 @@ export default function ProcessTable({
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
           onPointerLeave={endDrag}
-          className="mt-[var(--space-xl)] cursor-grab overflow-x-auto pb-4 select-none [scrollbar-width:none] active:cursor-grabbing [&::-webkit-scrollbar]:hidden"
+          className="mt-[var(--space-xl)] cursor-grab overflow-x-auto overflow-y-hidden pb-4 select-none [scrollbar-width:none] active:cursor-grabbing [&::-webkit-scrollbar]:hidden"
         >
           <div className="flex gap-8 md:gap-12" style={{ width: 'max-content' }}>
           {steps.map((step, i) => (

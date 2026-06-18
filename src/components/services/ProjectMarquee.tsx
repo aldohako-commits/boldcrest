@@ -148,7 +148,7 @@ export default function ProjectMarquee({
         onPointerLeave={endDrag}
         onClickCapture={onClickCapture}
         onDragStart={(e) => e.preventDefault()}
-        className="relative cursor-grab touch-pan-y overflow-x-auto select-none [scrollbar-width:none] active:cursor-grabbing [&_a]:select-none [&_img]:pointer-events-none [&::-webkit-scrollbar]:hidden"
+        className="relative cursor-grab touch-pan-y overflow-x-auto overflow-y-hidden select-none [scrollbar-width:none] active:cursor-grabbing [&_a]:select-none [&_img]:pointer-events-none [&::-webkit-scrollbar]:hidden"
       >
         <div className="flex w-max gap-6 md:gap-8">
           {repeated.map((project, i) => {

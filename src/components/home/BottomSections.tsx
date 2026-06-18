@@ -22,6 +22,7 @@ interface DiaryPost {
   excerpt?: string
   category?: string
   publishedAt?: string
+  coverImage?: { asset?: { _ref?: string } }
 }
 
 interface BottomSectionsProps {
@@ -288,17 +289,29 @@ const CATEGORY_COLORS: Record<string, string> = {
 /* ── Diary card ── */
 function DiaryCardImage({ post, index }: { post: DiaryPost; index: number }) {
   const color = CATEGORY_COLORS[post.category || ''] || '#DA291C'
+  const hasImage = !!post.coverImage?.asset?._ref
 
   return (
     <Link href={`/diary/${post.slug.current}`} className="group block">
       {/* Image container */}
       <div className="relative aspect-square overflow-hidden rounded-2xl bg-[#1a1a1a]">
-        {/* Placeholder image */}
-        <div className="flex h-full w-full items-center justify-center">
-          <span className="text-[1.2rem] font-bold uppercase leading-[1.1] tracking-[-0.02em] text-white/10 text-center px-4 md:text-[3rem] md:px-8">
-            {post.title}
-          </span>
-        </div>
+        {hasImage ? (
+          <Image
+            src={urlFor(post.coverImage!).width(800).height(800).url()}
+            alt={post.title}
+            fill
+            loader={sanityImageLoader}
+            sizes="(max-width: 768px) 50vw, 33vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          /* Placeholder — shown when no cover image is set */
+          <div className="flex h-full w-full items-center justify-center">
+            <span className="text-[1.2rem] font-bold uppercase leading-[1.1] tracking-[-0.02em] text-white/10 text-center px-4 md:text-[3rem] md:px-8">
+              {post.title}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Info below image */}
