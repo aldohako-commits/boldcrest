@@ -321,61 +321,55 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
                     </p>
                   ))
                 )}
-
-                {/* Back to Diary */}
-                <div className="mt-[var(--space-2xl)] border-t border-border pt-[var(--space-lg)]">
-                  <Link
-                    href="/diary"
-                    className="group inline-flex items-center gap-3 text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-text-tertiary transition-colors duration-300 hover:text-text-primary"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="rotate-180 transition-transform duration-300 group-hover:-translate-x-1">
-                      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    Back to Diary
-                  </Link>
-                </div>
               </div>
             </div>
           </div>
 
-          {/* MORE DIARY — same category first, then most recent (built server-side) */}
+          {/* MORE DIARY — same container/line/grid/spacing as the portfolio
+              "More Work" suggestions (RelatedProjects) for visual parity. */}
           {morePosts.length > 0 && (
-            <section className="px-[var(--gutter)] pb-[var(--space-2xl)]">
-              <div className="mx-auto max-w-[var(--max-width)]">
-                <p className="mb-[var(--space-lg)] text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
+            <section className="border-t border-border px-[var(--gutter)] py-[var(--space-2xl)]">
+              <div className="w-full">
+                <h2 className="mb-[var(--space-lg)] text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
                   More Diary
-                </p>
-                <div className="grid grid-cols-2 gap-x-3 gap-y-8 md:gap-x-6 lg:grid-cols-5 lg:gap-x-6">
-                  {morePosts.map((p, i) => (
-                    <Link key={p._id} href={`/diary/${p.slug.current}`} className={`group block ${i === 4 ? 'hidden lg:block' : ''}`}>
-                      <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-[#1a1a1a] md:rounded-2xl">
+                </h2>
+
+                <div className="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-5">
+                  {morePosts.map((p, index) => (
+                    <Link
+                      key={p._id}
+                      href={`/diary/${p.slug.current}`}
+                      className={`group ${index === 4 ? 'hidden md:block' : 'block'}`}
+                    >
+                      {/* Thumbnail */}
+                      <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-bg-card">
                         {p.coverImage?.asset ? (
                           <Image
                             loader={sanityImageLoader}
-                            src={urlFor(p.coverImage).width(800).height(600).url()}
+                            src={urlFor(p.coverImage).width(800).height(600).quality(80).url()}
                             alt={p.title}
                             fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                            sizes="(max-width: 768px) 50vw, 33vw"
+                            sizes="(max-width: 768px) 50vw, 23vw"
+                            className="object-cover transition-transform duration-[0.5s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]"
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center">
-                            <span className="px-4 text-center text-[1rem] font-bold uppercase leading-[1.1] tracking-[-0.02em] text-white/10">
+                          <div className="flex h-full w-full items-center justify-center bg-bg-card">
+                            <span className="font-display text-[0.75rem] font-semibold uppercase tracking-[0.1em] text-text-tertiary">
                               {p.title}
                             </span>
                           </div>
                         )}
                       </div>
-                      <div className="mt-3">
-                        {p.category && (
-                          <span className="mb-1 inline-block text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-text-tertiary">
-                            {p.category}
-                          </span>
-                        )}
-                        <h3 className="font-display text-[0.95rem] font-bold uppercase leading-[1.3] tracking-[0.02em] text-text-primary md:text-[1.1rem]">
-                          {p.title}
-                        </h3>
-                      </div>
+
+                      {/* Caption */}
+                      {p.category && (
+                        <span className="mt-3 block text-[0.7rem] font-semibold uppercase tracking-[0.15em] text-text-tertiary">
+                          {p.category}
+                        </span>
+                      )}
+                      <h3 className="mt-1 font-display text-[0.95rem] font-semibold uppercase leading-[1.2] text-text-primary transition-colors duration-300 group-hover:text-accent">
+                        {p.title}
+                      </h3>
                     </Link>
                   ))}
                 </div>
