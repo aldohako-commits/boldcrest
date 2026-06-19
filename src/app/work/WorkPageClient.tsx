@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -315,21 +315,35 @@ function InlineFilter({
   const group1Ref = useRef<HTMLSpanElement>(null)
   const group2Ref = useRef<HTMLSpanElement>(null)
   const [stacked, setStacked] = useState(false)
-  useEffect(() => {
-    if (openFilter !== null) return
+  // Measure with a ResizeObserver wired up through a callback ref on the
+  // collapsed row — NOT a plain effect keyed on the filter values. Selecting a
+  // filter collapses the panel via AnimatePresence mode="wait", so the collapsed
+  // groups only mount AFTER the expanded panel's exit animation finishes. An
+  // effect keyed on the values runs immediately on selection, before those
+  // groups exist, then never re-runs (no further state change) — leaving a stale
+  // measurement and an orphaned divider. ResizeObserver.observe fires as soon as
+  // the row and its group spans actually lay out, and again on any width change
+  // (viewport resize, clearing a value), so the divider is dropped the moment
+  // the two groups wrap.
+  const roRef = useRef<ResizeObserver | null>(null)
+  const collapsedRef = useCallback((node: HTMLDivElement | null) => {
+    roRef.current?.disconnect()
+    roRef.current = null
+    if (!node) return
     const check = () => {
       const a = group1Ref.current
       const b = group2Ref.current
-      const container = a?.parentElement
-      if (!a || !b || !container) return
+      if (!a || !b) return
       // gap-x-5 = 20px between items; divider is ~1px (+ its two gaps).
       const needed = a.offsetWidth + b.offsetWidth + 1 + 20 * 2
-      setStacked(needed > container.clientWidth + 1)
+      setStacked(needed > node.clientWidth + 1)
     }
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [openFilter, serviceFilter, industryFilter])
+    const ro = new ResizeObserver(check)
+    ro.observe(node)
+    if (group1Ref.current) ro.observe(group1Ref.current)
+    if (group2Ref.current) ro.observe(group2Ref.current)
+    roRef.current = ro
+  }, [])
 
   return (
     <motion.div
@@ -343,6 +357,7 @@ function InlineFilter({
           /* ── Collapsed: show both labels ── */
           <motion.div
             key="collapsed"
+            ref={collapsedRef}
             className="flex flex-wrap items-center gap-x-5 gap-y-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
