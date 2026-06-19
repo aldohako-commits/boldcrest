@@ -381,13 +381,14 @@ function InlineInput({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onFocus={(e) => {
-            const shell = e.currentTarget.closest<HTMLElement>('[data-active]')
-            if (shell) {
-              scrollIntoSafeView(shell)
-              // re-run after the keyboard has finished sliding up (visualViewport
-              // settles over ~300ms) so the final position clears it.
-              setTimeout(() => scrollIntoSafeView(shell, 'auto'), 350)
-            }
+            // Scroll the focused INPUT into view (not the whole form shell) so
+            // the field stays visible as the identity form grows downward and
+            // each later field sits lower in it.
+            const input = e.currentTarget
+            scrollIntoSafeView(input)
+            // re-run after the keyboard has finished sliding up (visualViewport
+            // settles over ~300ms) so the final position clears it.
+            setTimeout(() => scrollIntoSafeView(input, 'auto'), 350)
           }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && value.trim()) {
@@ -558,9 +559,17 @@ export default function StartProjectChat() {
     (behavior: ScrollBehavior, mode: 'center' | 'nearest') => {
       const root = containerRef.current
       if (!root) return
-      // Once the form is sent, follow the conversation to the bottom instead.
+      // Prefer the focused field (it may sit low in a growing form), then the
+      // active form, then the conversation bottom once everything's sent.
+      const ae = document.activeElement
+      const focusedField =
+        root.contains(ae) && (ae instanceof HTMLInputElement || ae instanceof HTMLTextAreaElement)
+          ? (ae as HTMLElement)
+          : null
       const target =
-        root.querySelector<HTMLElement>('[data-active]') ?? bottomRef.current
+        focusedField ??
+        root.querySelector<HTMLElement>('[data-active]') ??
+        bottomRef.current
       if (!target) return
       if (mode === 'center') scrollIntoSafeView(target, behavior)
       else ensureVisibleInScroller(target, behavior)
@@ -777,11 +786,9 @@ export default function StartProjectChat() {
                   value={a.message}
                   onChange={(e) => setA({ ...a, message: e.target.value })}
                   onFocus={(e) => {
-                    const shell = e.currentTarget.closest<HTMLElement>('[data-active]')
-                    if (shell) {
-                      scrollIntoSafeView(shell)
-                      setTimeout(() => scrollIntoSafeView(shell, 'auto'), 350)
-                    }
+                    const field = e.currentTarget
+                    scrollIntoSafeView(field)
+                    setTimeout(() => scrollIntoSafeView(field, 'auto'), 350)
                   }}
                   disabled={!isActive('message')}
                   rows={3}
