@@ -178,7 +178,7 @@ function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
 
       {/* Cards */}
       <motion.div
-        className="flex h-[480px] gap-3 md:h-[640px]"
+        className="flex h-[clamp(480px,72svh,620px)] gap-3 md:h-[640px]"
         initial={{ opacity: 0, y: 30 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
@@ -248,7 +248,7 @@ function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
                   className="group flex h-full flex-col"
                 >
                 {/* Top body */}
-                <div className="flex flex-1 flex-col justify-between p-5 md:p-12">
+                <div className="flex flex-1 flex-col justify-between overflow-y-auto p-5 md:p-12">
                   <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
                     <h3
                       className="font-display text-[clamp(2rem,4.2vw,4.5rem)] font-bold leading-[0.95] tracking-[-0.02em]"
