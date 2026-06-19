@@ -300,6 +300,25 @@ function InlineFilter({
     setOpenFilter(null)
   }
 
+  // When both filters are active the collapsed row can wrap onto two lines on
+  // narrow screens; in that case the "|" separator is hidden. The divider stays
+  // in the DOM (just visually hidden) so toggling it can't re-trigger a wrap.
+  const group1Ref = useRef<HTMLSpanElement>(null)
+  const group2Ref = useRef<HTMLSpanElement>(null)
+  const [stacked, setStacked] = useState(false)
+  useEffect(() => {
+    if (openFilter !== null) return
+    const check = () => {
+      const a = group1Ref.current
+      const b = group2Ref.current
+      if (!a || !b) return
+      setStacked(b.offsetTop > a.offsetTop + 2)
+    }
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [openFilter, serviceFilter, industryFilter])
+
   return (
     <motion.div
       className="flex min-w-0 flex-1 select-none items-start gap-5 md:pr-6"
@@ -312,53 +331,57 @@ function InlineFilter({
           /* ── Collapsed: show both labels ── */
           <motion.div
             key="collapsed"
-            className="flex items-center gap-5"
+            className="flex flex-wrap items-center gap-x-5 gap-y-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
           >
-            <button
-              onClick={() => setOpenFilter('services')}
-              className={`${labelClass} flex items-center gap-2`}
-            >
-              Services
+            <span ref={group1Ref} className="flex items-center gap-3">
+              <button
+                onClick={() => setOpenFilter('services')}
+                className={`${labelClass} flex items-center gap-2`}
+              >
+                Services
+                {serviceFilter !== 'All' && (
+                  <span className="text-[#a3a3a3]">{serviceFilter}</span>
+                )}
+              </button>
               {serviceFilter !== 'All' && (
-                <span className="text-[#a3a3a3]">{serviceFilter}</span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setServiceFilter('All') }}
+                  aria-label="Clear services filter"
+                  className="-ml-1 inline-flex items-center justify-center text-[#a3a3a3] transition-colors duration-200 hover:text-white"
+                >
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                    <path d="M1.5 1.5l9 9M10.5 1.5l-9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </button>
               )}
-            </button>
-            {serviceFilter !== 'All' && (
+            </span>
+            <span className={`h-3 w-px bg-text-tertiary ${stacked ? 'invisible' : ''}`} />
+            <span ref={group2Ref} className="flex items-center gap-3">
               <button
-                onClick={(e) => { e.stopPropagation(); setServiceFilter('All') }}
-                aria-label="Clear services filter"
-                className="-ml-1 inline-flex items-center justify-center text-[#a3a3a3] transition-colors duration-200 hover:text-white"
+                onClick={() => setOpenFilter('industry')}
+                className={`${labelClass} flex items-center gap-2`}
               >
-                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                  <path d="M1.5 1.5l9 9M10.5 1.5l-9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+                Industry
+                {industryFilter !== 'All' && (
+                  <span className="text-[#a3a3a3]">{industryFilter}</span>
+                )}
               </button>
-            )}
-            <span className="h-3 w-px bg-text-tertiary" />
-            <button
-              onClick={() => setOpenFilter('industry')}
-              className={`${labelClass} flex items-center gap-2`}
-            >
-              Industry
               {industryFilter !== 'All' && (
-                <span className="text-[#a3a3a3]">{industryFilter}</span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setIndustryFilter('All') }}
+                  aria-label="Clear industry filter"
+                  className="-ml-1 inline-flex items-center justify-center text-[#a3a3a3] transition-colors duration-200 hover:text-white"
+                >
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                    <path d="M1.5 1.5l9 9M10.5 1.5l-9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </button>
               )}
-            </button>
-            {industryFilter !== 'All' && (
-              <button
-                onClick={(e) => { e.stopPropagation(); setIndustryFilter('All') }}
-                aria-label="Clear industry filter"
-                className="-ml-1 inline-flex items-center justify-center text-[#a3a3a3] transition-colors duration-200 hover:text-white"
-              >
-                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                  <path d="M1.5 1.5l9 9M10.5 1.5l-9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              </button>
-            )}
+            </span>
           </motion.div>
         ) : (
           /* ── Expanded: label + items + X ── */
