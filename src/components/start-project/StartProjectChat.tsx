@@ -129,12 +129,13 @@ function getScroller(el: HTMLElement): HTMLElement | null {
   return el.closest('[data-lenis-prevent]')
 }
 
-/** Center the focused field within the band that's actually visible above the
-    on-screen keyboard. The panel is full-height (its solid bg covers behind the
-    keyboard so nothing bleeds through), so the visible band must come from
-    window.visualViewport — NOT the scroller height — to keep the field clear of
-    the keyboard. No padding tricks; the full-height scroller has all the room it
-    needs. */
+/** Keep the focused field clear of the on-screen keyboard by scrolling the chat
+    body so the field's BOTTOM lands just above the top of the keyboard. The
+    keyboard top comes straight from window.visualViewport (offsetTop + height),
+    so this is correct whether or not the panel itself shrinks to fit. A generous
+    bottom padding gives even the last field room to rise above the keyboard.
+    When the keyboard is closed it clears the padding and leaves the view alone,
+    so the conversation settles back at the bottom naturally. */
 function scrollIntoSafeView(el: HTMLElement, behavior: ScrollBehavior = 'smooth') {
   const scroller = getScroller(el)
   if (!scroller) {
@@ -142,23 +143,20 @@ function scrollIntoSafeView(el: HTMLElement, behavior: ScrollBehavior = 'smooth'
     return
   }
   const vv = window.visualViewport
-  const visTop = vv ? vv.offsetTop : 0
   const kbTop = vv ? vv.offsetTop + vv.height : window.innerHeight
-  // Keyboard height derived from the LAYOUT viewport (stable), not the scroller
-  // rect — the panel is full-height so the keyboard covers (innerHeight - kbTop)
-  // of it. 0 when the keyboard is closed, so the padding resets cleanly.
   const keyboard = Math.max(0, window.innerHeight - kbTop)
-  // Padding (hidden behind the keyboard) creates the room to scroll a low field
-  // up into the visible band; generous so any field can reach centre.
-  scroller.style.paddingBottom = keyboard > 0 ? `${keyboard + (kbTop - visTop)}px` : ''
-  const band = kbTop - visTop
-  const margin = 16
-  const tRect = el.getBoundingClientRect()
-  // Center the field in the visible band, then clamp so it never sits under the
-  // keyboard nor above the top of the band.
-  let delta = tRect.top - (visTop + Math.max(margin, (band - tRect.height) / 2))
-  if (tRect.bottom - delta > kbTop - margin) delta = tRect.bottom - (kbTop - margin)
-  if (tRect.top - delta < visTop + margin) delta = tRect.top - (visTop + margin)
+  if (keyboard < 100) {
+    // Keyboard isn't open (yet) — don't yank the view; just clear the padding.
+    scroller.style.paddingBottom = ''
+    return
+  }
+  // Room below the content so a field near the bottom can still scroll up clear
+  // of the keyboard.
+  scroller.style.paddingBottom = `${keyboard + 96}px`
+  const margin = 24
+  const rect = el.getBoundingClientRect()
+  // Land the field's bottom a small margin above the keyboard.
+  const delta = rect.bottom - (kbTop - margin)
   if (Math.abs(delta) > 1) scroller.scrollTo({ top: scroller.scrollTop + delta, behavior })
 }
 
