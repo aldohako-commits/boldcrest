@@ -322,6 +322,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const touchStartY = useRef(0)
+  const touchStartX = useRef(0)
   // Scroll state of the active slide captured at touchstart (mobile): used to
   // decide whether a swipe scrolls the slide internally or advances the deck.
   const touchStartEdges = useRef({ atTop: true, atBottom: true, scrollable: false })
@@ -439,6 +440,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
 
     const onTouchStart = (e: TouchEvent) => {
       touchStartY.current = e.touches[0].clientY
+      touchStartX.current = e.touches[0].clientX
       const slide = wrapperRef.current?.children[current] as HTMLElement | undefined
       if (slide) {
         const scrollable = slide.scrollHeight > slide.clientHeight + 4
@@ -454,6 +456,12 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
     const onTouchEnd = (e: TouchEvent) => {
       const last = TOTAL_SECTIONS - 1
       const diff = touchStartY.current - e.changedTouches[0].clientY
+      const diffX = touchStartX.current - e.changedTouches[0].clientX
+      // Ignore predominantly-horizontal swipes: those belong to the staff/faces
+      // carousels (overflow-x strips). Without this, a sideways flick with a bit
+      // of vertical drift was read as a deck swipe and jumped to the previous
+      // slide. Only a clearly-vertical swipe drives the deck.
+      if (Math.abs(diffX) > Math.abs(diff)) return
       const { scrollable, atTop, atBottom } = touchStartEdges.current
       // On the final slide, allow native scroll to the footer; only step back
       // into the deck on a downward swipe when the page is at the top.
