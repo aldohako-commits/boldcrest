@@ -2,7 +2,7 @@
 
 import { useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import { useStartProject } from '@/components/start-project/StartProjectProvider'
 
 const capabilities = [
@@ -102,7 +102,11 @@ export default function ServiceCards() {
     offset: ['start start', 'end end'],
   })
 
-  const x = useTransform(scrollYProgress, (v) => -v * maxScroll.current)
+  const xRaw = useTransform(scrollYProgress, (v) => -v * maxScroll.current)
+  // Smooth the scroll-linked transform: iOS throttles scroll events during
+  // momentum, which makes the raw mapping stutter. A light spring interpolates
+  // between the sparse samples so the horizontal track glides.
+  const x = useSpring(xRaw, { stiffness: 220, damping: 40, mass: 0.25 })
 
   return (
     <section ref={containerRef} className="relative h-[200vh]">
@@ -121,7 +125,7 @@ export default function ServiceCards() {
         {/* Horizontal panels */}
         <motion.div
           ref={trackRef}
-          className="flex h-[calc(100vh-130px)]"
+          className="flex h-[calc(100vh-130px)] will-change-transform [transform:translateZ(0)]"
           style={{ x }}
         >
           {capabilities.map((cap, i) => (
