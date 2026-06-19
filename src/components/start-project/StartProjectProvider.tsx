@@ -30,10 +30,15 @@ export function useStartProject() {
 export default function StartProjectProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
   const [chatKey, setChatKey] = useState(0)
+  // True while a field in the panel is focused (the "chat active" typing state).
+  const [inputActive, setInputActive] = useState(false)
   const open = useCallback(() => setIsOpen(true), [])
   const close = useCallback(() => setIsOpen(false), [])
   // Remounting the chat with a fresh key resets it to the first question.
   const restartChat = useCallback(() => setChatKey((k) => k + 1), [])
+
+  const isField = (el: EventTarget | null) =>
+    el instanceof HTMLElement && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')
 
   // Esc to close + lock background scroll while the panel is open
   useEffect(() => {
@@ -47,6 +52,7 @@ export default function StartProjectProvider({ children }: { children: ReactNode
     return () => {
       window.removeEventListener('keydown', onKey)
       document.body.style.overflow = prevOverflow
+      setInputActive(false)
     }
   }, [isOpen, close])
 
@@ -94,11 +100,29 @@ export default function StartProjectProvider({ children }: { children: ReactNode
               onClick={close}
             />
 
+            {/* Focus overlay — when the user starts typing, push the interface
+                behind the chat further away with extra darken + blur. Fades in
+                only while a field is focused; no box around the chat. */}
+            <motion.div
+              className="pointer-events-none fixed inset-0 z-[1950] bg-black/45 backdrop-blur-lg"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: inputActive ? 1 : 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            />
+
             {/* Side panel */}
             <motion.aside
               role="dialog"
               aria-modal="true"
               aria-label="Start a new project"
+              onFocus={(e) => {
+                if (isField(e.target)) setInputActive(true)
+              }}
+              onBlur={(e) => {
+                // Stay active if focus is just moving to another field.
+                if (!isField(e.relatedTarget)) setInputActive(false)
+              }}
               className="fixed right-0 top-0 z-[2000] flex w-full max-w-[480px] flex-col bg-bg"
               style={{ top: panelTop, height: panelHeight, borderLeft: '1px solid var(--border)', boxShadow: '-24px 0 60px rgba(0,0,0,0.45)' }}
               initial={{ x: '100%' }}

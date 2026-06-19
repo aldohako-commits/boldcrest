@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, Children } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { submitProjectForm } from './actions'
 
@@ -78,35 +78,27 @@ const EMPTY: Answers = {
 /* ════════════════════════════════════════════════════
    Layout primitives
 ══════════════════════════════════════════════════════ */
-// The turn as a whole only fades in (no slide) — the slide belongs to the
-// individual bubbles below, so messages read as appearing one-by-one rather
-// than the whole block arriving at once.
-const turnVariants = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-}
-
+// Each message pops in with a small opacity + translateY, like a text landing.
 const turnTransition = { duration: 0.3, ease: [0.16, 1, 0.3, 1] as const }
+const ITEM_TRANSITION = { duration: 0.35, ease: [0.16, 1, 0.3, 1] as const }
 
-// Messages reveal one after another like a real chat. Megi's question types in
-// first; the user's reply/form follows after a short beat, so each step reads
-// as a back-and-forth instead of everything popping in together. Kept brisk so
-// it never feels slow.
-const megiListVariants = {
-  initial: {},
-  animate: { transition: { staggerChildren: 0.4, delayChildren: 0.15 } },
-}
-const userListVariants = {
-  initial: {},
-  animate: { transition: { staggerChildren: 0.4, delayChildren: 0.6 } },
-}
-const itemVariants = {
-  initial: { opacity: 0, y: 14 },
-  animate: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const },
-  },
+// Reveals a turn's children one-by-one on a timeline so the chat grows like a
+// real conversation: messages arrive in sequence, the container expands, and
+// the avatar (rendered after the messages) is pushed down as each new one
+// appears. Returns how many children are currently shown. Kept brisk so it
+// reads like texting, never slow.
+function useRevealCount(total: number, startDelayMs: number, intervalMs: number) {
+  const [count, setCount] = useState(0)
+  useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = []
+    for (let i = 0; i < total; i++) {
+      timers.push(
+        setTimeout(() => setCount((c) => (c < i + 1 ? i + 1 : c)), startDelayMs + i * intervalMs),
+      )
+    }
+    return () => timers.forEach((t) => clearTimeout(t))
+  }, [total, startDelayMs, intervalMs])
+  return count
 }
 
 /* iOS Safari's scrollIntoView is unreliable for an element inside a
@@ -146,14 +138,17 @@ function scrollIntoSafeView(el: HTMLElement, behavior: ScrollBehavior = 'smooth'
   // keyboard's top edge is respected whether or not the panel itself shrank.
   const visTop = Math.max(sRect.top, vv ? vv.offsetTop : 0)
   const visBottom = Math.min(sRect.bottom, kbTop)
-  const margin = 20
+  const band = visBottom - visTop
+  const margin = 16
   const tRect = el.getBoundingClientRect()
-  let delta = 0
-  if (tRect.bottom > visBottom - margin) {
-    delta = tRect.bottom - (visBottom - margin) // lift bottom above keyboard
+  // Center the field within the visible band so it sits comfortably mid-screen
+  // above the keyboard — not cropped low at the keyboard's edge.
+  let delta = tRect.top - (visTop + Math.max(margin, (band - tRect.height) / 2))
+  if (tRect.bottom - delta > visBottom - margin) {
+    delta = tRect.bottom - (visBottom - margin) // keep the bottom above the keyboard
   }
   if (tRect.top - delta < visTop + margin) {
-    delta = tRect.top - (visTop + margin) // …but never hide the top
+    delta = tRect.top - (visTop + margin) // …but never push the top out of view
   }
   if (Math.abs(delta) > 1) scroller.scrollTo({ top: scroller.scrollTop + delta, behavior })
 }
@@ -205,15 +200,20 @@ function MegiAvatar() {
   )
 }
 
-function AgencyTurn({ children }: { children: React.ReactNode }) {
+function AgencyTurn({
+  children,
+  startDelay = 250,
+}: {
+  children: React.ReactNode
+  startDelay?: number
+}) {
+  const items = Children.toArray(children)
+  const count = useRevealCount(items.length, startDelay, 450)
+  // Render nothing until the first message is due, so the turn takes no space
+  // (and no surrounding gap) and the chat grows naturally from the top down.
+  if (count === 0) return null
   return (
-    <motion.div
-      variants={turnVariants}
-      initial="initial"
-      animate="animate"
-      transition={turnTransition}
-      className="flex w-full flex-col items-start"
-    >
+    <div className="flex w-full flex-col items-start">
       <div className="max-w-[560px]">
         <header className="mb-4 flex items-baseline gap-3">
           <h3 className="font-display text-[1.05rem] font-bold tracking-[-0.01em] text-text-primary">
@@ -223,17 +223,12 @@ function AgencyTurn({ children }: { children: React.ReactNode }) {
             Account Manager
           </span>
         </header>
-        <motion.div
-          variants={megiListVariants}
-          initial="initial"
-          animate="animate"
-          className="flex flex-col items-start gap-2"
-        >
-          {children}
-        </motion.div>
+        {/* Messages mount one at a time; the avatar below is pushed down as
+            each new one appears, like a real chat message group. */}
+        <div className="flex flex-col items-start gap-2">{items.slice(0, count)}</div>
         <MegiAvatar />
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -241,41 +236,35 @@ function UserTurn({
   heading,
   initial,
   children,
+  startDelay = 1050,
 }: {
   heading: string
   initial?: string
   children: React.ReactNode
+  startDelay?: number
 }) {
+  const items = Children.toArray(children)
+  const count = useRevealCount(items.length, startDelay, 450)
+  // The user's turn starts only after the account-manager messages above have
+  // landed, so the exchange reads as a back-and-forth. Hidden until then.
+  if (count === 0) return null
   return (
-    <motion.div
-      variants={turnVariants}
-      initial="initial"
-      animate="animate"
-      transition={turnTransition}
-      className="flex w-full flex-col items-end"
-    >
+    <div className="flex w-full flex-col items-end">
       <div className="flex w-full max-w-[560px] flex-col items-end">
         <header className="mb-4 flex items-baseline gap-3">
           <h3 className="font-display text-[1.05rem] font-bold tracking-[-0.01em] text-text-primary">
             {heading}
           </h3>
         </header>
-        <motion.div
-          variants={userListVariants}
-          initial="initial"
-          animate="animate"
-          className="flex w-full flex-col items-end gap-2"
-        >
-          {children}
-        </motion.div>
+        <div className="flex w-full flex-col items-end gap-2">{items.slice(0, count)}</div>
         <div
           className="mt-4 flex h-10 w-10 items-center justify-center rounded-full text-[0.85rem] font-bold"
           style={{ background: '#161616', color: '#545454' }}
         >
-          {initial || 'You'.slice(0, 1)}
+          {initial || 'Y'}
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -286,9 +275,16 @@ function Bubble({
   side?: 'left' | 'right'
   children: React.ReactNode
 }) {
+  const ref = useRef<HTMLParagraphElement>(null)
+  useEffect(() => {
+    if (ref.current) ensureVisibleInScroller(ref.current)
+  }, [])
   return (
     <motion.p
-      variants={itemVariants}
+      ref={ref}
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={ITEM_TRANSITION}
       className={`rounded-2xl px-5 py-3 text-[0.95rem] leading-[1.5] ${
         side === 'left'
           ? 'rounded-bl-md bg-bg-card text-text-primary'
@@ -310,13 +306,18 @@ function FormShell({
   children: React.ReactNode
   active: boolean
 }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (ref.current) ensureVisibleInScroller(ref.current)
+  }, [])
   return (
     <motion.div
-      variants={itemVariants}
+      ref={ref}
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: active ? 1 : 0.5, y: 0 }}
+      transition={ITEM_TRANSITION}
       data-active={active || undefined}
-      className={`w-full scroll-mt-6 rounded-2xl rounded-br-md border p-5 transition-opacity duration-300 ${
-        active ? 'opacity-100' : 'opacity-50'
-      }`}
+      className="w-full scroll-mt-6 rounded-2xl rounded-br-md border p-5 transition-colors duration-300"
       style={{
         background: '#141414',
         borderColor: active ? 'rgba(255,255,255,0.12)' : 'var(--border)',
@@ -586,12 +587,8 @@ export default function StartProjectChat() {
     if (idx < ORDER.length - 1) setStep(ORDER[idx + 1])
   }
 
-  // On each step, bring the newly-active form (or the closing messages) into
-  // view. Defer a frame so the new turn has mounted before we measure.
-  useEffect(() => {
-    const id = requestAnimationFrame(() => scrollActiveIntoView('smooth', 'nearest'))
-    return () => cancelAnimationFrame(id)
-  }, [step, scrollActiveIntoView])
+  // (Per-message follow-scroll lives on each Bubble/FormShell as it mounts, so
+  // the view tracks the conversation as it reveals — no step-level scroll here.)
 
   // When the on-screen keyboard opens/closes the visual viewport resizes; the
   // panel shrinks to fit above it (see StartProjectProvider), so re-center the
