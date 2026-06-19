@@ -345,9 +345,9 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
                 <p className="mb-[var(--space-lg)] text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
                   More Diary
                 </p>
-                <div className="grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-3 md:gap-x-6 lg:gap-x-8">
-                  {morePosts.map((p) => (
-                    <Link key={p._id} href={`/diary/${p.slug.current}`} className="group block">
+                <div className="grid grid-cols-2 gap-x-3 gap-y-8 md:gap-x-6 lg:grid-cols-5 lg:gap-x-6">
+                  {morePosts.map((p, i) => (
+                    <Link key={p._id} href={`/diary/${p.slug.current}`} className={`group block ${i === 4 ? 'hidden lg:block' : ''}`}>
                       <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-[#1a1a1a] md:rounded-2xl">
                         {p.coverImage?.asset ? (
                           <Image

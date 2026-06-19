@@ -300,9 +300,11 @@ function InlineFilter({
     setOpenFilter(null)
   }
 
-  // When both filters are active the collapsed row can wrap onto two lines on
-  // narrow screens; in that case the "|" separator is hidden. The divider stays
-  // in the DOM (just visually hidden) so toggling it can't re-trigger a wrap.
+  // When the two filter groups don't fit one line the row wraps and the "|"
+  // separator is removed entirely (it would otherwise sit orphaned at the end
+  // of the first row). Detection is width-based — would group1 + "|" + group2
+  // fit? — so it's independent of whether the divider is currently rendered and
+  // can't oscillate when the divider is added/removed.
   const group1Ref = useRef<HTMLSpanElement>(null)
   const group2Ref = useRef<HTMLSpanElement>(null)
   const [stacked, setStacked] = useState(false)
@@ -311,8 +313,11 @@ function InlineFilter({
     const check = () => {
       const a = group1Ref.current
       const b = group2Ref.current
-      if (!a || !b) return
-      setStacked(b.offsetTop > a.offsetTop + 2)
+      const container = a?.parentElement
+      if (!a || !b || !container) return
+      // gap-x-5 = 20px between items; divider is ~1px (+ its two gaps).
+      const needed = a.offsetWidth + b.offsetWidth + 1 + 20 * 2
+      setStacked(needed > container.clientWidth + 1)
     }
     check()
     window.addEventListener('resize', check)
@@ -359,7 +364,7 @@ function InlineFilter({
                 </button>
               )}
             </span>
-            <span className={`h-3 w-px bg-text-tertiary ${stacked ? 'invisible' : ''}`} />
+            {!stacked && <span className="h-3 w-px bg-text-tertiary" />}
             <span ref={group2Ref} className="flex items-center gap-3">
               <button
                 onClick={() => setOpenFilter('industry')}
@@ -566,7 +571,7 @@ export default function WorkPageClient({ projects, initialService, initialIndust
       </section>
 
       {/* ── Projects ── */}
-      <section className={`px-[var(--gutter)] pb-[var(--space-3xl)] ${viewMode === 'grid' ? 'pt-[var(--space-xl)]' : 'pt-0'}`}>
+      <section className={`px-[var(--gutter)] pb-[var(--space-3xl)] ${viewMode === 'grid' ? 'pt-[var(--space-md)] md:pt-[var(--space-xl)]' : 'pt-0'}`}>
         <AnimatePresence mode="wait">
           {viewMode === 'grid' ? (
             <motion.div

@@ -85,7 +85,7 @@ export default async function DiaryPostPage({
   const seen = new Set<string>()
   const morePosts = [...(related ?? []), ...(more ?? [])]
     .filter((p) => (seen.has(p._id) ? false : seen.add(p._id)))
-    .slice(0, 3)
+    .slice(0, 5)
 
   return (
     <>

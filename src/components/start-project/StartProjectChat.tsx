@@ -510,7 +510,7 @@ export default function StartProjectChat() {
           <FormShell active={showIdentity && !identitySubmitted}>
             <InlineInput
               label="My name is"
-              placeholder="Paul McCartney"
+              placeholder="Leonard Cohen"
               value={a.name}
               onChange={(v) => setA({ ...a, name: v })}
               onSubmit={() => a.name.trim() && advance()}
@@ -604,7 +604,7 @@ export default function StartProjectChat() {
             <AgencyTurn>
               <Bubble>You came to the right place.</Bubble>
               <Bubble>
-                In a sentence or two — what are you trying to build?
+                In a sentence or two, what are you trying to build?
               </Bubble>
             </AgencyTurn>
 
@@ -743,7 +743,7 @@ export default function StartProjectChat() {
               <FormShell active={isActive('email')}>
                 <InlineInput
                   label="Reach me at"
-                  placeholder="aldo@boldcrest.com"
+                  placeholder="leonardcohen@boldcrest.com"
                   value={a.email}
                   type="email"
                   onChange={(v) => setA({ ...a, email: v })}

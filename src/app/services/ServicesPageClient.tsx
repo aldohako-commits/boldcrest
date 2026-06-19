@@ -251,7 +251,7 @@ function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
                 <div className="flex flex-1 flex-col justify-between overflow-y-auto p-5 md:p-12">
                   <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
                     <h3
-                      className="font-display text-[clamp(2rem,4.2vw,4.5rem)] font-bold leading-[0.95] tracking-[-0.02em]"
+                      className="font-display text-[clamp(1.7rem,3.6vw,3.6rem)] font-bold leading-[0.95] tracking-[-0.02em]"
                       style={{ color: darkShade, whiteSpace: 'pre-line' }}
                     >
                       {cap.heading}

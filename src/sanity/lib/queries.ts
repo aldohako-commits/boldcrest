@@ -191,13 +191,13 @@ export const diaryPostBySlugQuery = defineQuery(
 // Related diary posts — same category first (newest), then a recent-posts
 // fallback to fill remaining slots (combined in the page).
 export const relatedDiaryPostsQuery = defineQuery(
-  `*[_type == "diaryPost" && slug.current != $slug && category == $category] | order(publishedAt desc) [0...3] {
+  `*[_type == "diaryPost" && slug.current != $slug && category == $category] | order(publishedAt desc) [0...5] {
     _id, title, slug, excerpt, category, coverImage, publishedAt
   }`
 )
 
 export const moreDiaryPostsQuery = defineQuery(
-  `*[_type == "diaryPost" && slug.current != $slug] | order(publishedAt desc) [0...6] {
+  `*[_type == "diaryPost" && slug.current != $slug] | order(publishedAt desc) [0...8] {
     _id, title, slug, excerpt, category, coverImage, publishedAt
   }`
 )
