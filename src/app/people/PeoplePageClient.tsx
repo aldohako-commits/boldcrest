@@ -258,7 +258,7 @@ function FacesGallery({ team }: { team: FaceItem[] }) {
         {repeated.map((member, i) => (
           <div
             key={i}
-            className="group relative aspect-[5/7] w-[clamp(170px,46vw,220px)] shrink-0 overflow-hidden rounded-[var(--radius-md)] bg-bg-card md:w-[clamp(150px,16vw,220px)]"
+            className="group relative aspect-[5/7] w-[clamp(116px,32vw,150px)] shrink-0 overflow-hidden rounded-[var(--radius-md)] bg-bg-card md:w-[clamp(150px,16vw,220px)]"
           >
             {member.image?.asset ? (
               <Image

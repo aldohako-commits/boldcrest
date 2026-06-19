@@ -361,7 +361,7 @@ function DiarySection({ posts }: { posts: DiaryPost[] }) {
   const inView = useInView(sectionRef, { once: true, margin: '-100px' })
 
   return (
-    <div ref={sectionRef} className="relative pt-[var(--space-xl)] pb-[var(--space-2xl)]">
+    <div ref={sectionRef} className="relative pt-[var(--space-sm)] pb-[var(--space-2xl)] md:pt-[var(--space-xl)]">
       {/* Diary header — matching Selected Works style */}
       <div className="px-[var(--gutter)]">
         <div className="mb-[var(--space-lg)] flex items-center justify-between">
