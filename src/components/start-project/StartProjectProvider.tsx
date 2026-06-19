@@ -5,8 +5,8 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
-  type CSSProperties,
   type ReactNode,
 } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -48,60 +48,79 @@ export default function StartProjectProvider({ children }: { children: ReactNode
     return () => window.removeEventListener('keydown', onKey)
   }, [isOpen, close])
 
-  // Lock background scroll while the chat is open. Deliberately NOT using the
-  // position:fixed-body technique: on iOS, focusing an input inside a fixed
-  // panel while <body> is also position:fixed makes Safari mis-clip the panel
-  // to a tiny height. Plain overflow:hidden + pausing Lenis (desktop) locks the
-  // page without breaking the keyboard-open layout; the constant dark backdrop
-  // covers anything behind.
+  // Lock the page behind the panel using the position:fixed-body technique
+  // (pin <body> and offset it by the current scroll). On iOS Safari plain
+  // overflow:hidden does NOT stop the page from scrolling when the keyboard
+  // opens — Safari scrolls the document to bring the focused field into view,
+  // which drags the page out from behind the panel and shows it through the
+  // strip above the keyboard. Pinning the body stops that entirely. The panel
+  // is given an explicit pixel height (from visualViewport, below) — never a %
+  // height — so a fixed body can't collapse it to a sliver.
   useEffect(() => {
     if (!isOpen) return
     lenis?.stop()
-    const prevOverflow = document.body.style.overflow
-    const prevOverscroll = document.body.style.overscrollBehavior
-    document.body.style.overflow = 'hidden'
-    document.body.style.overscrollBehavior = 'none'
+    const body = document.body
+    const scrollY = window.scrollY
+    const prev = {
+      position: body.style.position,
+      top: body.style.top,
+      left: body.style.left,
+      right: body.style.right,
+      width: body.style.width,
+      overscrollBehavior: body.style.overscrollBehavior,
+    }
+    body.style.position = 'fixed'
+    body.style.top = `-${scrollY}px`
+    body.style.left = '0'
+    body.style.right = '0'
+    body.style.width = '100%'
+    body.style.overscrollBehavior = 'none'
     return () => {
-      document.body.style.overflow = prevOverflow
-      document.body.style.overscrollBehavior = prevOverscroll
+      body.style.position = prev.position
+      body.style.top = prev.top
+      body.style.left = prev.left
+      body.style.right = prev.right
+      body.style.width = prev.width
+      body.style.overscrollBehavior = prev.overscrollBehavior
+      window.scrollTo(0, scrollY)
       lenis?.start()
     }
   }, [isOpen, lenis])
 
-  // Drive the overlay's vertical box straight from window.visualViewport so it
-  // always covers EXACTLY the visible band above the on-screen keyboard. CSS
-  // viewport units (vh/dvh/lvh) + position:fixed are unreliable on iOS when the
-  // keyboard is up: Safari mis-positions the fixed panel and the page behind
-  // bleeds through the strip just above the keyboard (the bug we kept chasing).
-  // Reading offsetTop + height and applying them as top/height leaves no box
-  // uncovered, so nothing can show through — regardless of how iOS treats fixed
-  // elements. With no keyboard (desktop / iPad) this is simply full-window size.
-  const [box, setBox] = useState<{ top: number; height: number } | null>(null)
+  // Size + position the overlay (backdrop AND panel) to the visual viewport with
+  // DIRECT DOM writes — not React state. State updates land a frame late, and
+  // during the keyboard animation that one-frame lag is exactly when the page
+  // flashes through. Writing top/height straight to the elements keeps the panel
+  // pinned to the visible band above the keyboard every frame. Explicit pixel
+  // height means the fixed panel covers exactly that band with no gap. With no
+  // keyboard (desktop/iPad) this resolves to the full window.
+  const panelRef = useRef<HTMLElement>(null)
+  const backdropRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    if (!isOpen) {
-      setBox(null)
-      return
-    }
+    if (!isOpen) return
     const vv = window.visualViewport
-    const update = () => {
-      if (vv) setBox({ top: vv.offsetTop, height: vv.height })
-      else setBox({ top: 0, height: window.innerHeight })
+    const apply = () => {
+      const top = vv ? vv.offsetTop : 0
+      const height = vv ? vv.height : window.innerHeight
+      for (const el of [panelRef.current, backdropRef.current] as HTMLElement[]) {
+        if (!el) continue
+        el.style.top = `${top}px`
+        el.style.height = `${height}px`
+      }
     }
-    update()
-    vv?.addEventListener('resize', update)
-    vv?.addEventListener('scroll', update)
-    window.addEventListener('resize', update)
+    apply()
+    // Re-apply next frame too, in case the panel is still mounting/animating in.
+    const raf = requestAnimationFrame(apply)
+    vv?.addEventListener('resize', apply)
+    vv?.addEventListener('scroll', apply)
+    window.addEventListener('resize', apply)
     return () => {
-      vv?.removeEventListener('resize', update)
-      vv?.removeEventListener('scroll', update)
-      window.removeEventListener('resize', update)
+      cancelAnimationFrame(raf)
+      vv?.removeEventListener('resize', apply)
+      vv?.removeEventListener('scroll', apply)
+      window.removeEventListener('resize', apply)
     }
   }, [isOpen])
-
-  // Before the first measurement (and as a no-JS fallback) fall back to dvh.
-  const boxStyle: CSSProperties = box
-    ? { top: box.top, height: box.height }
-    : { top: 0, height: '100dvh' }
 
   return (
     <StartProjectContext.Provider value={{ isOpen, open, close }}>
@@ -115,8 +134,9 @@ export default function StartProjectProvider({ children }: { children: ReactNode
                 toggling on focus/keyboard, so the page behind never flashes back
                 into view. No box around the chat. */}
             <motion.div
-              className="fixed left-0 z-[1900] w-full bg-black/90 backdrop-blur-xl"
-              style={boxStyle}
+              ref={backdropRef}
+              className="fixed left-0 top-0 z-[1900] w-full bg-black/90 backdrop-blur-xl"
+              style={{ height: '100dvh' }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -124,15 +144,16 @@ export default function StartProjectProvider({ children }: { children: ReactNode
               onClick={close}
             />
 
-            {/* Side panel — top/height come from boxStyle (the visual viewport),
-                so the panel covers exactly the visible area above the keyboard
-                with no gap for the page to bleed through. */}
+            {/* Side panel — top/height are written from the visual viewport (see
+                effect above) so the panel covers exactly the visible band above
+                the keyboard, with no gap for the page to bleed through. */}
             <motion.aside
+              ref={panelRef}
               role="dialog"
               aria-modal="true"
               aria-label="Start a new project"
-              className="fixed right-0 z-[2000] flex w-full max-w-[480px] flex-col overflow-hidden bg-bg"
-              style={{ ...boxStyle, borderLeft: '1px solid var(--border)', boxShadow: '-24px 0 60px rgba(0,0,0,0.45)' }}
+              className="fixed right-0 top-0 z-[2000] flex w-full max-w-[480px] flex-col overflow-hidden bg-bg"
+              style={{ height: '100dvh', borderLeft: '1px solid var(--border)', boxShadow: '-24px 0 60px rgba(0,0,0,0.45)' }}
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}

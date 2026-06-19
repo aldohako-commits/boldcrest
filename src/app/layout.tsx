@@ -28,17 +28,9 @@ const metropolis = localFont({
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.boldcrest.com'
 
-// interactive-widget=resizes-content: when the on-screen keyboard opens, iOS
-// (16.4+) / Android shrink the LAYOUT viewport to the visible area instead of
-// only the visual viewport. Without this, a position:fixed overlay stays
-// full-screen-tall while iOS scroll-anchors the focused input, detaching the
-// panel and leaving a gap above the keyboard where the page behind bleeds
-// through. With resizes-content the panel's 100dvh + the backdrop's inset-0
-// resolve to exactly the area above the keyboard, so it sits flush with no gap.
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  interactiveWidget: 'resizes-content',
   themeColor: '#0a0a0a',
 }
 
@@ -81,11 +73,14 @@ export const metadata: Metadata = {
   // a transparent-cornered black circle so it reads as a clean badge in the tab.
   // apple-touch (iOS), web manifest (Android/PWA) and the Safari pinned-tab mask
   // round out the other platforms.
+  // The ?v=2 query busts Safari's notoriously sticky favicon cache: changing the
+  // icon URL makes browsers fetch the new circular icon instead of reusing the
+  // stale square one they cached from earlier. Bump this if the icon changes.
   icons: {
-    icon: { url: '/favicon.ico', sizes: '16x16 32x32 48x48' },
-    shortcut: '/favicon.ico',
-    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
-    other: [{ rel: 'mask-icon', url: '/safari-pinned-tab.svg', color: '#0a0a0a' }],
+    icon: { url: '/favicon.ico?v=2', sizes: '16x16 32x32 48x48' },
+    shortcut: '/favicon.ico?v=2',
+    apple: [{ url: '/apple-touch-icon.png?v=2', sizes: '180x180', type: 'image/png' }],
+    other: [{ rel: 'mask-icon', url: '/safari-pinned-tab.svg?v=2', color: '#0a0a0a' }],
   },
   manifest: '/site.webmanifest',
   other: {
