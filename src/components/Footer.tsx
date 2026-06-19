@@ -133,7 +133,7 @@ export default function Footer({ forceShow = false }: { forceShow?: boolean }) {
 
         {/* Bottom section — motto + copyright */}
         <div className="border-t border-black/10 px-[var(--gutter)]">
-          <div className="flex items-end justify-between py-10 md:py-14">
+          <div className="flex flex-col items-start gap-5 py-10 md:flex-row md:items-end md:justify-between md:gap-0 md:py-14">
             {/* Motto SVG — left aligned */}
             <div className="w-[clamp(200px,35vw,400px)]">
               <svg viewBox="0 0 493.02 210.71" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="w-full">

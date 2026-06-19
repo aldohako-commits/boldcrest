@@ -300,51 +300,9 @@ function InlineFilter({
     setOpenFilter(null)
   }
 
-  // Drag-to-scroll for the filter row. Touch uses the browser's native
-  // horizontal scroll (overflow-x-auto); mouse drag is handled here. A real
-  // drag (moved > 4px) scrolls and swallows the trailing click so it doesn't
-  // also select a filter — a plain click still navigates normally.
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const drag = useRef({ down: false, moved: false, startX: 0, startScroll: 0 })
-
-  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.pointerType === 'touch') return
-    const el = scrollRef.current
-    if (!el) return
-    drag.current = { down: true, moved: false, startX: e.clientX, startScroll: el.scrollLeft }
-  }
-  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!drag.current.down) return
-    const el = scrollRef.current
-    if (!el) return
-    const dx = e.clientX - drag.current.startX
-    if (!drag.current.moved && Math.abs(dx) > 4) {
-      drag.current.moved = true
-      el.setPointerCapture?.(e.pointerId)
-    }
-    if (drag.current.moved) el.scrollLeft = drag.current.startScroll - dx
-  }
-  const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (drag.current.moved) scrollRef.current?.releasePointerCapture?.(e.pointerId)
-    drag.current.down = false
-  }
-  const onClickCapture = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (drag.current.moved) {
-      e.preventDefault()
-      e.stopPropagation()
-      drag.current.moved = false
-    }
-  }
-
   return (
     <motion.div
-      ref={scrollRef}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={endDrag}
-      onPointerCancel={endDrag}
-      onClickCapture={onClickCapture}
-      className="flex select-none items-center gap-5 overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:cursor-grab md:active:cursor-grabbing"
+      className="flex min-w-0 flex-1 select-none items-start gap-5 md:pr-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
@@ -406,17 +364,19 @@ function InlineFilter({
           /* ── Expanded: label + items + X ── */
           <motion.div
             key={`expanded-${openFilter}`}
-            className="flex items-center gap-4"
+            className="flex w-full items-start gap-3 sm:gap-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <span className="text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-white whitespace-nowrap">
+            <span className="shrink-0 pt-[0.15rem] text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-white whitespace-nowrap">
               {openFilter === 'services' ? 'Services' : 'Industry'}
             </span>
-            <span className="h-3 w-px bg-border" />
-            <div className="flex items-center gap-3">
+            <span className="mt-[0.3rem] hidden h-3 w-px shrink-0 bg-border sm:block" />
+            {/* Items wrap into multiple rows as needed; the section below is
+                pushed down naturally instead of the row scrolling/overflowing. */}
+            <div className="flex flex-1 flex-wrap items-center gap-x-3 gap-y-2">
               {items.map((item, i) => (
                 <motion.button
                   key={item}
@@ -436,26 +396,28 @@ function InlineFilter({
                   {item}
                 </motion.button>
               ))}
-              <motion.button
-                onClick={() => setOpenFilter(null)}
-                aria-label="Clear filter"
-                className="ml-1 inline-flex flex-shrink-0 items-center justify-center transition-colors duration-200 focus:outline-none"
-                style={{ color: '#a3a3a3' }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = '#ffffff' }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = '#a3a3a3' }}
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{
-                  duration: 0.3,
-                  delay: items.length * 0.04,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-              >
-                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                  <path d="M1.5 1.5l9 9M10.5 1.5l-9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              </motion.button>
             </div>
+            {/* Close X — pinned top-right, aligned with the Services/Industry
+                label and the right edge, kept clear of the view-style toggle. */}
+            <motion.button
+              onClick={() => setOpenFilter(null)}
+              aria-label="Clear filter"
+              className="ml-auto mt-[0.15rem] inline-flex shrink-0 items-center justify-center transition-colors duration-200 focus:outline-none"
+              style={{ color: '#a3a3a3' }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#ffffff' }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = '#a3a3a3' }}
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{
+                duration: 0.3,
+                delay: items.length * 0.04,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+            >
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                <path d="M1.5 1.5l9 9M10.5 1.5l-9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </motion.button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -537,7 +499,7 @@ export default function WorkPageClient({ projects, initialService, initialIndust
           {/* Divider — directly below hero, above filters */}
           <div className="h-px w-full bg-border" />
 
-          <div className="mt-6 flex items-center justify-between">
+          <div className="mt-6 flex items-start justify-between gap-4">
             <InlineFilter
               openFilter={openFilter}
               setOpenFilter={setOpenFilter}

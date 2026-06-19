@@ -39,7 +39,20 @@ export default function ProjectMarquee({
   const scrollerRef = useRef<HTMLDivElement>(null)
   const drag = useRef({ active: false, startX: 0, startScroll: 0, moved: false, captured: false })
   const frac = useRef(0)
-  const SPEED = 125 // px per second (a touch faster than the old 60s marquee)
+  // Auto-scroll speed scales with viewport width so the perceived speed
+  // (how fast a card sweeps across the screen) stays consistent — a fixed
+  // px/sec feels far too fast on a narrow phone. Clamped so it never crawls.
+  const speedRef = useRef(125)
+
+  useEffect(() => {
+    const calcSpeed = () => {
+      const vw = window.innerWidth
+      speedRef.current = Math.max(55, Math.min(125, (125 * vw) / 1440))
+    }
+    calcSpeed()
+    window.addEventListener('resize', calcSpeed)
+    return () => window.removeEventListener('resize', calcSpeed)
+  }, [])
 
   useEffect(() => {
     const el = scrollerRef.current
@@ -59,7 +72,7 @@ export default function ProjectMarquee({
       if (!drag.current.active) {
         // Add only whole-pixel steps — Safari/Firefox round scrollLeft to
         // integers, dropping sub-pixel increments (strip would never move).
-        frac.current += SPEED * dt
+        frac.current += speedRef.current * dt
         const stepPx = Math.floor(frac.current)
         if (stepPx > 0) {
           frac.current -= stepPx

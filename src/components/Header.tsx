@@ -17,6 +17,7 @@ const navLinks = [
 export default function Header() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [vw, setVw] = useState(0)
   const pathname = usePathname()
   const isStudio = pathname?.startsWith('/studio')
   const { open: openStartProject } = useStartProject()
@@ -39,7 +40,22 @@ export default function Header() {
     setMobileOpen(false)
   }, [pathname])
 
+  // Track viewport width so the CTA can collapse to its compact "+" form
+  // before it crowds the nav, and so the scrolled pill stays full-width on
+  // mobile (matching the open menu panel).
+  useEffect(() => {
+    const onResize = () => setVw(window.innerWidth)
+    onResize()
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
   if (isStudio) return null
+
+  // Below md the hamburger/menu takes over. Between md and lg the full CTA
+  // crowds the nav, so use the compact "+" there (and whenever scrolled).
+  const isMobile = vw > 0 && vw < 768
+  const ctaCompact = scrolled || (vw >= 768 && vw < 1024)
 
   return (
     <>
@@ -48,7 +64,7 @@ export default function Header() {
         <div
           className="relative flex items-center pointer-events-auto"
           style={{
-            width: scrolled ? 'min(56rem, 85%)' : '100%',
+            width: scrolled && !isMobile ? 'min(56rem, 85%)' : '100%',
             height: '3.5rem',
             transition: 'width 650ms cubic-bezier(0.23, 1, 0.32, 1)',
           }}
@@ -123,14 +139,14 @@ export default function Header() {
               onClick={openStartProject}
               className="group relative z-10 hidden cursor-pointer items-center justify-center overflow-hidden transition-all md:inline-flex"
               style={{
-                width: scrolled ? '2.2rem' : 'auto',
-                height: scrolled ? '2.2rem' : 'auto',
-                padding: scrolled ? '0' : '0.6rem 1.4rem',
+                width: ctaCompact ? '2.2rem' : 'auto',
+                height: ctaCompact ? '2.2rem' : 'auto',
+                padding: ctaCompact ? '0' : '0.6rem 1.4rem',
                 borderRadius: 'var(--radius-pill)',
                 borderWidth: '1px',
                 borderStyle: 'solid',
-                borderColor: scrolled ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.45)',
-                backgroundColor: scrolled ? 'rgba(255,255,255,0.08)' : '#000',
+                borderColor: ctaCompact ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.45)',
+                backgroundColor: ctaCompact ? 'rgba(255,255,255,0.08)' : '#000',
                 transitionDuration: '500ms',
                 transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
               }}
@@ -138,8 +154,8 @@ export default function Header() {
               <span
                 className="absolute inset-0 flex items-center justify-center text-white/80 transition-all group-hover:text-white"
                 style={{
-                  opacity: scrolled ? 1 : 0,
-                  transform: scrolled ? 'scale(1)' : 'scale(0.5)',
+                  opacity: ctaCompact ? 1 : 0,
+                  transform: ctaCompact ? 'scale(1)' : 'scale(0.5)',
                   transitionDuration: '400ms',
                   transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
                 }}
@@ -152,8 +168,8 @@ export default function Header() {
               <span
                 className="relative z-10 inline-flex overflow-hidden text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-text-secondary transition-all group-hover:text-white"
                 style={{
-                  height: scrolled ? 0 : '1.2em',
-                  opacity: scrolled ? 0 : 1,
+                  height: ctaCompact ? 0 : '1.2em',
+                  opacity: ctaCompact ? 0 : 1,
                   transitionDuration: '400ms',
                   transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
                 }}
@@ -177,7 +193,7 @@ export default function Header() {
               <span
                 className="h-[2px] w-7 rounded-[2px] bg-white transition-all duration-[0.4s]"
                 style={{
-                  transform: mobileOpen ? 'rotate(45deg) translateY(3.5px)' : 'none',
+                  transform: mobileOpen ? 'translateY(3.5px) rotate(45deg)' : 'none',
                   transitionTimingFunction: 'var(--ease-out-expo)',
                 }}
               />
@@ -186,7 +202,7 @@ export default function Header() {
                 style={{
                   width: mobileOpen ? '28px' : '60%',
                   marginLeft: mobileOpen ? '0' : 'auto',
-                  transform: mobileOpen ? 'rotate(-45deg) translateY(-3.5px)' : 'none',
+                  transform: mobileOpen ? 'translateY(-3.5px) rotate(-45deg)' : 'none',
                   transitionTimingFunction: 'var(--ease-out-expo)',
                 }}
               />

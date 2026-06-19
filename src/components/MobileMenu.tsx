@@ -67,8 +67,8 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
                 </svg>
               </Link>
               <button onClick={onClose} aria-label="Close menu" className="flex flex-col gap-[5px]">
-                <span className="h-[2px] w-7 rounded-[2px] bg-white transition-transform duration-300" style={{ transform: 'rotate(45deg) translateY(3.5px)' }} />
-                <span className="h-[2px] w-7 rounded-[2px] bg-white transition-transform duration-300" style={{ transform: 'rotate(-45deg) translateY(-3.5px)' }} />
+                <span className="h-[2px] w-7 rounded-[2px] bg-white transition-transform duration-300" style={{ transform: 'translateY(3.5px) rotate(45deg)' }} />
+                <span className="h-[2px] w-7 rounded-[2px] bg-white transition-transform duration-300" style={{ transform: 'translateY(-3.5px) rotate(-45deg)' }} />
               </button>
             </div>
 
@@ -104,9 +104,14 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
                 <button
                   type="button"
                   onClick={() => { onClose(); openStartProject() }}
-                  className="block py-0.5 text-left font-display text-[2rem] font-normal leading-[1.2] text-white transition-colors duration-200 hover:text-accent"
+                  className="flex w-full items-center justify-between gap-3 py-0.5 text-left font-display text-[2rem] font-semibold leading-[1.2] text-white transition-colors duration-200 hover:text-accent"
                 >
                   Start a Project
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/35">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                    </svg>
+                  </span>
                 </button>
               </motion.li>
             </ul>

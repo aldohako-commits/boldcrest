@@ -106,11 +106,11 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
         <div className="h-px" style={{ backgroundColor: 'var(--zone-fg-subtle)' }} />
       </div>
 
-      {/* Row 1 — scrolls left. Faster duration on small screens so new logos
-          appear sooner; both rows kept tight to read as a pair. */}
+      {/* Row 1 — scrolls left. Slower on small screens (higher duration) so the
+          logos don't whip past on a narrow viewport; both rows read as a pair. */}
       <div className="relative">
         <div
-          className="flex w-max items-center will-change-transform [--mq:20s] md:[--mq:34s]"
+          className="flex w-max items-center will-change-transform [--mq:32s] md:[--mq:34s]"
           style={{ animation: 'marquee var(--mq) linear infinite' }}
         >
           {row1Items.map(renderPartner)}
@@ -120,7 +120,7 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
       {/* Row 2 — scrolls right (reverse) */}
       <div className="relative">
         <div
-          className="flex w-max items-center will-change-transform [--mq:24s] md:[--mq:40s]"
+          className="flex w-max items-center will-change-transform [--mq:38s] md:[--mq:40s]"
           style={{ animation: 'marquee-reverse var(--mq) linear infinite' }}
         >
           {row2Items.map(renderPartner)}
