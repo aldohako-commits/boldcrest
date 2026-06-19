@@ -71,7 +71,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
         className="group block"
       >
         {/* Card container — fixed aspect, overflow hidden */}
-        <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-bg-card">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-bg-card md:rounded-2xl">
           {/* Image — translates UP on hover (desktop only) */}
           {project.thumbnailType === 'video' && project.thumbnailVideo ? (
             <iframe
@@ -142,14 +142,14 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
           </h3>
           <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
             {project.industry && (
-              <span className="rounded-[var(--radius-pill)] bg-white/10 px-3 py-1 text-[0.6rem] font-medium uppercase tracking-[0.1em] text-text-secondary">
+              <span className="rounded-[var(--radius-pill)] bg-white/10 px-2 py-0.5 text-[0.55rem] font-medium uppercase tracking-[0.06em] text-text-secondary">
                 {project.industry}
               </span>
             )}
             {project.services?.map((service) => (
               <span
                 key={service}
-                className="rounded-[var(--radius-pill)] border border-border px-3 py-1 text-[0.6rem] font-medium uppercase tracking-[0.1em] text-text-tertiary"
+                className="rounded-[var(--radius-pill)] border border-border px-2 py-0.5 text-[0.55rem] font-medium uppercase tracking-[0.06em] text-text-tertiary"
               >
                 {service}
               </span>

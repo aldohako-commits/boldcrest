@@ -294,7 +294,7 @@ function DiaryCardImage({ post, index }: { post: DiaryPost; index: number }) {
   return (
     <Link href={`/diary/${post.slug.current}`} className="group block">
       {/* Image container */}
-      <div className="relative aspect-square overflow-hidden rounded-2xl bg-[#1a1a1a]">
+      <div className="relative aspect-square overflow-hidden rounded-xl bg-[#1a1a1a] md:rounded-2xl">
         {hasImage ? (
           <Image
             src={urlFor(post.coverImage!).width(800).height(800).url()}

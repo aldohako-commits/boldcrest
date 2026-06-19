@@ -41,7 +41,7 @@ function DiaryCard({ post }: { post: DiaryPost }) {
   return (
     <Link href={`/diary/${post.slug?.current}`} className="group block">
       {/* Image container — 4:3 to match the /work grid */}
-      <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#1a1a1a]">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-[#1a1a1a] md:rounded-2xl">
         {post.coverImage?.asset ? (
           <Image
             loader={sanityImageLoader}

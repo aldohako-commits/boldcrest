@@ -150,7 +150,7 @@ function PhotoMarquee() {
       onPointerCancel={endDrag}
       onPointerLeave={endDrag}
       onDragStart={(e) => e.preventDefault()}
-      className="flex h-[50dvh] w-full shrink-0 cursor-grab touch-pan-y select-none overflow-x-auto [scrollbar-width:none] [@media(max-height:820px)]:h-[42dvh] active:cursor-grabbing [&::-webkit-scrollbar]:hidden"
+      className="flex h-[44dvh] w-full shrink-0 cursor-grab touch-pan-x select-none overflow-x-auto [scrollbar-width:none] [@media(max-height:820px)]:h-[38dvh] active:cursor-grabbing [&::-webkit-scrollbar]:hidden"
     >
       <div className="flex h-full w-max">
         {repeated.map((n, i) => (
@@ -251,13 +251,14 @@ function FacesGallery({ team }: { team: FaceItem[] }) {
       onPointerCancel={endDrag}
       onPointerLeave={endDrag}
       onDragStart={(e) => e.preventDefault()}
-      className="w-full cursor-grab touch-pan-y select-none overflow-x-auto [scrollbar-width:none] active:cursor-grabbing [&::-webkit-scrollbar]:hidden"
+      className="w-full cursor-grab touch-pan-x select-none overflow-x-auto [scrollbar-width:none] active:cursor-grabbing [&::-webkit-scrollbar]:hidden"
     >
-      <div className="grid w-max grid-flow-col grid-rows-2 gap-[0.625rem] md:gap-3">
+      {/* Single row on mobile (larger images, no nested vertical scroll); two rows on desktop */}
+      <div className="grid w-max grid-flow-col grid-rows-1 gap-[0.625rem] md:grid-rows-2 md:gap-3">
         {repeated.map((member, i) => (
           <div
             key={i}
-            className="group relative aspect-[5/7] w-[clamp(150px,16vw,220px)] shrink-0 overflow-hidden rounded-[var(--radius-md)] bg-bg-card"
+            className="group relative aspect-[5/7] w-[clamp(170px,46vw,220px)] shrink-0 overflow-hidden rounded-[var(--radius-md)] bg-bg-card md:w-[clamp(150px,16vw,220px)]"
           >
             {member.image?.asset ? (
               <Image
@@ -618,7 +619,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  <p className="text-[1.05rem] leading-[1.8] text-text-secondary">
+                  <p className="text-[0.95rem] leading-[1.7] text-text-secondary">
                     The ground shook twice. The world shut down. And somewhere in the middle of all of that, two 22-year-olds decided it was a good time to build an agency.
                   </p>
                 </motion.div>
@@ -730,7 +731,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
         ═══════════════════════════════════════════ */}
         <section className="grid grid-cols-1 [align-content:safe_center] h-[100svh] overflow-x-hidden overflow-y-auto px-[var(--gutter)] pt-[80px] md:flex md:h-[100dvh] md:items-center md:overflow-hidden">
           <div className="mx-auto w-full max-w-[var(--max-width)]">
-            <div className="grid items-center gap-[var(--space-2xl)] md:grid-cols-2">
+            <div className="grid items-center gap-[var(--space-lg)] md:grid-cols-2 md:gap-[var(--space-2xl)]">
               {/* Left — culture copy */}
               <div className="min-w-0">
                 <FadeUp active={active(3)}>

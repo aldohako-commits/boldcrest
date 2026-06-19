@@ -6,7 +6,7 @@ import { InlineButton } from '@/components/MagneticButton'
 
 export default function WeDoSection() {
   return (
-    <section className="flex items-center justify-center px-[var(--gutter)] py-[var(--space-xl)]">
+    <section className="flex items-center justify-center px-[var(--gutter)] py-[var(--space-lg)] md:py-[var(--space-xl)]">
       <ScrollReveal>
         {/* Desktop — inline button */}
         <p className="hidden text-center font-display text-[clamp(2.8rem,8vw,8rem)] font-bold leading-[1.05] tracking-[-0.03em] md:block" style={{ color: 'var(--zone-fg)' }}>
