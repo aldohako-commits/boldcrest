@@ -84,22 +84,23 @@ const EMPTY: Answers = {
 const turnTransition = { duration: 0.3, ease: [0.16, 1, 0.3, 1] as const }
 const ITEM_TRANSITION = {
   type: 'spring' as const,
-  stiffness: 240,
-  damping: 26,
-  mass: 1,
-  opacity: { duration: 0.45 },
+  stiffness: 190,
+  damping: 24,
+  mass: 1.1,
+  opacity: { duration: 0.55 },
 }
 // The avatar slides — not snaps — to the bottom of its group as messages arrive.
-const AVATAR_TRANSITION = { type: 'spring' as const, stiffness: 340, damping: 30, mass: 1 }
+const AVATAR_TRANSITION = { type: 'spring' as const, stiffness: 280, damping: 28, mass: 1.1 }
 
-// Conversation pacing — deliberately unhurried so it reads like someone typing
-// on the other end rather than a form revealing itself. Same values drive both
-// desktop and mobile (one shared component). REVEAL_INTERVAL is the gap between
-// consecutive messages within a turn; AGENCY_START / USER_START delay the start
-// of each side's turn so the exchange lands as a back-and-forth.
-const REVEAL_INTERVAL = 1100
-const AGENCY_START = 500
-const USER_START = 1900
+// Conversation pacing — deliberately unhurried so it reads like a real
+// back-and-forth: each line lands, settles, and gives you time to read it
+// before the next arrives. Same values drive every platform (one shared
+// component — desktop, iPad and mobile animate identically). REVEAL_INTERVAL is
+// the gap between consecutive messages within a turn; AGENCY_START / USER_START
+// delay each side's turn so the conversation breathes between speakers.
+const REVEAL_INTERVAL = 1500
+const AGENCY_START = 600
+const USER_START = 2500
 
 // Reveals a turn's children one-by-one on a timeline so the chat grows like a
 // real conversation: messages arrive in sequence, the container expands, and
@@ -163,7 +164,11 @@ function scrollIntoSafeView(el: HTMLElement, behavior: ScrollBehavior = 'smooth'
 
 /** Only scroll if the element isn't fully visible — keeps step changes from
     yanking the layout when everything already fits at full panel height. */
-function ensureVisibleInScroller(el: HTMLElement, behavior: ScrollBehavior = 'smooth') {
+function ensureVisibleInScroller(
+  el: HTMLElement,
+  behavior: ScrollBehavior = 'smooth',
+  pad = 16,
+) {
   const scroller = getScroller(el)
   if (!scroller) {
     el.scrollIntoView({ behavior, block: 'nearest' })
@@ -171,12 +176,29 @@ function ensureVisibleInScroller(el: HTMLElement, behavior: ScrollBehavior = 'sm
   }
   const sRect = scroller.getBoundingClientRect()
   const tRect = el.getBoundingClientRect()
-  const pad = 16
   if (tRect.bottom > sRect.bottom - pad) {
     scroller.scrollTo({ top: scroller.scrollTop + (tRect.bottom - sRect.bottom) + pad, behavior })
   } else if (tRect.top < sRect.top + pad) {
     scroller.scrollTo({ top: scroller.scrollTop - (sRect.top - tRect.top) - pad, behavior })
   }
+}
+
+/* Follow the conversation down to a turn's AVATAR (the profile pic at the
+   bottom of the group) — not the messages — plus a little padding, so the
+   newest line always sits just above the pic. Runs as each message reveals
+   (count changes). Skipped while a field is focused, since keyboard scrolling
+   owns the view then. Works on every platform (desktop/iPad/mobile). */
+function useFollowAvatar(ref: { current: HTMLDivElement | null }, count: number) {
+  useEffect(() => {
+    if (count === 0 || !ref.current) return
+    const ae = document.activeElement
+    if (ae instanceof HTMLInputElement || ae instanceof HTMLTextAreaElement) return
+    const el = ref.current
+    // Defer a frame so the avatar's layout-spring has its up-to-date position
+    // before we measure and scroll.
+    const id = requestAnimationFrame(() => ensureVisibleInScroller(el, 'smooth', 28))
+    return () => cancelAnimationFrame(id)
+  }, [ref, count])
 }
 
 /* Megi's avatar — profile photo from /public, falls back to the red "M"
@@ -217,6 +239,8 @@ function AgencyTurn({
 }) {
   const items = Children.toArray(children)
   const count = useRevealCount(items.length, startDelay, REVEAL_INTERVAL)
+  const avatarRef = useRef<HTMLDivElement>(null)
+  useFollowAvatar(avatarRef, count)
   // Render nothing until the first message is due so the turn takes no space
   // (and no surrounding gap) and the chat grows naturally from the top down.
   if (count === 0) return null
@@ -234,7 +258,7 @@ function AgencyTurn({
         {/* Messages mount one at a time; the avatar below is pushed down as
             each new one appears, like a real chat message group. */}
         <div className="flex flex-col items-start gap-2">{items.slice(0, count)}</div>
-        <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={AVATAR_TRANSITION}>
+        <motion.div ref={avatarRef} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={AVATAR_TRANSITION}>
           <MegiAvatar />
         </motion.div>
       </div>
@@ -255,6 +279,8 @@ function UserTurn({
 }) {
   const items = Children.toArray(children)
   const count = useRevealCount(items.length, startDelay, REVEAL_INTERVAL)
+  const avatarRef = useRef<HTMLDivElement>(null)
+  useFollowAvatar(avatarRef, count)
   // The user's turn starts only after the account-manager messages above have
   // landed, so the exchange reads as a back-and-forth. Hidden until then.
   if (count === 0) return null
@@ -268,6 +294,7 @@ function UserTurn({
         </header>
         <div className="flex w-full flex-col items-end gap-2">{items.slice(0, count)}</div>
         <motion.div
+          ref={avatarRef}
           layout
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -289,20 +316,9 @@ function Bubble({
   side?: 'left' | 'right'
   children: React.ReactNode
 }) {
-  const ref = useRef<HTMLParagraphElement>(null)
-  // Follow the conversation as it reveals: each message — Megi's AND the user's
-  // — pulls the view down when it lands, so the latest line is always visible.
-  // Skip while a field is focused so we never yank away from what's being typed
-  // (keyboard scrolling owns the view then).
-  useEffect(() => {
-    const ae = document.activeElement
-    const typing = ae instanceof HTMLInputElement || ae instanceof HTMLTextAreaElement
-    if (!typing && ref.current) ensureVisibleInScroller(ref.current)
-  }, [])
   return (
     <motion.p
-      ref={ref}
-      initial={{ opacity: 0, y: 14 }}
+      initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       transition={ITEM_TRANSITION}
       className={`rounded-2xl px-5 py-3 text-[0.95rem] leading-[1.5] ${
