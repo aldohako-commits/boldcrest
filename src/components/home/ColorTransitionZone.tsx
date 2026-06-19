@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect, useCallback } from 'react'
+import { useRef, useEffect, useCallback, useState } from 'react'
 import { useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 
 /** Parse any CSS color string (hex, rgb, rgba) to [r,g,b] */
@@ -36,18 +36,27 @@ export default function ColorTransitionZone({ children }: { children: React.Reac
 
   // Transitions keep their START points but are STEEPER so they don't visually
   // drag across a long scroll distance (which left portfolio/diary text sitting
-  // on a mid-grey background and hard to read). dark→light completes by 0.035
-  // (still starts at 0); light→dark starts at 0.92 and completes by 0.96, then
-  // holds dark out the top.
+  // on a mid-grey background and hard to read). Mobile completes even faster so
+  // the static portfolio background gives way to the transition sooner.
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)')
+    const update = () => setIsMobile(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+  const stops = isMobile ? [0, 0.02, 0.95, 0.98] : [0, 0.035, 0.92, 0.96]
+
   const bgColor = useTransform(
     scrollYProgress,
-    [0, 0.035, 0.92, 0.96],
+    stops,
     ['#0a0a0a', '#EDEDED', '#EDEDED', '#0a0a0a']
   )
 
   const fgColor = useTransform(
     scrollYProgress,
-    [0, 0.035, 0.92, 0.96],
+    stops,
     ['#EDEDED', '#0a0a0a', '#0a0a0a', '#EDEDED']
   )
 

@@ -117,20 +117,27 @@ function ProjectCard({
           <h3 className="mt-1 font-display text-[1rem] font-semibold uppercase text-text-primary">
             {withSmallMarks(project.tagline || project.name)}
           </h3>
-          <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+          {/* Industry (client category) on its own row, services on the next */}
+          <div className="mt-2.5 flex flex-col gap-1.5">
             {project.industry && (
-              <span className="rounded-[var(--radius-pill)] bg-white/10 px-2 py-0.5 text-[0.55rem] font-medium uppercase tracking-[0.06em] text-text-secondary">
-                {project.industry}
-              </span>
+              <div className="flex flex-wrap gap-1.5">
+                <span className="rounded-[var(--radius-pill)] bg-white/10 px-2 py-0.5 text-[0.55rem] font-medium uppercase tracking-[0.06em] text-text-secondary">
+                  {project.industry}
+                </span>
+              </div>
             )}
-            {project.services?.map((service) => (
-              <span
-                key={service}
-                className="rounded-[var(--radius-pill)] border border-border px-2 py-0.5 text-[0.55rem] font-medium uppercase tracking-[0.06em] text-text-tertiary"
-              >
-                {service}
-              </span>
-            ))}
+            {project.services && project.services.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {project.services.map((service) => (
+                  <span
+                    key={service}
+                    className="rounded-[var(--radius-pill)] border border-border px-2 py-0.5 text-[0.55rem] font-medium uppercase tracking-[0.06em] text-text-tertiary"
+                  >
+                    {service}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </Link>

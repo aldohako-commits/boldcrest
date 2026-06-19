@@ -110,10 +110,11 @@ export default function ServiceCards() {
 
   return (
     <section ref={containerRef} className="relative h-[200vh]">
-      <div className="sticky top-0 h-screen overflow-hidden">
+      <div className="sticky top-0 h-[100svh] overflow-hidden">
         {/* Label — top padding clears the fixed menu pill at every breakpoint
-            (the section pins under the menu while it scrolls). */}
-        <div className="flex items-center px-[var(--gutter)] pt-[5rem] pb-6">
+            (the section pins under the menu while it scrolls); the gap from the
+            menu to the heading matches the gap below it (pb-6). */}
+        <div className="flex items-center px-[var(--gutter)] pt-[6rem] pb-6">
           <p className="text-[0.75rem] font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--zone-fg-half)' }}>
             What We Do
           </p>
@@ -125,7 +126,7 @@ export default function ServiceCards() {
         {/* Horizontal panels */}
         <motion.div
           ref={trackRef}
-          className="flex h-[calc(100vh-130px)] will-change-transform [transform:translateZ(0)]"
+          className="flex h-[calc(100svh-150px)] will-change-transform [transform:translateZ(0)]"
           style={{ x }}
         >
           {capabilities.map((cap, i) => (
