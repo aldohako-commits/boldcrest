@@ -49,41 +49,24 @@ export default function StartProjectProvider({ children }: { children: ReactNode
     return () => window.removeEventListener('keydown', onKey)
   }, [isOpen, close])
 
-  // Lock the page behind the panel using the position:fixed-body technique
-  // (pin <body> and offset it by the current scroll). On iOS Safari plain
-  // overflow:hidden does NOT stop the page from scrolling when the keyboard
-  // opens — Safari scrolls the document to bring the focused field into view,
-  // which drags the page out from behind the panel and shows it through the
-  // strip above the keyboard. Pinning the body stops that entirely. The panel
-  // is given an explicit pixel height (from visualViewport, below) — never a %
-  // height — so a fixed body can't collapse it to a sliver.
+  // Lock background scroll with plain overflow:hidden — deliberately NOT the
+  // position:fixed-body technique. Pinning <body> with position:fixed suppresses
+  // iOS Safari's visualViewport keyboard resize (visualViewport.height stops
+  // shrinking when the keyboard opens), which blinds all of our keyboard-aware
+  // sizing/scrolling. We don't need the fixed-body trick anyway: the page
+  // content is hidden while the chat is open (below), so there's nothing behind
+  // the panel to bleed through even if the document shifts.
   useEffect(() => {
     if (!isOpen) return
     lenis?.stop()
     const body = document.body
-    const scrollY = window.scrollY
-    const prev = {
-      position: body.style.position,
-      top: body.style.top,
-      left: body.style.left,
-      right: body.style.right,
-      width: body.style.width,
-      overscrollBehavior: body.style.overscrollBehavior,
-    }
-    body.style.position = 'fixed'
-    body.style.top = `-${scrollY}px`
-    body.style.left = '0'
-    body.style.right = '0'
-    body.style.width = '100%'
+    const prevOverflow = body.style.overflow
+    const prevOverscroll = body.style.overscrollBehavior
+    body.style.overflow = 'hidden'
     body.style.overscrollBehavior = 'none'
     return () => {
-      body.style.position = prev.position
-      body.style.top = prev.top
-      body.style.left = prev.left
-      body.style.right = prev.right
-      body.style.width = prev.width
-      body.style.overscrollBehavior = prev.overscrollBehavior
-      window.scrollTo(0, scrollY)
+      body.style.overflow = prevOverflow
+      body.style.overscrollBehavior = prevOverscroll
       lenis?.start()
     }
   }, [isOpen, lenis])
