@@ -74,18 +74,15 @@ export const metadata: Metadata = {
       'We build identities and shape perceptions. Go bold or go unseen.',
     images: ['/og-image.png'],
   },
-  // Full multi-platform icon set (same logic as vercel.com): the .ico carries
-  // 16/32 for legacy browsers with sizes="any" so modern browsers prefer the
-  // crisp SVG; explicit 16/32 PNGs as extra fallbacks; a 180×180 apple-touch
-  // icon for iOS home screens; android/PWA icons via the web manifest; and the
-  // Safari pinned-tab mask icon. All files live in /public.
+  // Tab icon: a single multi-size .ico (16/32/48), exactly like apple.com and
+  // vercel.com. Deliberately NO svg favicon link — Safari's SVG-favicon support
+  // is unreliable and, when it picks the svg <link> and fails to render it, it
+  // shows a blank white square instead of falling back to the .ico. The .ico is
+  // a transparent-cornered black circle so it reads as a clean badge in the tab.
+  // apple-touch (iOS), web manifest (Android/PWA) and the Safari pinned-tab mask
+  // round out the other platforms.
   icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-    ],
+    icon: { url: '/favicon.ico', sizes: '16x16 32x32 48x48' },
     shortcut: '/favicon.ico',
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
     other: [{ rel: 'mask-icon', url: '/safari-pinned-tab.svg', color: '#0a0a0a' }],
