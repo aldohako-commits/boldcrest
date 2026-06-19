@@ -159,9 +159,12 @@ function scrollIntoSafeView(el: HTMLElement, behavior: ScrollBehavior = 'smooth'
   // Room below the content so a field near the bottom can still scroll up clear
   // of the keyboard.
   scroller.style.paddingBottom = `${keyboard + 96}px`
-  const margin = 24
-  const rect = el.getBoundingClientRect()
-  // Land the field's bottom a small margin above the keyboard.
+  const margin = 20
+  // Lift the WHOLE active form box (so its OK button shows too), not just the
+  // field — fall back to the field itself if it isn't inside a form box.
+  const box = (el.closest('[data-active]') as HTMLElement | null) ?? el
+  const rect = box.getBoundingClientRect()
+  // Land the box's bottom a small margin above the keyboard.
   const delta = rect.bottom - (kbTop - margin)
   if (Math.abs(delta) > 1) scroller.scrollTo({ top: scroller.scrollTop + delta, behavior })
 }
