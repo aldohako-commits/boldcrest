@@ -212,10 +212,18 @@ function useFollowAvatar(ref: { current: HTMLDivElement | null }, count: number)
     const ae = document.activeElement
     if (ae instanceof HTMLInputElement || ae instanceof HTMLTextAreaElement) return
     const el = ref.current
-    // Defer a frame so the avatar's layout-spring has its up-to-date position
-    // before we measure and scroll.
-    const id = requestAnimationFrame(() => ensureVisibleInScroller(el, 'smooth', 28))
-    return () => cancelAnimationFrame(id)
+    // Follow next frame, then AGAIN once the avatar's layout-spring settles. The
+    // avatar slides DOWN as each new message lands; framer's layout transform
+    // means a mid-slide getBoundingClientRect reports a position higher than its
+    // resting place, so the first scroll undershoots and the avatar ends up
+    // cropped below the fold (e.g. when the account manager sends two messages
+    // in a row). Re-running after it comes to rest keeps the pic fully visible.
+    const raf = requestAnimationFrame(() => ensureVisibleInScroller(el, 'smooth', 40))
+    const settle = window.setTimeout(() => ensureVisibleInScroller(el, 'smooth', 40), 560)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.clearTimeout(settle)
+    }
   }, [ref, count])
 }
 

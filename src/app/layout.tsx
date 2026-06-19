@@ -73,14 +73,14 @@ export const metadata: Metadata = {
   // a transparent-cornered black circle so it reads as a clean badge in the tab.
   // apple-touch (iOS), web manifest (Android/PWA) and the Safari pinned-tab mask
   // round out the other platforms.
-  // The ?v=2 query busts Safari's notoriously sticky favicon cache: changing the
+  // The ?v=3 query busts Safari's notoriously sticky favicon cache: changing the
   // icon URL makes browsers fetch the new circular icon instead of reusing the
   // stale square one they cached from earlier. Bump this if the icon changes.
   icons: {
-    icon: { url: '/favicon.ico?v=2', sizes: '16x16 32x32 48x48' },
-    shortcut: '/favicon.ico?v=2',
-    apple: [{ url: '/apple-touch-icon.png?v=2', sizes: '180x180', type: 'image/png' }],
-    other: [{ rel: 'mask-icon', url: '/safari-pinned-tab.svg?v=2', color: '#0a0a0a' }],
+    icon: { url: '/favicon.ico?v=3', sizes: '16x16 32x32 48x48' },
+    shortcut: '/favicon.ico?v=3',
+    apple: [{ url: '/apple-touch-icon.png?v=3', sizes: '180x180', type: 'image/png' }],
+    other: [{ rel: 'mask-icon', url: '/safari-pinned-tab.svg?v=3', color: '#0a0a0a' }],
   },
   manifest: '/site.webmanifest',
   other: {
