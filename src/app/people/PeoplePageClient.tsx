@@ -319,7 +319,11 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
   const [isLocked, setIsLocked] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
   const touchStartY = useRef(0)
+  // Scroll state of the active slide captured at touchstart (mobile): used to
+  // decide whether a swipe scrolls the slide internally or advances the deck.
+  const touchStartEdges = useRef({ atTop: true, atBottom: true, scrollable: false })
   // False right after we land on the last slide; true once the snap settles and
   // page-scroll to the footer is allowed (absorbs hard-scroll momentum).
   const lastSlideReady = useRef(false)
@@ -425,27 +429,48 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
     return () => el.removeEventListener('wheel', onWheel)
   }, [current, isLocked, goTo, isMobile])
 
-  // Touch handler
+  // Touch handler — drives the deck on both touch-laptops and mobile. On
+  // mobile a slide taller than the viewport scrolls internally first; the deck
+  // only advances once the swipe starts from the relevant scroll edge.
   useEffect(() => {
     const el = containerRef.current
-    if (!el || isMobile) return
+    if (!el) return
 
     const onTouchStart = (e: TouchEvent) => {
       touchStartY.current = e.touches[0].clientY
+      const slide = wrapperRef.current?.children[current] as HTMLElement | undefined
+      if (slide) {
+        const scrollable = slide.scrollHeight > slide.clientHeight + 4
+        touchStartEdges.current = {
+          scrollable,
+          atTop: slide.scrollTop <= 2,
+          atBottom: slide.scrollTop + slide.clientHeight >= slide.scrollHeight - 2,
+        }
+      } else {
+        touchStartEdges.current = { scrollable: false, atTop: true, atBottom: true }
+      }
     }
     const onTouchEnd = (e: TouchEvent) => {
       const last = TOTAL_SECTIONS - 1
       const diff = touchStartY.current - e.changedTouches[0].clientY
+      const { scrollable, atTop, atBottom } = touchStartEdges.current
       // On the final slide, allow native scroll to the footer; only step back
       // into the deck on a downward swipe when the page is at the top.
       if (current === last) {
-        if (diff < 0 && window.scrollY <= 0 && !isLocked && Math.abs(diff) > 50) {
+        if (diff < 0 && window.scrollY <= 0 && atTop && !isLocked && Math.abs(diff) > 50) {
           goTo(current - 1)
         }
         return
       }
       if (isLocked) return
       if (Math.abs(diff) < 50) return
+      // When the slide can scroll internally, only advance from its edges so
+      // mid-content swipes just scroll the slide (mobile only).
+      if (isMobile && scrollable) {
+        if (diff > 0 && atBottom) goTo(current + 1)
+        else if (diff < 0 && atTop) goTo(current - 1)
+        return
+      }
       if (diff > 0) goTo(current + 1)
       else goTo(current - 1)
     }
@@ -484,7 +509,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
   useEffect(() => {
     const html = document.documentElement
     const last = TOTAL_SECTIONS - 1
-    if (isMobile || current === last) {
+    if (current === last) {
       html.style.overflow = ''
       document.body.style.overflow = ''
     } else {
@@ -506,7 +531,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
     return () => window.removeEventListener('boldcrest:back-to-top', handler)
   }, [])
 
-  const active = (i: number) => isMobile || current === i
+  const active = (i: number) => current === i
 
   // Faces grid — local preview photos for now; Sanity members take over
   // once optimized images are uploaded (empty LOCAL_TEAM to switch back).
@@ -531,18 +556,21 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
     <>
     <div
       ref={containerRef}
-      className={isMobile ? 'relative bg-bg' : 'relative h-[100dvh] overflow-hidden bg-bg'}
+      className={isMobile ? 'relative h-[100svh] overflow-hidden bg-bg' : 'relative h-[100dvh] overflow-hidden bg-bg'}
     >
-      {/* Sliding wrapper — deck translates on desktop, static (normal scroll) on mobile */}
+      {/* Sliding wrapper — deck translates one slide at a time on both desktop
+          and mobile (mobile uses svh + touch input; tall slides scroll
+          internally before advancing). */}
       <motion.div
+        ref={wrapperRef}
         className="relative will-change-transform"
-        animate={{ y: isMobile ? 0 : `${-current * 100}dvh` }}
+        animate={{ y: `${-current * 100}${isMobile ? 'svh' : 'dvh'}` }}
         transition={{ duration: TRANSITION_DURATION / 1000, ease: [0.76, 0, 0.24, 1] }}
       >
         {/* ═══════════════════════════════════════════
             0. HERO
         ═══════════════════════════════════════════ */}
-        <section className="relative flex min-h-[100dvh] md:h-[100dvh] flex-col overflow-hidden bg-bg">
+        <section className="relative flex h-[100svh] flex-col overflow-x-hidden overflow-y-auto bg-bg md:h-[100dvh] md:overflow-hidden">
           {/* Hero copy — full-width stretch, top-aligned to match Work/Services/Diary */}
           <div className="flex min-h-0 flex-1 items-start px-[var(--gutter)] pt-[120px] [@media(max-height:780px)]:pt-[92px]">
             <div className="w-full">
@@ -605,7 +633,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
         {/* ═══════════════════════════════════════════
             1. THE MOTTO
         ═══════════════════════════════════════════ */}
-        <section className="flex min-h-[100dvh] md:h-[100dvh] items-center overflow-hidden px-[var(--gutter)]">
+        <section className="grid grid-cols-1 [align-content:safe_center] h-[100svh] overflow-x-hidden overflow-y-auto px-[var(--gutter)] md:flex md:h-[100dvh] md:items-center md:overflow-hidden">
           <div className="mx-auto w-full max-w-[var(--max-width)] text-center">
             <FadeUp active={active(1)}>
               <p className="mb-[var(--space-md)] text-[0.75rem] font-semibold uppercase tracking-[0.25em] text-text-tertiary">
@@ -642,7 +670,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
         {/* ═══════════════════════════════════════════
             2. THE FOUNDERS
         ═══════════════════════════════════════════ */}
-        <section className="flex min-h-[100dvh] md:h-[100dvh] items-center overflow-hidden px-[var(--gutter)]">
+        <section className="grid grid-cols-1 [align-content:safe_center] h-[100svh] overflow-x-hidden overflow-y-auto px-[var(--gutter)] md:flex md:h-[100dvh] md:items-center md:overflow-hidden">
           <div className="mx-auto w-full max-w-[var(--max-width)]">
             <div className="grid gap-[var(--space-md)] md:grid-cols-[1fr_1fr] md:items-center md:gap-[var(--space-xl)]">
               <FadeUp active={active(2)}>
@@ -700,7 +728,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
         {/* ═══════════════════════════════════════════
             3. TEAM CULTURE + FACES (combined)
         ═══════════════════════════════════════════ */}
-        <section className="flex min-h-[100dvh] md:h-[100dvh] items-center overflow-hidden px-[var(--gutter)] pt-[80px]">
+        <section className="grid grid-cols-1 [align-content:safe_center] h-[100svh] overflow-x-hidden overflow-y-auto px-[var(--gutter)] pt-[80px] md:flex md:h-[100dvh] md:items-center md:overflow-hidden">
           <div className="mx-auto w-full max-w-[var(--max-width)]">
             <div className="grid items-center gap-[var(--space-2xl)] md:grid-cols-2">
               {/* Left — culture copy */}
@@ -743,7 +771,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
         {/* ═══════════════════════════════════════════
             7. THE WORK PHILOSOPHY
         ═══════════════════════════════════════════ */}
-        <section className="flex min-h-[100dvh] md:h-[100dvh] items-center overflow-hidden px-[var(--gutter)]">
+        <section className="grid grid-cols-1 [align-content:safe_center] h-[100svh] overflow-x-hidden overflow-y-auto px-[var(--gutter)] md:flex md:h-[100dvh] md:items-center md:overflow-hidden">
           <div className="mx-auto w-full max-w-[var(--max-width)]">
             <div className="mx-auto max-w-[700px] text-center">
               <FadeUp active={active(4)}>
@@ -779,7 +807,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
             5. CLOSING (last slide — releases the scroll lock so the
             global footer can flow in below via normal scroll)
         ═══════════════════════════════════════════ */}
-        <section className="flex min-h-[100dvh] md:h-[100dvh] items-center overflow-hidden px-[var(--gutter)]">
+        <section className="grid grid-cols-1 [align-content:safe_center] h-[100svh] overflow-x-hidden overflow-y-auto px-[var(--gutter)] md:flex md:h-[100dvh] md:items-center md:overflow-hidden">
           <div className="mx-auto w-full max-w-[var(--max-width)]">
             <FadeUp active={active(5)}>
               <p className="mb-[var(--space-md)] text-[0.75rem] font-semibold uppercase tracking-[0.25em] text-text-tertiary">
