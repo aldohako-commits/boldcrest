@@ -224,6 +224,7 @@ export default function StartProjectProvider({ children }: { children: ReactNode
 function KbDebug({ panelRef }: { panelRef: RefObject<HTMLElement | null> }) {
   const [on, setOn] = useState(false)
   const [text, setText] = useState('')
+  const barRef = useRef<HTMLPreElement>(null)
   useEffect(() => {
     if (typeof window === 'undefined') return
     // TEMP: always on while diagnosing the keyboard (no URL flag needed).
@@ -231,6 +232,9 @@ function KbDebug({ panelRef }: { panelRef: RefObject<HTMLElement | null> }) {
     const fmt = (n: number | undefined) => (n == null ? '–' : Math.round(n))
     const update = () => {
       const vv = window.visualViewport
+      // Pin the bar to the visible viewport top so it stays on screen even when
+      // iOS pans the viewport for the keyboard (otherwise it scrolls off).
+      if (barRef.current && vv) barRef.current.style.top = `${vv.offsetTop}px`
       const r = panelRef.current?.getBoundingClientRect()
       const ae = document.activeElement as HTMLElement | null
       setText(
@@ -256,6 +260,7 @@ function KbDebug({ panelRef }: { panelRef: RefObject<HTMLElement | null> }) {
   if (!on) return null
   return (
     <pre
+      ref={barRef}
       style={{
         position: 'fixed',
         top: 0,
