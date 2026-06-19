@@ -163,7 +163,7 @@ function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
   return (
     <section
       ref={ref}
-      className="px-[var(--gutter)] pt-8 pb-[120px] md:pt-10"
+      className="px-[var(--gutter)] pt-8 pb-[72px] md:pt-10 md:pb-[120px]"
     >
       <div>
       {/* Section header */}
@@ -454,7 +454,7 @@ function ClientLogos({ partners = [] }: { partners?: Partner[] }) {
   const prev = () => setPage(Math.max(currentPage - 1, 0))
 
   return (
-    <section ref={ref} className="px-[var(--gutter)] pt-20 pb-12">
+    <section ref={ref} className="px-[var(--gutter)] pt-12 pb-12 md:pt-20">
       <div className="mx-auto max-w-[var(--max-width)]">
         <motion.div
           className="mb-[var(--space-lg)]"
@@ -560,7 +560,7 @@ function ProcessRow({ step, index }: { step: typeof PROCESS_STEPS[number]; index
   return (
     <motion.div
       ref={rowRef}
-      className="grid grid-cols-12 items-start gap-6 border-t py-12 md:gap-10 md:py-16"
+      className="grid grid-cols-12 items-start gap-6 border-t py-8 md:gap-10 md:py-16"
       style={{ borderColor: 'var(--border)' }}
       initial={{ opacity: 0, y: 40 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -593,9 +593,9 @@ function ProcessSection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
-    <section ref={ref} className="px-[var(--gutter)] pt-12 pb-[120px] md:pt-16">
+    <section ref={ref} className="px-[var(--gutter)] pt-12 pb-[72px] md:pt-16 md:pb-[120px]">
       <div className="mx-auto max-w-[var(--max-width)]">
-        <div className="mb-16 md:mb-20">
+        <div className="mb-10 md:mb-20">
           <motion.p
             className="mb-6 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
             initial={{ opacity: 0 }}
@@ -615,8 +615,9 @@ function ProcessSection() {
           </motion.h2>
         </div>
 
-        {/* Steps — vertical editorial rows with hairline dividers */}
-        <div className="border-b" style={{ borderColor: 'var(--border)' }}>
+        {/* Steps — vertical editorial rows with hairline dividers (no closing
+            bottom line; it read as redundant against the next section). */}
+        <div>
           {PROCESS_STEPS.map((step, i) => (
             <ProcessRow key={step.number} step={step} index={i} />
           ))}

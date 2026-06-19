@@ -581,9 +581,11 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
                   </motion.p>
                 </div>
 
-                {/* Right — story copy, right-aligned */}
+                {/* Right — story copy, right-aligned. Narrower on iPad so the
+                    right-aligned lines don't get ragged; bottom-aligns with the
+                    headline via md:items-end on the parent. */}
                 <motion.div
-                  className="max-w-[440px] md:text-right"
+                  className="max-w-[440px] md:max-w-[320px] md:text-right lg:max-w-[420px]"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
