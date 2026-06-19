@@ -161,8 +161,7 @@ export default function StartProjectProvider({ children }: { children: ReactNode
                 into view. No box around the chat. */}
             <motion.div
               ref={backdropRef}
-              className="fixed left-0 top-0 z-[1900] w-full bg-black/90 backdrop-blur-xl"
-              style={{ height: '100dvh' }}
+              className="fixed left-0 top-0 z-[1900] h-[100dvh] w-full bg-black/90 backdrop-blur-xl"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -178,8 +177,8 @@ export default function StartProjectProvider({ children }: { children: ReactNode
               role="dialog"
               aria-modal="true"
               aria-label="Start a new project"
-              className="fixed right-0 top-0 z-[2000] flex w-full max-w-[480px] flex-col overflow-hidden bg-bg"
-              style={{ height: '100dvh', borderLeft: '1px solid var(--border)', boxShadow: '-24px 0 60px rgba(0,0,0,0.45)' }}
+              className="fixed right-0 top-0 z-[2000] flex h-[100dvh] w-full max-w-[480px] flex-col overflow-hidden bg-bg"
+              style={{ borderLeft: '1px solid var(--border)', boxShadow: '-24px 0 60px rgba(0,0,0,0.45)' }}
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
