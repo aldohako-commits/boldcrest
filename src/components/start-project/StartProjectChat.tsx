@@ -84,13 +84,22 @@ const EMPTY: Answers = {
 const turnTransition = { duration: 0.3, ease: [0.16, 1, 0.3, 1] as const }
 const ITEM_TRANSITION = {
   type: 'spring' as const,
-  stiffness: 460,
-  damping: 30,
-  mass: 0.7,
-  opacity: { duration: 0.25 },
+  stiffness: 320,
+  damping: 28,
+  mass: 0.9,
+  opacity: { duration: 0.35 },
 }
 // The avatar slides — not snaps — to the bottom of its group as messages arrive.
-const AVATAR_TRANSITION = { type: 'spring' as const, stiffness: 500, damping: 34, mass: 0.8 }
+const AVATAR_TRANSITION = { type: 'spring' as const, stiffness: 420, damping: 32, mass: 0.9 }
+
+// Conversation pacing — deliberately unhurried so it reads like someone typing
+// on the other end rather than a form revealing itself. Same values drive both
+// desktop and mobile (one shared component). REVEAL_INTERVAL is the gap between
+// consecutive messages within a turn; AGENCY_START / USER_START delay the start
+// of each side's turn so the exchange lands as a back-and-forth.
+const REVEAL_INTERVAL = 650
+const AGENCY_START = 350
+const USER_START = 1250
 
 // Reveals a turn's children one-by-one on a timeline so the chat grows like a
 // real conversation: messages arrive in sequence, the container expands, and
@@ -201,14 +210,14 @@ function MegiAvatar() {
 
 function AgencyTurn({
   children,
-  startDelay = 250,
+  startDelay = AGENCY_START,
 }: {
   children: React.ReactNode
   startDelay?: number
 }) {
   const items = Children.toArray(children)
-  const count = useRevealCount(items.length, startDelay, 450)
-  // Render nothing until the first message is due, so the turn takes no space
+  const count = useRevealCount(items.length, startDelay, REVEAL_INTERVAL)
+  // Render nothing until the first message is due so the turn takes no space
   // (and no surrounding gap) and the chat grows naturally from the top down.
   if (count === 0) return null
   return (
@@ -237,7 +246,7 @@ function UserTurn({
   heading,
   initial,
   children,
-  startDelay = 1050,
+  startDelay = USER_START,
 }: {
   heading: string
   initial?: string
@@ -245,7 +254,7 @@ function UserTurn({
   startDelay?: number
 }) {
   const items = Children.toArray(children)
-  const count = useRevealCount(items.length, startDelay, 450)
+  const count = useRevealCount(items.length, startDelay, REVEAL_INTERVAL)
   // The user's turn starts only after the account-manager messages above have
   // landed, so the exchange reads as a back-and-forth. Hidden until then.
   if (count === 0) return null

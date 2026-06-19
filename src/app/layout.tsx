@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 import './globals.css'
 import Header from '@/components/Header'
@@ -27,6 +27,19 @@ const metropolis = localFont({
 })
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.boldcrest.com'
+
+// interactive-widget=resizes-content: when the on-screen keyboard opens, iOS
+// (16.4+) / Android shrink the LAYOUT viewport to the visible area instead of
+// only the visual viewport. Without this, a position:fixed overlay stays
+// full-screen-tall while iOS scroll-anchors the focused input, detaching the
+// panel and leaving a gap above the keyboard where the page behind bleeds
+// through. With resizes-content the panel's 100dvh + the backdrop's inset-0
+// resolve to exactly the area above the keyboard, so it sits flush with no gap.
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  interactiveWidget: 'resizes-content',
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
