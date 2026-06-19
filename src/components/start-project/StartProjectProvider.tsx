@@ -54,11 +54,18 @@ export default function StartProjectProvider({ children }: { children: ReactNode
   // (iOS Safari doesn't shrink dvh when the keyboard opens). The chat then
   // behaves like a messaging app: the input stays visible and messages scroll.
   const [panelHeight, setPanelHeight] = useState('100dvh')
+  const [panelTop, setPanelTop] = useState(0)
   useEffect(() => {
     if (!isOpen) return
     const vv = window.visualViewport
     if (!vv) return
-    const update = () => setPanelHeight(`${vv.height}px`)
+    const update = () => {
+      setPanelHeight(`${vv.height}px`)
+      // iOS Safari can shift the whole webview up when an input focuses (even
+      // with body scroll locked); offsetTop follows that shift so the panel
+      // stays pinned to the visible area instead of sliding under the notch.
+      setPanelTop(vv.offsetTop)
+    }
     update()
     vv.addEventListener('resize', update)
     vv.addEventListener('scroll', update)
@@ -66,6 +73,7 @@ export default function StartProjectProvider({ children }: { children: ReactNode
       vv.removeEventListener('resize', update)
       vv.removeEventListener('scroll', update)
       setPanelHeight('100dvh')
+      setPanelTop(0)
     }
   }, [isOpen])
 
@@ -92,7 +100,7 @@ export default function StartProjectProvider({ children }: { children: ReactNode
               aria-modal="true"
               aria-label="Start a new project"
               className="fixed right-0 top-0 z-[2000] flex w-full max-w-[480px] flex-col bg-bg"
-              style={{ height: panelHeight, borderLeft: '1px solid var(--border)', boxShadow: '-24px 0 60px rgba(0,0,0,0.45)' }}
+              style={{ top: panelTop, height: panelHeight, borderLeft: '1px solid var(--border)', boxShadow: '-24px 0 60px rgba(0,0,0,0.45)' }}
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}

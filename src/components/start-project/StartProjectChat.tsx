@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { submitProjectForm } from './actions'
 
@@ -206,7 +206,8 @@ function FormShell({
 }) {
   return (
     <div
-      className={`w-full rounded-2xl rounded-br-md border p-5 transition-opacity duration-300 ${
+      data-active={active || undefined}
+      className={`w-full scroll-mt-6 rounded-2xl rounded-br-md border p-5 transition-opacity duration-300 ${
         active ? 'opacity-100' : 'opacity-50'
       }`}
       style={{
@@ -285,6 +286,11 @@ function InlineInput({
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onFocus={(e) =>
+            e.currentTarget
+              .closest('[data-active]')
+              ?.scrollIntoView({ block: 'center' })
+          }
           onKeyDown={(e) => {
             if (e.key === 'Enter' && value.trim()) {
               e.preventDefault()
@@ -443,6 +449,24 @@ export default function StartProjectChat() {
   const [step, setStep] = useState<Step>('name')
   const [a, setA] = useState<Answers>(EMPTY)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Keep the *active* form comfortably in view. Centering it (rather than
+  // scrolling to the very bottom) ensures the field you're typing in never
+  // ends up hidden behind the on-screen keyboard on mobile — the keyboard only
+  // opens on the text-input steps, and those forms are short, so centering them
+  // leaves the question above visible and the input clear of the keyboard.
+  const scrollActiveIntoView = useCallback(
+    (behavior: ScrollBehavior, block: ScrollLogicalPosition) => {
+      const root = containerRef.current
+      if (!root) return
+      // Once the form is sent, follow the conversation to the bottom instead.
+      const target =
+        root.querySelector<HTMLElement>('[data-active]') ?? bottomRef.current
+      target?.scrollIntoView({ behavior, block })
+    },
+    [],
+  )
 
   const isActive = (s: Step) => step === s
   const isPast = (s: Step) => ORDER.indexOf(step) > ORDER.indexOf(s)
@@ -453,10 +477,31 @@ export default function StartProjectChat() {
     if (idx < ORDER.length - 1) setStep(ORDER[idx + 1])
   }
 
-  // Auto-scroll new content into view
+  // On each step, bring the newly-active form (or the closing messages) into
+  // view. Defer a frame so the new turn has mounted before we measure.
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-  }, [step])
+    const id = requestAnimationFrame(() => scrollActiveIntoView('smooth', 'nearest'))
+    return () => cancelAnimationFrame(id)
+  }, [step, scrollActiveIntoView])
+
+  // When the on-screen keyboard opens/closes the visual viewport resizes; the
+  // panel shrinks to fit above it (see StartProjectProvider), so re-center the
+  // active field instantly to keep it clear of the keyboard. No smooth scroll
+  // here — it should track the keyboard, not animate after it.
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    // Defer two frames so the panel has re-rendered to its new (shorter)
+    // height before we measure and scroll — otherwise we'd center against the
+    // old full height and the field would still end up under the keyboard.
+    const onResize = () => {
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => scrollActiveIntoView('auto', 'center')),
+      )
+    }
+    vv.addEventListener('resize', onResize)
+    return () => vv.removeEventListener('resize', onResize)
+  }, [scrollActiveIntoView])
 
   const handleSubmit = async () => {
     setStep('submitting')
@@ -493,7 +538,7 @@ export default function StartProjectChat() {
   const identitySubmitted = isReached('services')
 
   return (
-    <div className="flex flex-col gap-12">
+    <div ref={containerRef} className="flex flex-col gap-12">
         {/* ═══════════════════════════════════════════
             Turn 1 — Megi's greeting
         ═══════════════════════════════════════════ */}
@@ -616,6 +661,11 @@ export default function StartProjectChat() {
                 <textarea
                   value={a.message}
                   onChange={(e) => setA({ ...a, message: e.target.value })}
+                  onFocus={(e) =>
+                    e.currentTarget
+                      .closest('[data-active]')
+                      ?.scrollIntoView({ block: 'center' })
+                  }
                   disabled={!isActive('message')}
                   rows={3}
                   placeholder="Build a brand that doesn't fade with the trend cycle."
