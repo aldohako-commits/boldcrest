@@ -85,6 +85,62 @@ const turnVariants = {
 
 const turnTransition = { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }
 
+// Within a turn the bubbles — and then the form — reveal one after another,
+// like a real chat typing them in. Mirrors the reference (deuxhuithuit.com),
+// where each message appears in sequence rather than all at once.
+const listVariants = {
+  initial: {},
+  animate: { transition: { staggerChildren: 0.55, delayChildren: 0.15 } },
+}
+const itemVariants = {
+  initial: { opacity: 0, y: 14 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] as const },
+  },
+}
+
+/* iOS Safari's scrollIntoView is unreliable for an element inside a
+   position:fixed + overflow:auto container (it often scrolls the page instead
+   of the inner scroller, or nothing). So we scroll the known scroll container
+   — the [data-lenis-prevent] chat body — by a computed offset instead. */
+function getScroller(el: HTMLElement): HTMLElement | null {
+  return el.closest('[data-lenis-prevent]')
+}
+
+/** Center the element within its scroll container — used when the keyboard is
+    up, so the focused field clears it with room above for context. */
+function centerInScroller(el: HTMLElement, behavior: ScrollBehavior = 'smooth') {
+  const scroller = getScroller(el)
+  if (!scroller) {
+    el.scrollIntoView({ behavior, block: 'center' })
+    return
+  }
+  const sRect = scroller.getBoundingClientRect()
+  const tRect = el.getBoundingClientRect()
+  const delta = tRect.top - sRect.top - (scroller.clientHeight - tRect.height) / 2
+  scroller.scrollTo({ top: scroller.scrollTop + delta, behavior })
+}
+
+/** Only scroll if the element isn't fully visible — keeps step changes from
+    yanking the layout when everything already fits at full panel height. */
+function ensureVisibleInScroller(el: HTMLElement, behavior: ScrollBehavior = 'smooth') {
+  const scroller = getScroller(el)
+  if (!scroller) {
+    el.scrollIntoView({ behavior, block: 'nearest' })
+    return
+  }
+  const sRect = scroller.getBoundingClientRect()
+  const tRect = el.getBoundingClientRect()
+  const pad = 16
+  if (tRect.bottom > sRect.bottom - pad) {
+    scroller.scrollTo({ top: scroller.scrollTop + (tRect.bottom - sRect.bottom) + pad, behavior })
+  } else if (tRect.top < sRect.top + pad) {
+    scroller.scrollTo({ top: scroller.scrollTop - (sRect.top - tRect.top) - pad, behavior })
+  }
+}
+
 /* Megi's avatar — profile photo from /public, falls back to the red "M"
    monogram if the image is missing so it never renders as a broken image. */
 function MegiAvatar() {
@@ -132,7 +188,14 @@ function AgencyTurn({ children }: { children: React.ReactNode }) {
             Account Manager
           </span>
         </header>
-        <div className="flex flex-col items-start gap-2">{children}</div>
+        <motion.div
+          variants={listVariants}
+          initial="initial"
+          animate="animate"
+          className="flex flex-col items-start gap-2"
+        >
+          {children}
+        </motion.div>
         <MegiAvatar />
       </div>
     </motion.div>
@@ -162,7 +225,14 @@ function UserTurn({
             {heading}
           </h3>
         </header>
-        <div className="flex w-full flex-col items-end gap-2">{children}</div>
+        <motion.div
+          variants={listVariants}
+          initial="initial"
+          animate="animate"
+          className="flex w-full flex-col items-end gap-2"
+        >
+          {children}
+        </motion.div>
         <div
           className="mt-4 flex h-10 w-10 items-center justify-center rounded-full text-[0.85rem] font-bold"
           style={{ background: '#161616', color: '#545454' }}
@@ -182,7 +252,8 @@ function Bubble({
   children: React.ReactNode
 }) {
   return (
-    <p
+    <motion.p
+      variants={itemVariants}
       className={`rounded-2xl px-5 py-3 text-[0.95rem] leading-[1.5] ${
         side === 'left'
           ? 'rounded-bl-md bg-bg-card text-text-primary'
@@ -190,7 +261,7 @@ function Bubble({
       }`}
     >
       {children}
-    </p>
+    </motion.p>
   )
 }
 
@@ -205,7 +276,8 @@ function FormShell({
   active: boolean
 }) {
   return (
-    <div
+    <motion.div
+      variants={itemVariants}
       data-active={active || undefined}
       className={`w-full scroll-mt-6 rounded-2xl rounded-br-md border p-5 transition-opacity duration-300 ${
         active ? 'opacity-100' : 'opacity-50'
@@ -216,7 +288,7 @@ function FormShell({
       }}
     >
       {children}
-    </div>
+    </motion.div>
   )
 }
 
@@ -286,11 +358,14 @@ function InlineInput({
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          onFocus={(e) =>
-            e.currentTarget
-              .closest('[data-active]')
-              ?.scrollIntoView({ block: 'center' })
-          }
+          onFocus={(e) => {
+            const shell = e.currentTarget.closest<HTMLElement>('[data-active]')
+            if (shell) {
+              centerInScroller(shell)
+              // re-center once the keyboard has finished sliding up
+              setTimeout(() => centerInScroller(shell, 'auto'), 350)
+            }
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && value.trim()) {
               e.preventDefault()
@@ -457,13 +532,15 @@ export default function StartProjectChat() {
   // opens on the text-input steps, and those forms are short, so centering them
   // leaves the question above visible and the input clear of the keyboard.
   const scrollActiveIntoView = useCallback(
-    (behavior: ScrollBehavior, block: ScrollLogicalPosition) => {
+    (behavior: ScrollBehavior, mode: 'center' | 'nearest') => {
       const root = containerRef.current
       if (!root) return
       // Once the form is sent, follow the conversation to the bottom instead.
       const target =
         root.querySelector<HTMLElement>('[data-active]') ?? bottomRef.current
-      target?.scrollIntoView({ behavior, block })
+      if (!target) return
+      if (mode === 'center') centerInScroller(target, behavior)
+      else ensureVisibleInScroller(target, behavior)
     },
     [],
   )
@@ -661,11 +738,13 @@ export default function StartProjectChat() {
                 <textarea
                   value={a.message}
                   onChange={(e) => setA({ ...a, message: e.target.value })}
-                  onFocus={(e) =>
-                    e.currentTarget
-                      .closest('[data-active]')
-                      ?.scrollIntoView({ block: 'center' })
-                  }
+                  onFocus={(e) => {
+                    const shell = e.currentTarget.closest<HTMLElement>('[data-active]')
+                    if (shell) {
+                      centerInScroller(shell)
+                      setTimeout(() => centerInScroller(shell, 'auto'), 350)
+                    }
+                  }}
                   disabled={!isActive('message')}
                   rows={3}
                   placeholder="Build a brand that doesn't fade with the trend cycle."

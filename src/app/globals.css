@@ -94,6 +94,12 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior-y: none;
+  /* Safari only suppresses horizontal scroll when the clip is on <html>, not
+     <body> alone — without this, off-viewport decorative content (e.g. the
+     fanned team portraits on the homepage) leaks into a horizontal scroll on
+     Safari. `clip` (not `hidden`) avoids creating a scroll container, so it
+     leaves overflow-y: visible intact and doesn't break Lenis or sticky. */
+  overflow-x: clip;
 }
 
 body {
