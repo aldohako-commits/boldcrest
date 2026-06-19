@@ -79,7 +79,7 @@ export const metadata: Metadata = {
   icons: {
     icon: { url: '/favicon.ico?v=3', sizes: '16x16 32x32 48x48' },
     shortcut: '/favicon.ico?v=3',
-    apple: [{ url: '/apple-touch-icon.png?v=3', sizes: '180x180', type: 'image/png' }],
+    apple: [{ url: '/apple-touch-icon.png?v=4', sizes: '180x180', type: 'image/png' }],
     other: [{ rel: 'mask-icon', url: '/safari-pinned-tab.svg?v=3', color: '#0a0a0a' }],
   },
   manifest: '/site.webmanifest',
