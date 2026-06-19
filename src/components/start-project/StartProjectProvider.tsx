@@ -149,7 +149,11 @@ export default function StartProjectProvider({ children }: { children: ReactNode
                 into view. No box around the chat. */}
             <motion.div
               ref={backdropRef}
-              className="fixed left-0 top-0 z-[1900] h-[100dvh] w-full bg-black/90 backdrop-blur-xl"
+              // The blur only does anything on desktop, where the page behind
+              // stays visible. On touch devices the page content is hidden while
+              // the chat is open, so backdrop-blur would just blur a solid colour
+              // — wasted GPU. Restrict it to fine (mouse) pointers.
+              className="fixed left-0 top-0 z-[1900] h-[100dvh] w-full bg-black/90 [@media(pointer:fine)]:backdrop-blur-xl"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
