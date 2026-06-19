@@ -330,15 +330,23 @@ function InlineFilter({
     roRef.current?.disconnect()
     roRef.current = null
     if (!node) return
+    // The collapsed row itself is shrink-to-fit, so its own width tracks its
+    // current content — when the divider is hidden the row is ~21px narrower and
+    // `needed` would always exceed it, trapping the divider hidden forever once
+    // it dropped (even after the viewport widened). Measure against the AVAILABLE
+    // width instead: the flex-1 parent (full row width), whose size is fixed by
+    // layout and independent of whether the divider is shown.
+    const avail = () => node.parentElement?.clientWidth ?? node.clientWidth
     const check = () => {
       const a = group1Ref.current
       const b = group2Ref.current
       if (!a || !b) return
       // gap-x-5 = 20px between items; divider is ~1px (+ its two gaps).
       const needed = a.offsetWidth + b.offsetWidth + 1 + 20 * 2
-      setStacked(needed > node.clientWidth + 1)
+      setStacked(needed > avail() + 1)
     }
     const ro = new ResizeObserver(check)
+    if (node.parentElement) ro.observe(node.parentElement)
     ro.observe(node)
     if (group1Ref.current) ro.observe(group1Ref.current)
     if (group2Ref.current) ro.observe(group2Ref.current)
@@ -386,13 +394,11 @@ function InlineFilter({
                 </button>
               )}
             </span>
-            {/* The "|" between the two groups is a desktop-only nicety: shown
-                only on one row (!stacked) AND only at sm+ (hidden on phones).
-                On a narrow phone the two labels read fine on their own, and when
-                they wrap to two rows the divider would orphan at the end of row
-                one — so it stays hidden across every mobile state. Matches the
-                expanded-state divider, which is likewise `hidden … sm:block`. */}
-            {!stacked && <span className="hidden h-3 w-px bg-text-tertiary sm:block" />}
+            {/* Show the "|" only while the two groups share one row; drop it the
+                moment they wrap to two rows (so it never orphans at the end of
+                row one). Applies at EVERY width incl. mobile — `stacked` is the
+                width-based, ResizeObserver-driven wrap detector. */}
+            {!stacked && <span className="h-3 w-px bg-text-tertiary" />}
             <span ref={group2Ref} className="flex items-center gap-3">
               <button
                 onClick={() => setOpenFilter('industry')}
