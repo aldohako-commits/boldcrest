@@ -78,26 +78,34 @@ const EMPTY: Answers = {
 /* ════════════════════════════════════════════════════
    Layout primitives
 ══════════════════════════════════════════════════════ */
+// The turn as a whole only fades in (no slide) — the slide belongs to the
+// individual bubbles below, so messages read as appearing one-by-one rather
+// than the whole block arriving at once.
 const turnVariants = {
-  initial: { opacity: 0, y: 24 },
-  animate: { opacity: 1, y: 0 },
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
 }
 
-const turnTransition = { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }
+const turnTransition = { duration: 0.3, ease: [0.16, 1, 0.3, 1] as const }
 
-// Within a turn the bubbles — and then the form — reveal one after another,
-// like a real chat typing them in. Mirrors the reference (deuxhuithuit.com),
-// where each message appears in sequence rather than all at once.
-const listVariants = {
+// Messages reveal one after another like a real chat. Megi's question types in
+// first; the user's reply/form follows after a short beat, so each step reads
+// as a back-and-forth instead of everything popping in together. Kept brisk so
+// it never feels slow.
+const megiListVariants = {
   initial: {},
-  animate: { transition: { staggerChildren: 0.55, delayChildren: 0.15 } },
+  animate: { transition: { staggerChildren: 0.4, delayChildren: 0.15 } },
+}
+const userListVariants = {
+  initial: {},
+  animate: { transition: { staggerChildren: 0.4, delayChildren: 0.6 } },
 }
 const itemVariants = {
   initial: { opacity: 0, y: 14 },
   animate: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] as const },
+    transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const },
   },
 }
 
@@ -216,7 +224,7 @@ function AgencyTurn({ children }: { children: React.ReactNode }) {
           </span>
         </header>
         <motion.div
-          variants={listVariants}
+          variants={megiListVariants}
           initial="initial"
           animate="animate"
           className="flex flex-col items-start gap-2"
@@ -253,7 +261,7 @@ function UserTurn({
           </h3>
         </header>
         <motion.div
-          variants={listVariants}
+          variants={userListVariants}
           initial="initial"
           animate="animate"
           className="flex w-full flex-col items-end gap-2"
@@ -370,10 +378,7 @@ function InlineInput({
   type?: 'text' | 'email'
   active: boolean
 }) {
-  const ref = useRef<HTMLInputElement>(null)
-  useEffect(() => {
-    if (active && ref.current) ref.current.focus()
-  }, [active])
+  // No auto-focus: the keyboard must only open when the user taps the field.
   return (
     <div className="flex flex-col gap-2">
       <span className="text-[0.75rem] uppercase tracking-[0.18em] text-text-tertiary">
@@ -381,7 +386,6 @@ function InlineInput({
       </span>
       <div className="flex items-center gap-3 border-b border-white/15 pb-2">
         <input
-          ref={ref}
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
