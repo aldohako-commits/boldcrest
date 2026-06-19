@@ -548,7 +548,7 @@ export default function WorkPageClient({ projects, initialService, initialIndust
           {viewMode === 'grid' ? (
             <motion.div
               key="grid"
-              className="grid grid-cols-1 gap-x-6 gap-y-14 md:grid-cols-2 lg:grid-cols-3 lg:gap-x-8"
+              className="grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-2 md:gap-x-6 md:gap-y-14 lg:grid-cols-3 lg:gap-x-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}

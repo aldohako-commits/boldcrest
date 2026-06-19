@@ -197,7 +197,7 @@ export default function DiaryPageClient({ posts, initialCategory }: DiaryPageCli
           ) : (
             <motion.div
               key={activeFilter}
-              className="grid grid-cols-1 gap-x-6 gap-y-14 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-8"
+              className="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-6 sm:gap-y-14 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}

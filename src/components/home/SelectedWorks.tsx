@@ -195,8 +195,8 @@ export default function SelectedWorks({ projects }: SelectedWorksProps) {
           </div>
         </ScrollReveal>
 
-        {/* 2-column grid */}
-        <div className="grid grid-cols-1 gap-x-5 gap-y-8 md:grid-cols-2">
+        {/* 2-column grid (also 2-up on mobile) */}
+        <div className="grid grid-cols-2 gap-x-3 gap-y-6 md:gap-x-5 md:gap-y-8">
           {padded.map((project, i) => (
             <ProjectCard key={project._id} project={project} index={i} />
           ))}
