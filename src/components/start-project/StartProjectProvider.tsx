@@ -243,7 +243,7 @@ function KbDebug({ panelRef }: { panelRef: RefObject<HTMLElement | null> }) {
   const [text, setText] = useState('')
   useEffect(() => {
     if (typeof window === 'undefined') return
-    if (!window.location.search.includes('kbdebug')) return
+    // TEMP: always on while diagnosing the keyboard (no URL flag needed).
     setOn(true)
     const fmt = (n: number | undefined) => (n == null ? '–' : Math.round(n))
     const update = () => {
