@@ -457,6 +457,18 @@ function ClientLogos({ partners = [] }: { partners?: Partner[] }) {
   const next = () => setPage(Math.min(currentPage + 1, pageCount - 1))
   const prev = () => setPage(Math.max(currentPage - 1, 0))
 
+  // Touch swipe: horizontal drag pages the carousel (in addition to arrows).
+  const touchX = useRef<number | null>(null)
+  const onTouchStart = (e: React.TouchEvent) => { touchX.current = e.touches[0].clientX }
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchX.current === null) return
+    const dx = e.changedTouches[0].clientX - touchX.current
+    touchX.current = null
+    if (Math.abs(dx) < 40) return
+    if (dx < 0) next()
+    else prev()
+  }
+
   return (
     <section ref={ref} className="px-[var(--gutter)] pt-12 pb-12 md:pt-20">
       <div className="mx-auto max-w-[var(--max-width)]">
@@ -474,7 +486,11 @@ function ClientLogos({ partners = [] }: { partners?: Partner[] }) {
 
         {/* Slidable column track — viewport shows colsVisible columns; arrows
             page by a full visible set at a time */}
-        <div className="overflow-hidden [--logos-gap:1.5rem] md:[--logos-gap:2.5rem]">
+        <div
+          className="touch-pan-y overflow-hidden [--logos-gap:1.5rem] md:[--logos-gap:2.5rem]"
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+        >
           <div
             className="flex transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
             style={{
@@ -515,8 +531,8 @@ function ClientLogos({ partners = [] }: { partners?: Partner[] }) {
           </div>
         </div>
 
-        {/* Arrow controls (no indicator) */}
-        <div className="mt-12 flex items-center justify-end gap-3">
+        {/* Arrow controls — centered on mobile, right-aligned on desktop */}
+        <div className="mt-12 flex items-center justify-center gap-3 md:justify-end">
           <button
             onClick={prev}
             aria-label="Previous logos"
