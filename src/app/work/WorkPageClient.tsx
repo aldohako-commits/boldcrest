@@ -408,10 +408,12 @@ function InlineFilter({
             <span className="shrink-0 text-[0.75rem] font-semibold uppercase tracking-[0.15em] leading-[1.4] text-white whitespace-nowrap">
               {openFilter === 'services' ? 'Services' : 'Industry'}
             </span>
-            <span className="mt-[0.45rem] hidden h-3 w-px shrink-0 bg-border sm:block" />
-            {/* Items wrap into multiple rows as needed; the section below is
-                pushed down naturally instead of the row scrolling/overflowing. */}
-            <div className="flex flex-1 flex-wrap items-center gap-x-3 gap-y-2">
+            <span className="mt-[0.45rem] hidden h-3 w-px shrink-0 bg-text-tertiary sm:block" />
+            {/* Items size to their content so the X hugs the last filter on a
+                single row. When they don't fit, flex-shrink lets them fill the
+                available width and wrap to multiple rows — and the X is carried
+                to the right edge, preserving the wrapped-state behavior. */}
+            <div className="flex min-w-0 flex-shrink flex-wrap items-center gap-x-3 gap-y-2">
               {items.map((item, i) => (
                 <motion.button
                   key={item}
@@ -437,7 +439,7 @@ function InlineFilter({
             <motion.button
               onClick={() => setOpenFilter(null)}
               aria-label="Clear filter"
-              className="ml-auto mt-[0.15rem] inline-flex shrink-0 items-center justify-center transition-colors duration-200 focus:outline-none"
+              className="mt-[0.15rem] inline-flex shrink-0 items-center justify-center transition-colors duration-200 focus:outline-none"
               style={{ color: '#a3a3a3' }}
               onMouseEnter={(e) => { e.currentTarget.style.color = '#ffffff' }}
               onMouseLeave={(e) => { e.currentTarget.style.color = '#a3a3a3' }}
