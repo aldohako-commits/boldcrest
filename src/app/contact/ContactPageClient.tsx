@@ -56,7 +56,7 @@ export default function ContactPageClient({
   return (
     <main className="relative">
       {/* ── Hero ── */}
-      <section className="flex flex-col px-[var(--gutter)] pt-40 pb-0">
+      <section className="flex flex-col px-[var(--gutter)] pt-[120px] pb-0">
         <div className="w-full">
           <p className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
             Contact
@@ -83,7 +83,7 @@ export default function ContactPageClient({
       </section>
 
       {/* ── Info + Form ── */}
-      <section className="px-[var(--gutter)] pb-[var(--space-3xl)] pt-[var(--space-2xl)]">
+      <section className="px-[var(--gutter)] pb-[var(--space-3xl)] pt-10 md:pt-[var(--space-2xl)]">
         <div className="grid grid-cols-1 gap-y-16 md:grid-cols-12 md:gap-x-8">
           {/* Left: contact info — indented inward. A tight md gap keeps its
               natural height below the form's, so the FORM is the taller cell and
@@ -200,7 +200,7 @@ export default function ContactPageClient({
                   placeholder="Message*"
                   className={`${FIELD} resize-none`}
                 />
-                <div className="mt-2">
+                <div>
                   <button
                     type="submit"
                     disabled={isPending}

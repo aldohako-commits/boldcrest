@@ -216,6 +216,7 @@ function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
                     className="font-display text-[clamp(1.3rem,1.9vw,1.9rem)] font-bold tracking-[-0.01em]"
                     style={{
                       writingMode: 'vertical-rl',
+                      whiteSpace: 'nowrap',
                       color: darkShade,
                     }}
                   >
@@ -247,7 +248,7 @@ function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
                   className="group flex h-full flex-col"
                 >
                 {/* Top body */}
-                <div className="flex flex-1 flex-col justify-between p-8 md:p-12">
+                <div className="flex flex-1 flex-col justify-between p-5 md:p-12">
                   <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
                     <h3
                       className="font-display text-[clamp(2rem,4.2vw,4.5rem)] font-bold leading-[0.95] tracking-[-0.02em]"
@@ -255,11 +256,13 @@ function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
                     >
                       {cap.heading}
                     </h3>
-                    <div className="flex flex-wrap gap-2 md:max-w-[55%] md:justify-end">
+                    {/* Pills — smaller on mobile so several fit per row instead
+                        of stacking into a single column. */}
+                    <div className="flex flex-wrap gap-1.5 md:max-w-[55%] md:justify-end md:gap-2">
                       {tags.slice(0, 6).map((tag) => (
                         <span
                           key={tag}
-                          className="rounded-full border px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em]"
+                          className="rounded-full border px-2.5 py-1 text-[0.6rem] font-semibold uppercase tracking-[0.06em] md:px-3 md:py-1.5 md:text-[0.65rem] md:tracking-[0.08em]"
                           style={{ borderColor: darkShade, color: darkShade }}
                         >
                           {tag}
@@ -267,8 +270,9 @@ function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
                       ))}
                     </div>
                   </div>
+                  {/* Description hidden on mobile to avoid overcrowding the card */}
                   <p
-                    className="max-w-[520px] text-[0.9rem] leading-[1.7]"
+                    className="hidden max-w-[520px] text-[0.9rem] leading-[1.7] md:block"
                     style={{ color: darkShade }}
                   >
                     {cap.description}
