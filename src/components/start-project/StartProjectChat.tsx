@@ -109,18 +109,45 @@ function getScroller(el: HTMLElement): HTMLElement | null {
   return el.closest('[data-lenis-prevent]')
 }
 
-/** Center the element within its scroll container — used when the keyboard is
-    up, so the focused field clears it with room above for context. */
-function centerInScroller(el: HTMLElement, behavior: ScrollBehavior = 'smooth') {
+/** Scroll the focused field into the region that is actually visible above the
+    on-screen keyboard. Crucially the visible window is derived from
+    window.visualViewport — which always knows where the keyboard is — NOT from
+    the panel's own height. So this keeps the field clear of the keyboard even
+    on iOS Safari, where the panel may not resize (only the visual viewport
+    shrinks). It prefers to lift the field's bottom above the keyboard, and if
+    the field is taller than the gap it aligns the top instead. */
+function scrollIntoSafeView(el: HTMLElement, behavior: ScrollBehavior = 'smooth') {
   const scroller = getScroller(el)
   if (!scroller) {
     el.scrollIntoView({ behavior, block: 'center' })
     return
   }
+  const vv = window.visualViewport
+  const kbTop = vv ? vv.offsetTop + vv.height : window.innerHeight
   const sRect = scroller.getBoundingClientRect()
+
+  // If the scroller extends below the keyboard's top edge (e.g. iOS didn't
+  // shrink the fixed panel — only the visual viewport changed), the content
+  // fits and there's nothing to scroll. Pad the bottom by that overlap to
+  // CREATE the scroll room needed to lift a low field above the keyboard.
+  // When the keyboard closes the overlap is 0 and the padding resets.
+  const overlap = Math.max(0, sRect.bottom - kbTop)
+  scroller.style.paddingBottom = overlap > 0 ? `${overlap + 24}px` : ''
+
+  // True visible band: intersect the scroller with the visual viewport so the
+  // keyboard's top edge is respected whether or not the panel itself shrank.
+  const visTop = Math.max(sRect.top, vv ? vv.offsetTop : 0)
+  const visBottom = Math.min(sRect.bottom, kbTop)
+  const margin = 20
   const tRect = el.getBoundingClientRect()
-  const delta = tRect.top - sRect.top - (scroller.clientHeight - tRect.height) / 2
-  scroller.scrollTo({ top: scroller.scrollTop + delta, behavior })
+  let delta = 0
+  if (tRect.bottom > visBottom - margin) {
+    delta = tRect.bottom - (visBottom - margin) // lift bottom above keyboard
+  }
+  if (tRect.top - delta < visTop + margin) {
+    delta = tRect.top - (visTop + margin) // …but never hide the top
+  }
+  if (Math.abs(delta) > 1) scroller.scrollTo({ top: scroller.scrollTop + delta, behavior })
 }
 
 /** Only scroll if the element isn't fully visible — keeps step changes from
@@ -361,9 +388,10 @@ function InlineInput({
           onFocus={(e) => {
             const shell = e.currentTarget.closest<HTMLElement>('[data-active]')
             if (shell) {
-              centerInScroller(shell)
-              // re-center once the keyboard has finished sliding up
-              setTimeout(() => centerInScroller(shell, 'auto'), 350)
+              scrollIntoSafeView(shell)
+              // re-run after the keyboard has finished sliding up (visualViewport
+              // settles over ~300ms) so the final position clears it.
+              setTimeout(() => scrollIntoSafeView(shell, 'auto'), 350)
             }
           }}
           onKeyDown={(e) => {
@@ -539,7 +567,7 @@ export default function StartProjectChat() {
       const target =
         root.querySelector<HTMLElement>('[data-active]') ?? bottomRef.current
       if (!target) return
-      if (mode === 'center') centerInScroller(target, behavior)
+      if (mode === 'center') scrollIntoSafeView(target, behavior)
       else ensureVisibleInScroller(target, behavior)
     },
     [],
@@ -741,8 +769,8 @@ export default function StartProjectChat() {
                   onFocus={(e) => {
                     const shell = e.currentTarget.closest<HTMLElement>('[data-active]')
                     if (shell) {
-                      centerInScroller(shell)
-                      setTimeout(() => centerInScroller(shell, 'auto'), 350)
+                      scrollIntoSafeView(shell)
+                      setTimeout(() => scrollIntoSafeView(shell, 'auto'), 350)
                     }
                   }}
                   disabled={!isActive('message')}
