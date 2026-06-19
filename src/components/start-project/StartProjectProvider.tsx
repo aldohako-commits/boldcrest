@@ -227,7 +227,8 @@ function KbDebug({ panelRef }: { panelRef: RefObject<HTMLElement | null> }) {
   const barRef = useRef<HTMLPreElement>(null)
   useEffect(() => {
     if (typeof window === 'undefined') return
-    // TEMP: always on while diagnosing the keyboard (no URL flag needed).
+    // Diagnostic only — shows when the URL contains "kbdebug" (e.g. /?kbdebug=1).
+    if (!window.location.search.includes('kbdebug')) return
     setOn(true)
     const fmt = (n: number | undefined) => (n == null ? '–' : Math.round(n))
     const update = () => {

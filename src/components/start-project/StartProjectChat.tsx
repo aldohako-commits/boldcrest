@@ -143,8 +143,14 @@ function scrollIntoSafeView(el: HTMLElement, behavior: ScrollBehavior = 'smooth'
     return
   }
   const vv = window.visualViewport
-  const kbTop = vv ? vv.offsetTop + vv.height : window.innerHeight
-  const keyboard = Math.max(0, window.innerHeight - kbTop)
+  // getBoundingClientRect is relative to the VISIBLE viewport (a fixed element
+  // pinned to the visible top reports rect.top ≈ 0 even when iOS has panned the
+  // page, i.e. visualViewport.offsetTop > 0). So the keyboard's top edge in that
+  // same coordinate space is simply vv.height — NOT offsetTop + vv.height. Using
+  // the latter made `keyboard` compute to 0 on devices that pan (offsetTop>0),
+  // so the field was never scrolled clear of the keyboard.
+  const kbTop = vv ? vv.height : window.innerHeight
+  const keyboard = vv ? Math.max(0, window.innerHeight - vv.height) : 0
   if (keyboard < 100) {
     // Keyboard isn't open (yet) — don't yank the view; just clear the padding.
     scroller.style.paddingBottom = ''
