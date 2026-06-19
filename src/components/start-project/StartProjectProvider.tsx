@@ -71,19 +71,24 @@ export default function StartProjectProvider({ children }: { children: ReactNode
     }
   }, [isOpen, lenis])
 
-  // Hide the page content behind the overlay while the chat is open (mobile).
-  // iOS Safari clips position:fixed elements to the visual viewport when the
+  // Hide the page content behind the overlay while the chat is open on any
+  // TOUCH device (phones AND tablets — anything with an on-screen keyboard).
+  // Mobile browsers clip position:fixed elements to the visual viewport when the
   // keyboard is up, leaving a strip above the keyboard where the page bleeds
   // through no matter how we size the panel. Making the page content invisible
   // means that strip shows the uniform body background (#0a0a0a) instead — the
   // same colour as the panel, so there is nothing left to bleed. visibility
-  // (not display:none) keeps layout + scroll position intact. Desktop keeps its
-  // blurred-page backdrop (no keyboard there, so no gap).
+  // (not display:none) keeps layout + scroll position intact. Pointer-based
+  // detection (not a width breakpoint) so large tablets are covered and
+  // mouse-driven desktops keep their blurred-page backdrop.
   const pageRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!isOpen) return
     const el = pageRef.current
-    if (!el || window.innerWidth >= 768) return
+    const isTouch =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(pointer: coarse)').matches
+    if (!el || !isTouch) return
     const prev = el.style.visibility
     el.style.visibility = 'hidden'
     return () => {

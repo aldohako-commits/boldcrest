@@ -142,27 +142,31 @@ function scrollIntoSafeView(el: HTMLElement, behavior: ScrollBehavior = 'smooth'
     el.scrollIntoView({ behavior, block: 'center' })
     return
   }
+  // Lift the WHOLE active form box (so its OK button shows too), not just the
+  // field — fall back to the field itself if it isn't inside a form box.
+  const box = (el.closest('[data-active]') as HTMLElement | null) ?? el
   const vv = window.visualViewport
   // getBoundingClientRect is relative to the VISIBLE viewport (a fixed element
-  // pinned to the visible top reports rect.top ≈ 0 even when iOS has panned the
-  // page, i.e. visualViewport.offsetTop > 0). So the keyboard's top edge in that
-  // same coordinate space is simply vv.height — NOT offsetTop + vv.height. Using
-  // the latter made `keyboard` compute to 0 on devices that pan (offsetTop>0),
-  // so the field was never scrolled clear of the keyboard.
+  // pinned to the visible top reports rect.top ≈ 0 even when the browser has
+  // panned the page, i.e. visualViewport.offsetTop > 0). So the keyboard's top
+  // edge in that same coordinate space is simply vv.height — NOT
+  // offsetTop + vv.height. Using the latter made `keyboard` compute to 0 on
+  // devices that pan (offsetTop>0), so the field was never scrolled clear.
   const kbTop = vv ? vv.height : window.innerHeight
   const keyboard = vv ? Math.max(0, window.innerHeight - vv.height) : 0
   if (keyboard < 100) {
-    // Keyboard isn't open (yet) — don't yank the view; just clear the padding.
+    // No overlay keyboard: either it's closed, or the browser resized the layout
+    // instead of overlaying (some Android configs). Clear the padding and just
+    // make sure the box is visible — ensureVisibleInScroller only scrolls when
+    // it isn't, so a desktop view that's already fine is never yanked.
     scroller.style.paddingBottom = ''
+    ensureVisibleInScroller(box, behavior)
     return
   }
   // Room below the content so a field near the bottom can still scroll up clear
   // of the keyboard.
   scroller.style.paddingBottom = `${keyboard + 96}px`
   const margin = 20
-  // Lift the WHOLE active form box (so its OK button shows too), not just the
-  // field — fall back to the field itself if it isn't inside a form box.
-  const box = (el.closest('[data-active]') as HTMLElement | null) ?? el
   const rect = box.getBoundingClientRect()
   // Land the box's bottom a small margin above the keyboard.
   const delta = rect.bottom - (kbTop - margin)
