@@ -106,7 +106,15 @@ body {
   font-family: var(--font-body), sans-serif;
   background: var(--bg);
   color: var(--text-primary);
-  overflow-x: hidden;
+  /* `clip`, NOT `hidden`. `overflow-x: hidden` turns <body> into a scroll
+     container (it forces the computed overflow-y to `auto`), which breaks every
+     `position: sticky` pin on the page — most visibly the homepage "What We Do"
+     horizontal-scroll section, whose sticky panel stopped holding and left the
+     content scattered with huge gaps. `clip` suppresses the same horizontal
+     overflow without creating a scroll container, so sticky keeps working. The
+     <html> rule above already clips horizontally for Safari; this is a
+     belt-and-suspenders that must stay `clip` too. */
+  overflow-x: clip;
   overscroll-behavior-y: none;
   line-height: 1.6;
   margin: 0;
