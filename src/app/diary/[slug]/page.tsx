@@ -4,6 +4,8 @@ import { client } from '@/sanity/lib/client'
 import {
   diaryPostBySlugQuery,
   allDiaryPostsQuery,
+  relatedDiaryPostsQuery,
+  moreDiaryPostsQuery,
 } from '@/sanity/lib/queries'
 import DiaryArticle from './DiaryArticle'
 import JsonLd from '@/components/JsonLd'
@@ -74,6 +76,17 @@ export default async function DiaryPostPage({
 
   if (!post) notFound()
 
+  // MORE DIARY — same category first, then fill with the most recent posts
+  // (dedup against the current post + already-picked related), up to 3.
+  const [{ data: related }, { data: more }] = await Promise.all([
+    sanityFetch({ query: relatedDiaryPostsQuery, params: { slug, category: post.category ?? '' } }),
+    sanityFetch({ query: moreDiaryPostsQuery, params: { slug } }),
+  ])
+  const seen = new Set<string>()
+  const morePosts = [...(related ?? []), ...(more ?? [])]
+    .filter((p) => (seen.has(p._id) ? false : seen.add(p._id)))
+    .slice(0, 3)
+
   return (
     <>
       <JsonLd
@@ -93,7 +106,7 @@ export default async function DiaryPostPage({
           section: post.category,
         })}
       />
-      <DiaryArticle post={post} />
+      <DiaryArticle post={post} morePosts={morePosts} />
     </>
   )
 }

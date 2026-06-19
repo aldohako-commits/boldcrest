@@ -89,7 +89,7 @@ function formatDate(dateStr: string) {
   })
 }
 
-export default function DiaryArticle({ post }: { post: DiaryPost }) {
+export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost; morePosts?: DiaryPost[] }) {
   const [current, setCurrent] = useState(0) // 0 = cover, 1 = article
   const [isLocked, setIsLocked] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -337,6 +337,51 @@ export default function DiaryArticle({ post }: { post: DiaryPost }) {
               </div>
             </div>
           </div>
+
+          {/* MORE DIARY — same category first, then most recent (built server-side) */}
+          {morePosts.length > 0 && (
+            <section className="px-[var(--gutter)] pb-[var(--space-2xl)]">
+              <div className="mx-auto max-w-[var(--max-width)]">
+                <p className="mb-[var(--space-lg)] text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
+                  More Diary
+                </p>
+                <div className="grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-3 md:gap-x-6 lg:gap-x-8">
+                  {morePosts.map((p) => (
+                    <Link key={p._id} href={`/diary/${p.slug.current}`} className="group block">
+                      <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-[#1a1a1a] md:rounded-2xl">
+                        {p.coverImage?.asset ? (
+                          <Image
+                            loader={sanityImageLoader}
+                            src={urlFor(p.coverImage).width(800).height(600).url()}
+                            alt={p.title}
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            sizes="(max-width: 768px) 50vw, 33vw"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center">
+                            <span className="px-4 text-center text-[1rem] font-bold uppercase leading-[1.1] tracking-[-0.02em] text-white/10">
+                              {p.title}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="mt-3">
+                        {p.category && (
+                          <span className="mb-1 inline-block text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-text-tertiary">
+                            {p.category}
+                          </span>
+                        )}
+                        <h3 className="font-display text-[0.95rem] font-bold uppercase leading-[1.3] tracking-[0.02em] text-text-primary md:text-[1.1rem]">
+                          {p.title}
+                        </h3>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
 
           {/* Footer flows in at the end of the article (the fixed-overlay deck
               hides the global one, so we render it here). */}
