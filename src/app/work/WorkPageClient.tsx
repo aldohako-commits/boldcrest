@@ -386,7 +386,13 @@ function InlineFilter({
                 </button>
               )}
             </span>
-            {!stacked && <span className="h-3 w-px bg-text-tertiary" />}
+            {/* The "|" between the two groups is a desktop-only nicety: shown
+                only on one row (!stacked) AND only at sm+ (hidden on phones).
+                On a narrow phone the two labels read fine on their own, and when
+                they wrap to two rows the divider would orphan at the end of row
+                one — so it stays hidden across every mobile state. Matches the
+                expanded-state divider, which is likewise `hidden … sm:block`. */}
+            {!stacked && <span className="hidden h-3 w-px bg-text-tertiary sm:block" />}
             <span ref={group2Ref} className="flex items-center gap-3">
               <button
                 onClick={() => setOpenFilter('industry')}
