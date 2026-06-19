@@ -286,21 +286,21 @@ function FacesGallery({ team }: { team: FaceItem[] }) {
               </div>
             )}
             <div
-              className="pointer-events-none absolute inset-0 flex flex-col justify-end p-[var(--space-sm)] opacity-0 transition-opacity duration-[0.4s] group-hover:opacity-100"
+              className="pointer-events-none absolute inset-0 flex flex-col justify-end p-[var(--space-sm)] opacity-0 transition-opacity duration-[0.4s] group-hover:opacity-100 [@media(hover:none)]:opacity-100"
               style={{
                 background: 'linear-gradient(180deg, transparent 45%, rgba(0,0,0,0.8) 100%)',
                 transitionTimingFunction: 'var(--ease-out-expo)',
               }}
             >
               <h3
-                className="translate-y-2 font-display text-[0.95rem] font-semibold leading-tight transition-transform duration-[0.4s] group-hover:translate-y-0"
+                className="translate-y-2 font-display text-[0.95rem] font-semibold leading-tight transition-transform duration-[0.4s] group-hover:translate-y-0 [@media(hover:none)]:translate-y-0"
                 style={{ transitionTimingFunction: 'var(--ease-out-expo)' }}
               >
                 {member.name}
               </h3>
               {member.role && (
                 <span
-                  className="mt-0.5 translate-y-2 text-[0.65rem] uppercase tracking-[0.1em] text-text-secondary transition-transform duration-[0.4s] group-hover:translate-y-0"
+                  className="mt-0.5 translate-y-2 text-[0.65rem] uppercase tracking-[0.1em] text-text-secondary transition-transform duration-[0.4s] group-hover:translate-y-0 [@media(hover:none)]:translate-y-0"
                   style={{ transitionTimingFunction: 'var(--ease-out-expo)', transitionDelay: '0.04s' }}
                 >
                   {member.role}

@@ -24,6 +24,7 @@ interface DiaryPost {
 
 interface DiaryPageClientProps {
   posts: DiaryPost[]
+  initialCategory?: string
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -96,8 +97,10 @@ function DiaryCard({ post }: { post: DiaryPost }) {
   )
 }
 
-export default function DiaryPageClient({ posts }: DiaryPageClientProps) {
-  const [activeFilter, setActiveFilter] = useState('All')
+export default function DiaryPageClient({ posts, initialCategory }: DiaryPageClientProps) {
+  const [activeFilter, setActiveFilter] = useState(
+    initialCategory && initialCategory !== 'All' ? initialCategory : 'All'
+  )
 
   const categories = useMemo(() => {
     const set = new Set<string>()

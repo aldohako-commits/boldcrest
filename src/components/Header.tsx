@@ -113,6 +113,15 @@ export default function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
+                  onClick={(e) => {
+                    // Clicking the current page's nav item returns to the top
+                    // (slide-deck pages reset their deck via the event).
+                    if (pathname === link.href) {
+                      e.preventDefault()
+                      window.dispatchEvent(new CustomEvent('boldcrest:back-to-top'))
+                      window.scrollTo({ top: 0, behavior: 'smooth' })
+                    }
+                  }}
                   className={`group relative text-[0.8rem] font-medium uppercase tracking-[0.12em] transition-colors duration-[0.5s] ${
                     pathname === link.href
                       ? 'text-white'

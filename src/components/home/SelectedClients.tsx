@@ -74,7 +74,7 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
   const renderPartner = (partner: Partner) => (
     <span
       key={partner._id}
-      className="flex shrink-0 items-center px-6 py-1 opacity-50"
+      className="flex shrink-0 items-center px-3.5 py-1 opacity-50 md:px-6"
     >
       {hasLogo(partner) ? (
         <Image

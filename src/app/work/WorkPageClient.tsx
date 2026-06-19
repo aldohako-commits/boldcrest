@@ -285,7 +285,7 @@ function InlineFilter({
   const labelClass =
     'text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-text-secondary cursor-pointer transition-colors duration-200 hover:text-[#a3a3a3]'
   const itemClass =
-    'text-[0.7rem] font-medium uppercase tracking-[0.1em] cursor-pointer transition-colors duration-200 hover:text-white whitespace-nowrap'
+    'text-[0.75rem] font-medium uppercase leading-[1.4] tracking-[0.1em] cursor-pointer transition-colors duration-200 hover:text-white whitespace-nowrap'
 
   const items = openFilter === 'services'
     ? allServices.filter((s) => s !== 'All')
@@ -370,10 +370,10 @@ function InlineFilter({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <span className="shrink-0 pt-[0.15rem] text-[0.75rem] font-semibold uppercase tracking-[0.15em] text-white whitespace-nowrap">
+            <span className="shrink-0 text-[0.75rem] font-semibold uppercase tracking-[0.15em] leading-[1.4] text-white whitespace-nowrap">
               {openFilter === 'services' ? 'Services' : 'Industry'}
             </span>
-            <span className="mt-[0.3rem] hidden h-3 w-px shrink-0 bg-border sm:block" />
+            <span className="mt-[0.45rem] hidden h-3 w-px shrink-0 bg-border sm:block" />
             {/* Items wrap into multiple rows as needed; the section below is
                 pushed down naturally instead of the row scrolling/overflowing. */}
             <div className="flex flex-1 flex-wrap items-center gap-x-3 gap-y-2">

@@ -234,7 +234,12 @@ export default function DiaryArticle({ post }: { post: DiaryPost }) {
                 {post.category && (
                   <>
                     <span>/</span>
-                    <span className="text-text-secondary">{post.category}</span>
+                    <Link
+                      href={`/diary?category=${encodeURIComponent(post.category)}`}
+                      className="text-text-secondary transition-colors duration-200 hover:text-white"
+                    >
+                      {post.category}
+                    </Link>
                   </>
                 )}
               </motion.nav>

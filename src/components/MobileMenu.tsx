@@ -73,7 +73,7 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
             </div>
 
             {/* Links */}
-            <ul className="flex flex-col gap-1 pt-2" style={{ paddingLeft: 20, paddingRight: 20, paddingBottom: 20 }}>
+            <ul className="flex flex-col gap-1 pt-2" style={{ paddingLeft: 20, paddingRight: 20, paddingBottom: 16 }}>
               {navLinks.map((link, i) => (
                 <motion.li
                   key={link.href}
@@ -104,7 +104,7 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
                 <button
                   type="button"
                   onClick={() => { onClose(); openStartProject() }}
-                  className="flex w-full items-center justify-between gap-3 py-0.5 text-left font-display text-[2rem] font-semibold leading-[1.2] text-white transition-colors duration-200 hover:text-accent"
+                  className="flex w-full items-center justify-between gap-3 py-0.5 text-left font-display text-[2rem] font-normal leading-[1.2] text-white transition-colors duration-200 hover:text-accent"
                 >
                   Start a Project
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/35">

@@ -16,8 +16,18 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function DiaryPage() {
+export default async function DiaryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>
+}) {
+  const { category } = await searchParams
   const { data: posts } = await sanityFetch({ query: allDiaryPostsQuery })
 
-  return <DiaryPageClient posts={posts ?? []} />
+  return (
+    <DiaryPageClient
+      posts={posts ?? []}
+      initialCategory={typeof category === 'string' ? category : undefined}
+    />
+  )
 }
