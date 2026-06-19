@@ -67,33 +67,13 @@ export default function StartProjectProvider({ children }: { children: ReactNode
     }
   }, [isOpen, lenis])
 
-  // Pin the panel to the actual visible band of the visual viewport so it sits
-  // exactly above the on-screen keyboard (iOS doesn't shrink dvh for the
-  // keyboard, and it also SHIFTS the visual viewport — offsetTop — when an input
-  // focuses, which would otherwise leave a gap below the panel). Both height and
-  // offsetTop are tracked. setState is value-guarded, so when nothing actually
-  // changes (e.g. between keystrokes) it bails out and causes no re-render —
-  // keeping typing smooth.
-  const [panelHeight, setPanelHeight] = useState('100dvh')
-  const [panelTop, setPanelTop] = useState(0)
-  useEffect(() => {
-    if (!isOpen) return
-    const vv = window.visualViewport
-    if (!vv) return
-    const update = () => {
-      setPanelHeight((h) => (h === `${vv.height}px` ? h : `${vv.height}px`))
-      setPanelTop((t) => (t === vv.offsetTop ? t : vv.offsetTop))
-    }
-    update()
-    vv.addEventListener('resize', update)
-    vv.addEventListener('scroll', update)
-    return () => {
-      vv.removeEventListener('resize', update)
-      vv.removeEventListener('scroll', update)
-      setPanelHeight('100dvh')
-      setPanelTop(0)
-    }
-  }, [isOpen])
+  // The panel is full-height (100dvh) so its SOLID background covers the entire
+  // screen — including the strip behind the on-screen keyboard. This is what
+  // stops other sections of the page bleeding into the keyboard area: iOS has a
+  // backdrop-filter clipping bug where the blurred backdrop doesn't render
+  // between the visual viewport and the keyboard, but a solid full-height panel
+  // has no such gap. The focused field is scrolled above the keyboard from
+  // inside the chat (visualViewport-aware), so nothing needs to resize here.
 
   return (
     <StartProjectContext.Provider value={{ isOpen, open, close }}>
@@ -120,8 +100,8 @@ export default function StartProjectProvider({ children }: { children: ReactNode
               role="dialog"
               aria-modal="true"
               aria-label="Start a new project"
-              className="fixed right-0 top-0 z-[2000] flex w-full max-w-[480px] flex-col bg-bg"
-              style={{ top: panelTop, height: panelHeight, borderLeft: '1px solid var(--border)', boxShadow: '-24px 0 60px rgba(0,0,0,0.45)' }}
+              className="fixed right-0 top-0 z-[2000] flex h-[100dvh] w-full max-w-[480px] flex-col overflow-hidden bg-bg"
+              style={{ borderLeft: '1px solid var(--border)', boxShadow: '-24px 0 60px rgba(0,0,0,0.45)' }}
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
@@ -158,10 +138,13 @@ export default function StartProjectProvider({ children }: { children: ReactNode
                 </div>
               </div>
 
-              {/* Scrollable chat body — keep Lenis out so it scrolls natively */}
+              {/* Scrollable chat body — keep Lenis out so it scrolls natively.
+                  min-h-0 is essential: without it the flex item grows with its
+                  content (and keyboard padding) and overflows the panel instead
+                  of scrolling internally, which breaks the keyboard math. */}
               <div
                 data-lenis-prevent
-                className="flex-1 overflow-y-auto overscroll-contain px-6 py-8"
+                className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-8"
               >
                 <StartProjectChat key={chatKey} />
               </div>

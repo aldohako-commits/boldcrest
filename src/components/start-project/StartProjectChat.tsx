@@ -119,23 +119,36 @@ function getScroller(el: HTMLElement): HTMLElement | null {
   return el.closest('[data-lenis-prevent]')
 }
 
-/** Center the focused field within the chat scroller. The panel is pinned to
-    the visual-viewport band (height = visualViewport.height in the Provider), so
-    the scroller IS the area visible above the keyboard — centering the field in
-    it keeps it comfortably clear of the keyboard. No padding tricks (those left
-    a visible empty gap on iOS); just a clamped scroll. */
+/** Center the focused field within the band that's actually visible above the
+    on-screen keyboard. The panel is full-height (its solid bg covers behind the
+    keyboard so nothing bleeds through), so the visible band must come from
+    window.visualViewport — NOT the scroller height — to keep the field clear of
+    the keyboard. No padding tricks; the full-height scroller has all the room it
+    needs. */
 function scrollIntoSafeView(el: HTMLElement, behavior: ScrollBehavior = 'smooth') {
   const scroller = getScroller(el)
   if (!scroller) {
     el.scrollIntoView({ behavior, block: 'center' })
     return
   }
-  const sRect = scroller.getBoundingClientRect()
-  const tRect = el.getBoundingClientRect()
+  const vv = window.visualViewport
+  const visTop = vv ? vv.offsetTop : 0
+  const kbTop = vv ? vv.offsetTop + vv.height : window.innerHeight
+  // Keyboard height derived from the LAYOUT viewport (stable), not the scroller
+  // rect — the panel is full-height so the keyboard covers (innerHeight - kbTop)
+  // of it. 0 when the keyboard is closed, so the padding resets cleanly.
+  const keyboard = Math.max(0, window.innerHeight - kbTop)
+  // Padding (hidden behind the keyboard) creates the room to scroll a low field
+  // up into the visible band; generous so any field can reach centre.
+  scroller.style.paddingBottom = keyboard > 0 ? `${keyboard + (kbTop - visTop)}px` : ''
+  const band = kbTop - visTop
   const margin = 16
-  // Center, but never push the field's top above the scroller's top edge.
-  const target = sRect.top + Math.max(margin, (scroller.clientHeight - tRect.height) / 2)
-  const delta = tRect.top - target
+  const tRect = el.getBoundingClientRect()
+  // Center the field in the visible band, then clamp so it never sits under the
+  // keyboard nor above the top of the band.
+  let delta = tRect.top - (visTop + Math.max(margin, (band - tRect.height) / 2))
+  if (tRect.bottom - delta > kbTop - margin) delta = tRect.bottom - (kbTop - margin)
+  if (tRect.top - delta < visTop + margin) delta = tRect.top - (visTop + margin)
   if (Math.abs(delta) > 1) scroller.scrollTo({ top: scroller.scrollTop + delta, behavior })
 }
 
