@@ -34,19 +34,20 @@ export default function ColorTransitionZone({ children }: { children: React.Reac
     offset: ['start 0.8', 'end 0.05'],
   })
 
-  // Keep the light background until the zone is almost fully scrolled out the
-  // top. The last child is the Diary preview; darkening earlier made it land
-  // over the Diary at ~50/50 and become unreadable. The return to dark now
-  // happens only in the final stretch, after the Diary has left the centre.
+  // Transitions keep their START points but are STEEPER so they don't visually
+  // drag across a long scroll distance (which left portfolio/diary text sitting
+  // on a mid-grey background and hard to read). dark→light completes by 0.035
+  // (still starts at 0); light→dark starts at 0.92 and completes by 0.96, then
+  // holds dark out the top.
   const bgColor = useTransform(
     scrollYProgress,
-    [0, 0.05, 0.92, 1],
+    [0, 0.035, 0.92, 0.96],
     ['#0a0a0a', '#EDEDED', '#EDEDED', '#0a0a0a']
   )
 
   const fgColor = useTransform(
     scrollYProgress,
-    [0, 0.05, 0.92, 1],
+    [0, 0.035, 0.92, 0.96],
     ['#EDEDED', '#0a0a0a', '#0a0a0a', '#EDEDED']
   )
 
