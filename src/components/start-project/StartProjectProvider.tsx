@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type RefObject,
 } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import StartProjectChat from './StartProjectChat'
@@ -129,6 +130,11 @@ export default function StartProjectProvider({ children }: { children: ReactNode
       <AnimatePresence>
         {isOpen && (
           <>
+            {/* TEMP diagnostic — only when the URL contains ?kbdebug. Shows what
+                iOS actually reports for the viewport + where the panel really
+                renders, so we can stop guessing about the keyboard bleed. */}
+            <KbDebug panelRef={panelRef} />
+
             {/* Backdrop — darkened + blurred for the ENTIRE time the chat is
                 open. A single stable layer that only fades on open/close, never
                 toggling on focus/keyboard, so the page behind never flashes back
@@ -205,5 +211,65 @@ export default function StartProjectProvider({ children }: { children: ReactNode
         )}
       </AnimatePresence>
     </StartProjectContext.Provider>
+  )
+}
+
+/* TEMP diagnostic overlay. Renders only when the page URL contains "kbdebug"
+   (e.g. /?kbdebug=1). Shows, live, what iOS reports for the layout + visual
+   viewport and where the panel actually paints — so we can see the real numbers
+   during a keyboard-open instead of inferring them. Remove once the keyboard
+   bleed is resolved. */
+function KbDebug({ panelRef }: { panelRef: RefObject<HTMLElement | null> }) {
+  const [on, setOn] = useState(false)
+  const [text, setText] = useState('')
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (!window.location.search.includes('kbdebug')) return
+    setOn(true)
+    const fmt = (n: number | undefined) => (n == null ? '–' : Math.round(n))
+    const update = () => {
+      const vv = window.visualViewport
+      const r = panelRef.current?.getBoundingClientRect()
+      const ae = document.activeElement as HTMLElement | null
+      setText(
+        [
+          `inner  H=${window.innerHeight} W=${window.innerWidth} scrollY=${window.scrollY}`,
+          `vv     h=${fmt(vv?.height)} w=${fmt(vv?.width)} top=${fmt(vv?.offsetTop)} pageTop=${fmt(vv?.pageTop)} scale=${vv?.scale?.toFixed(2) ?? '–'}`,
+          `panel  top=${fmt(r?.top)} h=${fmt(r?.height)} bottom=${fmt(r?.bottom)}`,
+          `kbGap  innerH-vvH=${vv ? window.innerHeight - Math.round(vv.height) : '–'}  active=${ae?.tagName ?? '–'}`,
+        ].join('\n'),
+      )
+    }
+    update()
+    const vv = window.visualViewport
+    vv?.addEventListener('resize', update)
+    vv?.addEventListener('scroll', update)
+    const iv = window.setInterval(update, 200)
+    return () => {
+      vv?.removeEventListener('resize', update)
+      vv?.removeEventListener('scroll', update)
+      window.clearInterval(iv)
+    }
+  }, [panelRef])
+  if (!on) return null
+  return (
+    <pre
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 99999,
+        margin: 0,
+        padding: '6px 8px',
+        background: 'rgba(200,0,0,0.9)',
+        color: '#fff',
+        font: '10px/1.35 ui-monospace, monospace',
+        whiteSpace: 'pre-wrap',
+        pointerEvents: 'none',
+      }}
+    >
+      {text}
+    </pre>
   )
 }
