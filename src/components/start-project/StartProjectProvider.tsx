@@ -10,6 +10,7 @@ import {
 } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import StartProjectChat from './StartProjectChat'
+import { useLenis } from '@/components/LenisProvider'
 
 type StartProjectContextValue = {
   isOpen: boolean
@@ -30,56 +31,69 @@ export function useStartProject() {
 export default function StartProjectProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
   const [chatKey, setChatKey] = useState(0)
-  // True while a field in the panel is focused (the "chat active" typing state).
-  const [inputActive, setInputActive] = useState(false)
   const open = useCallback(() => setIsOpen(true), [])
   const close = useCallback(() => setIsOpen(false), [])
   // Remounting the chat with a fresh key resets it to the first question.
   const restartChat = useCallback(() => setChatKey((k) => k + 1), [])
+  const lenis = useLenis()
 
-  const isField = (el: EventTarget | null) =>
-    el instanceof HTMLElement && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')
-
-  // Esc to close + lock background scroll while the panel is open
+  // Esc to close.
   useEffect(() => {
     if (!isOpen) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close()
     }
     window.addEventListener('keydown', onKey)
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      document.body.style.overflow = prevOverflow
-      setInputActive(false)
-    }
+    return () => window.removeEventListener('keydown', onKey)
   }, [isOpen, close])
 
-  // Track the visual viewport so the panel shrinks above the on-screen keyboard
-  // (iOS Safari doesn't shrink dvh when the keyboard opens). The chat then
-  // behaves like a messaging app: the input stays visible and messages scroll.
+  // Hard scroll lock for the WHOLE time the chat is open: freeze the page with
+  // position:fixed so it can't scroll at all — this is what stops iOS from
+  // pulling other sections into view when the keyboard opens, and keeps the
+  // backdrop covering everything. Lenis (desktop only) is paused too. Fully
+  // restored to the exact prior scroll position on close.
+  useEffect(() => {
+    if (!isOpen) return
+    lenis?.stop()
+    const scrollY = window.scrollY
+    const body = document.body
+    const prev = {
+      position: body.style.position,
+      top: body.style.top,
+      left: body.style.left,
+      right: body.style.right,
+      width: body.style.width,
+      overflow: body.style.overflow,
+    }
+    body.style.position = 'fixed'
+    body.style.top = `-${scrollY}px`
+    body.style.left = '0'
+    body.style.right = '0'
+    body.style.width = '100%'
+    body.style.overflow = 'hidden'
+    return () => {
+      Object.assign(body.style, prev)
+      window.scrollTo(0, scrollY)
+      lenis?.start()
+    }
+  }, [isOpen, lenis])
+
+  // Panel height tracks the visual viewport so it sits above the on-screen
+  // keyboard (iOS doesn't shrink dvh for the keyboard). Only react to 'resize'
+  // (keyboard show/hide) — NOT 'scroll', which fires constantly while typing
+  // and would thrash re-renders. The page is frozen above, so there's no
+  // viewport offset to follow.
   const [panelHeight, setPanelHeight] = useState('100dvh')
-  const [panelTop, setPanelTop] = useState(0)
   useEffect(() => {
     if (!isOpen) return
     const vv = window.visualViewport
     if (!vv) return
-    const update = () => {
-      setPanelHeight(`${vv.height}px`)
-      // iOS Safari can shift the whole webview up when an input focuses (even
-      // with body scroll locked); offsetTop follows that shift so the panel
-      // stays pinned to the visible area instead of sliding under the notch.
-      setPanelTop(vv.offsetTop)
-    }
+    const update = () => setPanelHeight(`${vv.height}px`)
     update()
     vv.addEventListener('resize', update)
-    vv.addEventListener('scroll', update)
     return () => {
       vv.removeEventListener('resize', update)
-      vv.removeEventListener('scroll', update)
       setPanelHeight('100dvh')
-      setPanelTop(0)
     }
   }, [isOpen])
 
@@ -90,25 +104,17 @@ export default function StartProjectProvider({ children }: { children: ReactNode
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* Backdrop */}
+            {/* Backdrop — darkened + blurred for the ENTIRE time the chat is
+                open. A single stable layer that only fades on open/close, never
+                toggling on focus/keyboard, so the page behind never flashes back
+                into view. No box around the chat. */}
             <motion.div
-              className="fixed inset-0 z-[1900] bg-black/60 backdrop-blur-[3px]"
+              className="fixed inset-0 z-[1900] bg-black/75 backdrop-blur-lg"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.35 }}
               onClick={close}
-            />
-
-            {/* Focus overlay — when the user starts typing, push the interface
-                behind the chat further away with extra darken + blur. Fades in
-                only while a field is focused; no box around the chat. */}
-            <motion.div
-              className="pointer-events-none fixed inset-0 z-[1950] bg-black/45 backdrop-blur-lg"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: inputActive ? 1 : 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             />
 
             {/* Side panel */}
@@ -116,15 +122,8 @@ export default function StartProjectProvider({ children }: { children: ReactNode
               role="dialog"
               aria-modal="true"
               aria-label="Start a new project"
-              onFocus={(e) => {
-                if (isField(e.target)) setInputActive(true)
-              }}
-              onBlur={(e) => {
-                // Stay active if focus is just moving to another field.
-                if (!isField(e.relatedTarget)) setInputActive(false)
-              }}
               className="fixed right-0 top-0 z-[2000] flex w-full max-w-[480px] flex-col bg-bg"
-              style={{ top: panelTop, height: panelHeight, borderLeft: '1px solid var(--border)', boxShadow: '-24px 0 60px rgba(0,0,0,0.45)' }}
+              style={{ height: panelHeight, borderLeft: '1px solid var(--border)', boxShadow: '-24px 0 60px rgba(0,0,0,0.45)' }}
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}

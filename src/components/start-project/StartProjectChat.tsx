@@ -78,9 +78,18 @@ const EMPTY: Answers = {
 /* ════════════════════════════════════════════════════
    Layout primitives
 ══════════════════════════════════════════════════════ */
-// Each message pops in with a small opacity + translateY, like a text landing.
+// Each message pops in with a small opacity + translateY on a gentle spring, so
+// bubbles land like real chat messages (a touch of settle, never mechanical).
 const turnTransition = { duration: 0.3, ease: [0.16, 1, 0.3, 1] as const }
-const ITEM_TRANSITION = { duration: 0.35, ease: [0.16, 1, 0.3, 1] as const }
+const ITEM_TRANSITION = {
+  type: 'spring' as const,
+  stiffness: 460,
+  damping: 30,
+  mass: 0.7,
+  opacity: { duration: 0.25 },
+}
+// The avatar slides — not snaps — to the bottom of its group as messages arrive.
+const AVATAR_TRANSITION = { type: 'spring' as const, stiffness: 500, damping: 34, mass: 0.8 }
 
 // Reveals a turn's children one-by-one on a timeline so the chat grows like a
 // real conversation: messages arrive in sequence, the container expands, and
@@ -226,7 +235,9 @@ function AgencyTurn({
         {/* Messages mount one at a time; the avatar below is pushed down as
             each new one appears, like a real chat message group. */}
         <div className="flex flex-col items-start gap-2">{items.slice(0, count)}</div>
-        <MegiAvatar />
+        <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={AVATAR_TRANSITION}>
+          <MegiAvatar />
+        </motion.div>
       </div>
     </div>
   )
@@ -257,12 +268,16 @@ function UserTurn({
           </h3>
         </header>
         <div className="flex w-full flex-col items-end gap-2">{items.slice(0, count)}</div>
-        <div
+        <motion.div
+          layout
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={AVATAR_TRANSITION}
           className="mt-4 flex h-10 w-10 items-center justify-center rounded-full text-[0.85rem] font-bold"
           style={{ background: '#161616', color: '#545454' }}
         >
           {initial || 'Y'}
-        </div>
+        </motion.div>
       </div>
     </div>
   )
@@ -275,13 +290,8 @@ function Bubble({
   side?: 'left' | 'right'
   children: React.ReactNode
 }) {
-  const ref = useRef<HTMLParagraphElement>(null)
-  useEffect(() => {
-    if (ref.current) ensureVisibleInScroller(ref.current)
-  }, [])
   return (
     <motion.p
-      ref={ref}
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={ITEM_TRANSITION}
