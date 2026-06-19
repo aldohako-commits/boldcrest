@@ -98,7 +98,7 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
   )
 
   return (
-    <section className="overflow-hidden pb-[var(--space-2xl)]">
+    <section className="overflow-hidden pb-[var(--space-md)] md:pb-[var(--space-2xl)]">
       <div className="mb-[var(--space-lg)] px-[var(--gutter)]">
         <h2 className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--zone-fg-half)' }}>
           Trusted by the ambitious<span className="text-accent">.</span>

@@ -34,31 +34,32 @@ export default function ColorTransitionZone({ children }: { children: React.Reac
     offset: ['start 0.8', 'end 0.05'],
   })
 
-  // Transitions keep their START points but are STEEPER so they don't visually
-  // drag across a long scroll distance (which left portfolio/diary text sitting
-  // on a mid-grey background and hard to read). Mobile completes even faster so
-  // the static portfolio background gives way to the transition sooner.
+  // The page bg transitions dark → light → dark as this zone scrolls through.
+  // On MOBILE the portfolio sits just above the zone and shares this global bg,
+  // so the bg is held DARK for the first stretch (while the portfolio scrolls
+  // off the top) and then snaps to light quickly — this keeps the portfolio's
+  // white text readable and still avoids the slow 50/50 mid-grey state, without
+  // boxing the portfolio in its own background. Desktop is unchanged (its taller
+  // sections mean the portfolio is already gone before the bg lightens).
+  // Covers mobile + iPad (where the portfolio shares this scroll); true desktop
+  // (>1024px) keeps its original transition.
   const [isMobile, setIsMobile] = useState(false)
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)')
+    const mq = window.matchMedia('(max-width: 1024px)')
     const update = () => setIsMobile(mq.matches)
     update()
     mq.addEventListener('change', update)
     return () => mq.removeEventListener('change', update)
   }, [])
-  const stops = isMobile ? [0, 0.02, 0.95, 0.98] : [0, 0.035, 0.92, 0.96]
 
-  const bgColor = useTransform(
-    scrollYProgress,
-    stops,
-    ['#0a0a0a', '#EDEDED', '#EDEDED', '#0a0a0a']
-  )
+  const D = '#0a0a0a'
+  const L = '#EDEDED'
+  const stops = isMobile ? [0, 0.16, 0.2, 0.95, 0.98] : [0, 0.035, 0.92, 0.96]
+  const bgRange = isMobile ? [D, D, L, L, D] : [D, L, L, D]
+  const fgRange = isMobile ? [L, L, D, D, L] : [L, D, D, L]
 
-  const fgColor = useTransform(
-    scrollYProgress,
-    stops,
-    ['#EDEDED', '#0a0a0a', '#0a0a0a', '#EDEDED']
-  )
+  const bgColor = useTransform(scrollYProgress, stops, bgRange)
+  const fgColor = useTransform(scrollYProgress, stops, fgRange)
 
   const applyColor = useCallback((color: string) => {
     if (color === lastColor.current) return

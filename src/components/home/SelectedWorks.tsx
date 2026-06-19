@@ -159,7 +159,7 @@ export default function SelectedWorks({ projects }: SelectedWorksProps) {
   }
 
   return (
-    <section className="relative z-[1] bg-[#0a0a0a] px-[var(--gutter)] pb-[var(--space-lg)] md:pb-[var(--space-2xl)]">
+    <section className="px-[var(--gutter)] pb-[var(--space-lg)] md:pb-[var(--space-2xl)]">
       <div className="w-full">
         {/* Section Header */}
         <ScrollReveal>
