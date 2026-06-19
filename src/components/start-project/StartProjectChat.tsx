@@ -84,22 +84,22 @@ const EMPTY: Answers = {
 const turnTransition = { duration: 0.3, ease: [0.16, 1, 0.3, 1] as const }
 const ITEM_TRANSITION = {
   type: 'spring' as const,
-  stiffness: 320,
-  damping: 28,
-  mass: 0.9,
-  opacity: { duration: 0.35 },
+  stiffness: 240,
+  damping: 26,
+  mass: 1,
+  opacity: { duration: 0.45 },
 }
 // The avatar slides — not snaps — to the bottom of its group as messages arrive.
-const AVATAR_TRANSITION = { type: 'spring' as const, stiffness: 420, damping: 32, mass: 0.9 }
+const AVATAR_TRANSITION = { type: 'spring' as const, stiffness: 340, damping: 30, mass: 1 }
 
 // Conversation pacing — deliberately unhurried so it reads like someone typing
 // on the other end rather than a form revealing itself. Same values drive both
 // desktop and mobile (one shared component). REVEAL_INTERVAL is the gap between
 // consecutive messages within a turn; AGENCY_START / USER_START delay the start
 // of each side's turn so the exchange lands as a back-and-forth.
-const REVEAL_INTERVAL = 650
-const AGENCY_START = 350
-const USER_START = 1250
+const REVEAL_INTERVAL = 1100
+const AGENCY_START = 500
+const USER_START = 1900
 
 // Reveals a turn's children one-by-one on a timeline so the chat grows like a
 // real conversation: messages arrive in sequence, the container expands, and
@@ -289,8 +289,19 @@ function Bubble({
   side?: 'left' | 'right'
   children: React.ReactNode
 }) {
+  const ref = useRef<HTMLParagraphElement>(null)
+  // Follow the conversation as it reveals: each message — Megi's AND the user's
+  // — pulls the view down when it lands, so the latest line is always visible.
+  // Skip while a field is focused so we never yank away from what's being typed
+  // (keyboard scrolling owns the view then).
+  useEffect(() => {
+    const ae = document.activeElement
+    const typing = ae instanceof HTMLInputElement || ae instanceof HTMLTextAreaElement
+    if (!typing && ref.current) ensureVisibleInScroller(ref.current)
+  }, [])
   return (
     <motion.p
+      ref={ref}
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={ITEM_TRANSITION}

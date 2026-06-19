@@ -95,6 +95,24 @@ export default function StartProjectProvider({ children }: { children: ReactNode
               onClick={close}
             />
 
+            {/* Opaque backing layer — same column as the panel but extended far
+                past the top and bottom edges. iOS can detach/scroll a
+                position:fixed panel while the keyboard animates, which would
+                briefly expose the page in the strip above the keyboard; an
+                oversized solid layer behind the panel keeps that strip painted
+                with the panel background no matter how far it shifts. Slides in
+                with the panel so it never flashes as a bare bar. Hidden behind
+                the panel on desktop (identical width), full-width on mobile. */}
+            <motion.div
+              aria-hidden="true"
+              className="pointer-events-none fixed right-0 z-[1990] w-full max-w-[480px] bg-bg"
+              style={{ top: '-60vh', bottom: '-60vh' }}
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            />
+
             {/* Side panel */}
             <motion.aside
               role="dialog"
