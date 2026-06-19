@@ -50,6 +50,25 @@ export default function StartProjectProvider({ children }: { children: ReactNode
     }
   }, [isOpen, close])
 
+  // Track the visual viewport so the panel shrinks above the on-screen keyboard
+  // (iOS Safari doesn't shrink dvh when the keyboard opens). The chat then
+  // behaves like a messaging app: the input stays visible and messages scroll.
+  const [panelHeight, setPanelHeight] = useState('100dvh')
+  useEffect(() => {
+    if (!isOpen) return
+    const vv = window.visualViewport
+    if (!vv) return
+    const update = () => setPanelHeight(`${vv.height}px`)
+    update()
+    vv.addEventListener('resize', update)
+    vv.addEventListener('scroll', update)
+    return () => {
+      vv.removeEventListener('resize', update)
+      vv.removeEventListener('scroll', update)
+      setPanelHeight('100dvh')
+    }
+  }, [isOpen])
+
   return (
     <StartProjectContext.Provider value={{ isOpen, open, close }}>
       {children}
@@ -72,8 +91,8 @@ export default function StartProjectProvider({ children }: { children: ReactNode
               role="dialog"
               aria-modal="true"
               aria-label="Start a new project"
-              className="fixed right-0 top-0 z-[2000] flex h-[100dvh] w-full max-w-[480px] flex-col bg-bg"
-              style={{ borderLeft: '1px solid var(--border)', boxShadow: '-24px 0 60px rgba(0,0,0,0.45)' }}
+              className="fixed right-0 top-0 z-[2000] flex w-full max-w-[480px] flex-col bg-bg"
+              style={{ height: panelHeight, borderLeft: '1px solid var(--border)', boxShadow: '-24px 0 60px rgba(0,0,0,0.45)' }}
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
