@@ -119,47 +119,23 @@ function getScroller(el: HTMLElement): HTMLElement | null {
   return el.closest('[data-lenis-prevent]')
 }
 
-/** Scroll the focused field into the region that is actually visible above the
-    on-screen keyboard. Crucially the visible window is derived from
-    window.visualViewport — which always knows where the keyboard is — NOT from
-    the panel's own height. So this keeps the field clear of the keyboard even
-    on iOS Safari, where the panel may not resize (only the visual viewport
-    shrinks). It prefers to lift the field's bottom above the keyboard, and if
-    the field is taller than the gap it aligns the top instead. */
+/** Center the focused field within the chat scroller. The panel is pinned to
+    the visual-viewport band (height = visualViewport.height in the Provider), so
+    the scroller IS the area visible above the keyboard — centering the field in
+    it keeps it comfortably clear of the keyboard. No padding tricks (those left
+    a visible empty gap on iOS); just a clamped scroll. */
 function scrollIntoSafeView(el: HTMLElement, behavior: ScrollBehavior = 'smooth') {
   const scroller = getScroller(el)
   if (!scroller) {
     el.scrollIntoView({ behavior, block: 'center' })
     return
   }
-  const vv = window.visualViewport
-  const kbTop = vv ? vv.offsetTop + vv.height : window.innerHeight
   const sRect = scroller.getBoundingClientRect()
-
-  // If the scroller extends below the keyboard's top edge (e.g. iOS didn't
-  // shrink the fixed panel — only the visual viewport changed), the content
-  // fits and there's nothing to scroll. Pad the bottom by that overlap to
-  // CREATE the scroll room needed to lift a low field above the keyboard.
-  // When the keyboard closes the overlap is 0 and the padding resets.
-  const overlap = Math.max(0, sRect.bottom - kbTop)
-  scroller.style.paddingBottom = overlap > 0 ? `${overlap + 24}px` : ''
-
-  // True visible band: intersect the scroller with the visual viewport so the
-  // keyboard's top edge is respected whether or not the panel itself shrank.
-  const visTop = Math.max(sRect.top, vv ? vv.offsetTop : 0)
-  const visBottom = Math.min(sRect.bottom, kbTop)
-  const band = visBottom - visTop
-  const margin = 16
   const tRect = el.getBoundingClientRect()
-  // Center the field within the visible band so it sits comfortably mid-screen
-  // above the keyboard — not cropped low at the keyboard's edge.
-  let delta = tRect.top - (visTop + Math.max(margin, (band - tRect.height) / 2))
-  if (tRect.bottom - delta > visBottom - margin) {
-    delta = tRect.bottom - (visBottom - margin) // keep the bottom above the keyboard
-  }
-  if (tRect.top - delta < visTop + margin) {
-    delta = tRect.top - (visTop + margin) // …but never push the top out of view
-  }
+  const margin = 16
+  // Center, but never push the field's top above the scroller's top edge.
+  const target = sRect.top + Math.max(margin, (scroller.clientHeight - tRect.height) / 2)
+  const delta = tRect.top - target
   if (Math.abs(delta) > 1) scroller.scrollTo({ top: scroller.scrollTop + delta, behavior })
 }
 

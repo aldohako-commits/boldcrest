@@ -47,33 +47,22 @@ export default function StartProjectProvider({ children }: { children: ReactNode
     return () => window.removeEventListener('keydown', onKey)
   }, [isOpen, close])
 
-  // Hard scroll lock for the WHOLE time the chat is open: freeze the page with
-  // position:fixed so it can't scroll at all — this is what stops iOS from
-  // pulling other sections into view when the keyboard opens, and keeps the
-  // backdrop covering everything. Lenis (desktop only) is paused too. Fully
-  // restored to the exact prior scroll position on close.
+  // Lock background scroll while the chat is open. Deliberately NOT using the
+  // position:fixed-body technique: on iOS, focusing an input inside a fixed
+  // panel while <body> is also position:fixed makes Safari mis-clip the panel
+  // to a tiny height. Plain overflow:hidden + pausing Lenis (desktop) locks the
+  // page without breaking the keyboard-open layout; the constant dark backdrop
+  // covers anything behind.
   useEffect(() => {
     if (!isOpen) return
     lenis?.stop()
-    const scrollY = window.scrollY
-    const body = document.body
-    const prev = {
-      position: body.style.position,
-      top: body.style.top,
-      left: body.style.left,
-      right: body.style.right,
-      width: body.style.width,
-      overflow: body.style.overflow,
-    }
-    body.style.position = 'fixed'
-    body.style.top = `-${scrollY}px`
-    body.style.left = '0'
-    body.style.right = '0'
-    body.style.width = '100%'
-    body.style.overflow = 'hidden'
+    const prevOverflow = document.body.style.overflow
+    const prevOverscroll = document.body.style.overscrollBehavior
+    document.body.style.overflow = 'hidden'
+    document.body.style.overscrollBehavior = 'none'
     return () => {
-      Object.assign(body.style, prev)
-      window.scrollTo(0, scrollY)
+      document.body.style.overflow = prevOverflow
+      document.body.style.overscrollBehavior = prevOverscroll
       lenis?.start()
     }
   }, [isOpen, lenis])
