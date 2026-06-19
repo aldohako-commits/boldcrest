@@ -78,22 +78,31 @@ export default function StartProjectProvider({ children }: { children: ReactNode
     }
   }, [isOpen, lenis])
 
-  // Panel height tracks the visual viewport so it sits above the on-screen
-  // keyboard (iOS doesn't shrink dvh for the keyboard). Only react to 'resize'
-  // (keyboard show/hide) — NOT 'scroll', which fires constantly while typing
-  // and would thrash re-renders. The page is frozen above, so there's no
-  // viewport offset to follow.
+  // Pin the panel to the actual visible band of the visual viewport so it sits
+  // exactly above the on-screen keyboard (iOS doesn't shrink dvh for the
+  // keyboard, and it also SHIFTS the visual viewport — offsetTop — when an input
+  // focuses, which would otherwise leave a gap below the panel). Both height and
+  // offsetTop are tracked. setState is value-guarded, so when nothing actually
+  // changes (e.g. between keystrokes) it bails out and causes no re-render —
+  // keeping typing smooth.
   const [panelHeight, setPanelHeight] = useState('100dvh')
+  const [panelTop, setPanelTop] = useState(0)
   useEffect(() => {
     if (!isOpen) return
     const vv = window.visualViewport
     if (!vv) return
-    const update = () => setPanelHeight(`${vv.height}px`)
+    const update = () => {
+      setPanelHeight((h) => (h === `${vv.height}px` ? h : `${vv.height}px`))
+      setPanelTop((t) => (t === vv.offsetTop ? t : vv.offsetTop))
+    }
     update()
     vv.addEventListener('resize', update)
+    vv.addEventListener('scroll', update)
     return () => {
       vv.removeEventListener('resize', update)
+      vv.removeEventListener('scroll', update)
       setPanelHeight('100dvh')
+      setPanelTop(0)
     }
   }, [isOpen])
 
@@ -109,7 +118,7 @@ export default function StartProjectProvider({ children }: { children: ReactNode
                 toggling on focus/keyboard, so the page behind never flashes back
                 into view. No box around the chat. */}
             <motion.div
-              className="fixed inset-0 z-[1900] bg-black/75 backdrop-blur-lg"
+              className="fixed inset-0 z-[1900] bg-black/90 backdrop-blur-xl"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -123,7 +132,7 @@ export default function StartProjectProvider({ children }: { children: ReactNode
               aria-modal="true"
               aria-label="Start a new project"
               className="fixed right-0 top-0 z-[2000] flex w-full max-w-[480px] flex-col bg-bg"
-              style={{ height: panelHeight, borderLeft: '1px solid var(--border)', boxShadow: '-24px 0 60px rgba(0,0,0,0.45)' }}
+              style={{ top: panelTop, height: panelHeight, borderLeft: '1px solid var(--border)', boxShadow: '-24px 0 60px rgba(0,0,0,0.45)' }}
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}

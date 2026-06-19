@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback, Children } from 'react'
+import { flushSync } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { submitProjectForm } from './actions'
 
@@ -351,6 +352,9 @@ function OkButton({
     <button
       type={type}
       disabled={disabled}
+      // Don't let the tap steal focus from the input — keeps the keyboard up so
+      // advanceText() can move focus to the next field (iOS).
+      onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
       className="mt-4 inline-flex items-center gap-2 self-end rounded-full px-5 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.18em] transition-all duration-300 enabled:hover:translate-x-0.5 disabled:cursor-not-allowed disabled:opacity-30"
       style={{ background: '#545454', color: '#fff' }}
@@ -597,6 +601,25 @@ export default function StartProjectChat() {
     if (idx < ORDER.length - 1) setStep(ORDER[idx + 1])
   }
 
+  // Advance from a TEXT field (name → position → company, email) without losing
+  // the keyboard. On iOS, disabling the field you just left blurs it and closes
+  // the keyboard; the only way to keep it open is to move focus to the next text
+  // input within the SAME user gesture. flushSync commits the step change so the
+  // next field is in the DOM, then we focus it synchronously. If the next step
+  // has no text field (e.g. the checkbox/radio steps), nothing is focused and
+  // the keyboard closes naturally — which is the desired behaviour there.
+  const advanceText = () => {
+    const ae = document.activeElement
+    const wasTyping = ae instanceof HTMLInputElement || ae instanceof HTMLTextAreaElement
+    flushSync(() => advance())
+    if (!wasTyping) return
+    const root = containerRef.current
+    const next = root?.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+      '[data-active] input:not([disabled]), [data-active] textarea:not([disabled])',
+    )
+    next?.focus()
+  }
+
   // (Per-message follow-scroll lives on each Bubble/FormShell as it mounts, so
   // the view tracks the conversation as it reveals — no step-level scroll here.)
 
@@ -674,7 +697,7 @@ export default function StartProjectChat() {
               placeholder="Leonard Cohen"
               value={a.name}
               onChange={(v) => setA({ ...a, name: v })}
-              onSubmit={() => a.name.trim() && advance()}
+              onSubmit={() => a.name.trim() && advanceText()}
               active={isActive('name')}
             />
             {!isActive('name') && (
@@ -684,7 +707,7 @@ export default function StartProjectChat() {
                   placeholder="Founder"
                   value={a.position}
                   onChange={(v) => setA({ ...a, position: v })}
-                  onSubmit={() => a.position.trim() && advance()}
+                  onSubmit={() => a.position.trim() && advanceText()}
                   active={isActive('position')}
                 />
               </div>
@@ -696,7 +719,7 @@ export default function StartProjectChat() {
                   placeholder="Acme Co."
                   value={a.company}
                   onChange={(v) => setA({ ...a, company: v })}
-                  onSubmit={() => a.company.trim() && advance()}
+                  onSubmit={() => a.company.trim() && advanceText()}
                   active={isActive('company')}
                 />
               </div>
@@ -709,7 +732,7 @@ export default function StartProjectChat() {
                     (isActive('position') && !a.position.trim()) ||
                     (isActive('company') && !a.company.trim())
                   }
-                  onClick={advance}
+                  onClick={advanceText}
                 />
               </div>
             )}
