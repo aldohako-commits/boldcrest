@@ -100,7 +100,10 @@ const AVATAR_TRANSITION = { type: 'spring' as const, stiffness: 280, damping: 28
 // delay each side's turn so the conversation breathes between speakers.
 const REVEAL_INTERVAL = 1500
 const AGENCY_START = 600
-const USER_START = 2500
+// Deliberately a long beat after the account manager finishes before the user's
+// reply begins, so the exchange feels like real back-and-forth (you get time to
+// read Megi before "you" answer) rather than an instant echo.
+const USER_START = 3800
 
 // Reveals a turn's children one-by-one on a timeline so the chat grows like a
 // real conversation: messages arrive in sequence, the container expands, and
@@ -142,9 +145,13 @@ function scrollIntoSafeView(el: HTMLElement, behavior: ScrollBehavior = 'smooth'
     el.scrollIntoView({ behavior, block: 'center' })
     return
   }
-  // Lift the WHOLE active form box (so its OK button shows too), not just the
-  // field — fall back to the field itself if it isn't inside a form box.
-  const box = (el.closest('[data-active]') as HTMLElement | null) ?? el
+  // Lift the WHOLE active user turn above the keyboard — the form box, its OK
+  // button AND the avatar beneath it (so the user's profile picture isn't
+  // cropped). Fall back to the form box, then the field itself.
+  const box =
+    (el.closest('[data-turn]') as HTMLElement | null) ??
+    (el.closest('[data-active]') as HTMLElement | null) ??
+    el
   const vv = window.visualViewport
   // getBoundingClientRect is relative to the VISIBLE viewport (a fixed element
   // pinned to the visible top reports rect.top ≈ 0 even when the browser has
@@ -297,7 +304,7 @@ function UserTurn({
   if (count === 0) return null
   return (
     <div className="flex w-full flex-col items-end">
-      <div className="flex w-full max-w-[560px] flex-col items-end">
+      <div data-turn className="flex w-full max-w-[560px] flex-col items-end">
         <header className="mb-4 flex items-baseline gap-3">
           <h3 className="font-display text-[1.05rem] font-bold tracking-[-0.01em] text-text-primary">
             {heading}
