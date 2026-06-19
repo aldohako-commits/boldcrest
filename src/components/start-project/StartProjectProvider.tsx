@@ -88,6 +88,26 @@ export default function StartProjectProvider({ children }: { children: ReactNode
     }
   }, [isOpen, lenis])
 
+  // Hide the page content behind the overlay while the chat is open (mobile).
+  // iOS Safari clips position:fixed elements to the visual viewport when the
+  // keyboard is up, leaving a strip above the keyboard where the page bleeds
+  // through no matter how we size the panel. Making the page content invisible
+  // means that strip shows the uniform body background (#0a0a0a) instead — the
+  // same colour as the panel, so there is nothing left to bleed. visibility
+  // (not display:none) keeps layout + scroll position intact. Desktop keeps its
+  // blurred-page backdrop (no keyboard there, so no gap).
+  const pageRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!isOpen) return
+    const el = pageRef.current
+    if (!el || window.innerWidth >= 768) return
+    const prev = el.style.visibility
+    el.style.visibility = 'hidden'
+    return () => {
+      el.style.visibility = prev
+    }
+  }, [isOpen])
+
   // Size + position the overlay (backdrop AND panel) to the visual viewport with
   // DIRECT DOM writes — not React state. State updates land a frame late, and
   // during the keyboard animation that one-frame lag is exactly when the page
@@ -125,7 +145,7 @@ export default function StartProjectProvider({ children }: { children: ReactNode
 
   return (
     <StartProjectContext.Provider value={{ isOpen, open, close }}>
-      {children}
+      <div ref={pageRef}>{children}</div>
 
       <AnimatePresence>
         {isOpen && (
