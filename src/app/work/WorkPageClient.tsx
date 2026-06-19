@@ -408,7 +408,12 @@ function InlineFilter({
             <span className="shrink-0 text-[0.75rem] font-semibold uppercase tracking-[0.15em] leading-[1.4] text-white whitespace-nowrap">
               {openFilter === 'services' ? 'Services' : 'Industry'}
             </span>
-            <span className="mt-[0.45rem] hidden h-3 w-px shrink-0 bg-text-tertiary sm:block" />
+            {/* mt-[0.125rem] vertically centers the 12px divider on the first
+                row's text (glyph center ≈ 8px from the row top) — matching the
+                items-center alignment of the collapsed-state divider. The parent
+                stays items-start so the label + divider pin to the first row when
+                items wrap to multiple rows. */}
+            <span className="mt-[0.125rem] hidden h-3 w-px shrink-0 bg-text-tertiary sm:block" />
             {/* Items size to their content so the X hugs the last filter on a
                 single row. When they don't fit, flex-shrink lets them fill the
                 available width and wrap to multiple rows — and the X is carried
