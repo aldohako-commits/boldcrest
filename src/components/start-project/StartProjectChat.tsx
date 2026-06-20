@@ -132,6 +132,23 @@ function getScroller(el: HTMLElement): HTMLElement | null {
   return el.closest('[data-lenis-prevent]')
 }
 
+/* DESKTOP detection (mouse / trackpad = fine pointer). On desktop there is no
+   on-screen keyboard, so ALL the keyboard-aware scroll helpers below
+   (FormShell mount-scroll, input/textarea focus-scroll, the visualViewport
+   resize handler) must NOT run — they each scroll the active FORM into view,
+   which parks the view ~100px short of the true bottom and permanently breaks
+   useStickToBottom's pin (it reads that gap as "user scrolled up"). On desktop,
+   useStickToBottom is the SOLE scroll authority: it follows every reveal/reflow
+   and never leaves the newest line below the fold. Touch (coarse pointer) runs
+   every helper exactly as before — mobile is completely unaffected. */
+function isFinePointer(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(pointer: fine)').matches
+  )
+}
+
 /** Keep the focused field clear of the on-screen keyboard by scrolling the chat
     body so the field's BOTTOM lands just above the top of the keyboard. The
     keyboard top comes straight from window.visualViewport (offsetTop + height),
@@ -214,7 +231,7 @@ function useFollowAvatar(ref: { current: HTMLDivElement | null }, count: number)
     // reflows, so this reactive per-turn follow — which lags on desktop and
     // leaves the newest question/options below the fold, then jumps late — is
     // skipped there. Touch keeps it exactly as before (mobile is unaffected).
-    if (window.matchMedia?.('(pointer: fine)').matches) return
+    if (isFinePointer()) return
     const ae = document.activeElement
     if (ae instanceof HTMLInputElement || ae instanceof HTMLTextAreaElement) return
     const el = ref.current
@@ -249,12 +266,17 @@ function useStickToBottom(ref: { current: HTMLElement | null }) {
   useEffect(() => {
     const root = ref.current
     if (!root) return
-    if (!window.matchMedia?.('(pointer: fine)').matches) return
+    if (!isFinePointer()) return
     const scroller = root.closest('[data-lenis-prevent]') as HTMLElement | null
     if (!scroller) return
+    // Generous threshold: a single freshly-revealed message (or the trailing
+    // avatar + gap below the active form, ~110px) can sit below the fold the
+    // instant before pin() runs — that must still read as "at the bottom", or
+    // stick would flip false on its own reveal and never recover. Only a real
+    // user scroll UP (well past this) detaches to read history.
     let stick = true
     const onScroll = () => {
-      stick = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 80
+      stick = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 160
     }
     const pin = () => {
       if (stick) scroller.scrollTop = scroller.scrollHeight
@@ -413,6 +435,9 @@ function FormShell({
 }) {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
+    // Desktop: useStickToBottom owns the scroll — this form-aligned scroll would
+    // park ~100px short of bottom and break its pin. Touch keeps it (keyboard).
+    if (isFinePointer()) return
     if (ref.current) ensureVisibleInScroller(ref.current)
   }, [])
   return (
@@ -499,6 +524,10 @@ function InlineInput({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onFocus={(e) => {
+            // Desktop has no keyboard — let useStickToBottom own the scroll so
+            // focusing a field never fights the pin. Touch keeps the
+            // keyboard-clearing scroll below (mobile unchanged).
+            if (isFinePointer()) return
             // Scroll the focused INPUT into view (not the whole form shell) so
             // the field stays visible as the identity form grows downward and
             // each later field sits lower in it.
@@ -723,7 +752,18 @@ export default function StartProjectChat() {
     const next = root?.querySelector<HTMLInputElement | HTMLTextAreaElement>(
       '[data-active] input:not([disabled]), [data-active] textarea:not([disabled])',
     )
-    next?.focus()
+    // DESKTOP: preventScroll is essential. The next field sits lower in the
+    // growing form, so a default focus() makes the browser scrollIntoView it —
+    // and that scroll bubbles up THROUGH the inner chat scroller INTO the fixed
+    // panel itself (overflow-hidden still scrolls programmatically), shoving the
+    // header and conversation off the top and leaving a huge void.
+    // useStickToBottom owns desktop scrolling, so the browser must not scroll on
+    // focus. TOUCH is left exactly as before — plain focus() keeps the iOS
+    // keyboard-retention flow (flushSync + focus-next) untouched; its own
+    // keyboard-aware scrollIntoSafeView positions the field. The panel-scroll
+    // guard in the provider catches any stray panel scroll on either platform.
+    if (isFinePointer()) next?.focus({ preventScroll: true })
+    else next?.focus()
   }
 
   // (Per-message follow-scroll lives on each Bubble/FormShell as it mounts, so
@@ -736,6 +776,9 @@ export default function StartProjectChat() {
   useEffect(() => {
     const vv = window.visualViewport
     if (!vv) return
+    // Desktop: no keyboard, so the only vv resize is a window drag — let
+    // useStickToBottom handle that. This centring would fight the pin.
+    if (isFinePointer()) return
     // Defer two frames so the panel has re-rendered to its new (shorter)
     // height before we measure and scroll — otherwise we'd center against the
     // old full height and the field would still end up under the keyboard.
@@ -907,6 +950,8 @@ export default function StartProjectChat() {
                   value={a.message}
                   onChange={(e) => setA({ ...a, message: e.target.value })}
                   onFocus={(e) => {
+                    // Desktop: useStickToBottom owns the scroll (no keyboard).
+                    if (isFinePointer()) return
                     const field = e.currentTarget
                     scrollIntoSafeView(field)
                     setTimeout(() => scrollIntoSafeView(field, 'auto'), 350)

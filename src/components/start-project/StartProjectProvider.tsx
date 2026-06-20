@@ -104,6 +104,27 @@ export default function StartProjectProvider({ children }: { children: ReactNode
   // keyboard (desktop/iPad) this resolves to the full window.
   const panelRef = useRef<HTMLElement>(null)
   const backdropRef = useRef<HTMLDivElement>(null)
+
+  // The panel (aside) must NEVER scroll — only the inner [data-lenis-prevent]
+  // chat body does. But the aside is overflow-hidden, which still scrolls
+  // programmatically: a focus()/scrollIntoView on a field bubbles a scroll all
+  // the way up into the panel, shoving the header + conversation off the top and
+  // leaving a large void below. Pin its scrollTop to 0 (initial + on any scroll)
+  // so the panel chrome stays put no matter what tries to scroll it. Safe on all
+  // devices — the panel is never meant to scroll on any of them.
+  useEffect(() => {
+    if (!isOpen) return
+    const panel = panelRef.current
+    if (!panel) return
+    const reset = () => {
+      if (panel.scrollTop !== 0) panel.scrollTop = 0
+      if (panel.scrollLeft !== 0) panel.scrollLeft = 0
+    }
+    reset()
+    panel.addEventListener('scroll', reset, { passive: true })
+    return () => panel.removeEventListener('scroll', reset)
+  }, [isOpen])
+
   useEffect(() => {
     if (!isOpen) return
     const vv = window.visualViewport
