@@ -54,7 +54,11 @@ export default function ColorTransitionZone({ children }: { children: React.Reac
 
   const D = '#0a0a0a'
   const L = '#EDEDED'
-  const stops = isMobile ? [0, 0.16, 0.2, 0.95, 0.98] : [0, 0.035, 0.92, 0.96]
+  // Mobile: hold DARK through the portfolio, then the dark→light flip starts a
+  // bit further down (0.22) — landing around the middle of the clients logos —
+  // and is 0.03 wide so it runs at the SAME speed as the light→dark flip
+  // (0.95→0.98, also 0.03). Desktop unchanged.
+  const stops = isMobile ? [0, 0.29, 0.32, 0.95, 0.98] : [0, 0.035, 0.92, 0.96]
   const bgRange = isMobile ? [D, D, L, L, D] : [D, L, L, D]
   const fgRange = isMobile ? [L, L, D, D, L] : [L, D, D, L]
 
