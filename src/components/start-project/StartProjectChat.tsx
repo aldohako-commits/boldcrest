@@ -1208,7 +1208,7 @@ export default function StartProjectChat() {
                       That&rsquo;s everything, message received.
                     </Bubble>
                     <Bubble>
-                      We&rsquo;ll get back to you within one business day at
+                      We&rsquo;ll get back to you at
                       <span className="text-white"> {a.email}</span>.
                     </Bubble>
                     <Bubble>Talk soon, {a.name} 🤝</Bubble>
