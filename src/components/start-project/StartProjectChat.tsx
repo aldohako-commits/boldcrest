@@ -1219,7 +1219,10 @@ export default function StartProjectChat() {
           )}
         </AnimatePresence>
 
-        <div ref={bottomRef} aria-hidden="true" />
+        {/* -mt-12 cancels the trailing gap-12 (48px) the flex column would
+            otherwise put between the last turn and this 0-height scroll anchor,
+            so the conversation sits tight to the chat box bottom. */}
+        <div ref={bottomRef} aria-hidden="true" className="-mt-12" />
     </div>
   )
 }
