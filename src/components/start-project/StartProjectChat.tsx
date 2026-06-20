@@ -209,6 +209,15 @@ function ensureVisibleInScroller(
 function useFollowAvatar(ref: { current: HTMLDivElement | null }, count: number) {
   useEffect(() => {
     if (count === 0 || !ref.current) return
+    // Desktop (fine pointer) uses a container-level pin-to-bottom (see
+    // useStickToBottom) that tracks the growing/animating content every frame,
+    // so this per-turn reactive follow (which lags + crops mid-spring) is
+    // skipped there. Touch/keyboard devices keep it.
+    if (
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(pointer: fine)').matches
+    )
+      return
     const ae = document.activeElement
     if (ae instanceof HTMLInputElement || ae instanceof HTMLTextAreaElement) return
     const el = ref.current
@@ -225,6 +234,48 @@ function useFollowAvatar(ref: { current: HTMLDivElement | null }, count: number)
       window.clearTimeout(settle)
     }
   }, [ref, count])
+}
+
+/* DESKTOP pin-to-bottom (fine pointer only). A ResizeObserver on the chat
+   content keeps the scroller glued to the bottom every frame as the
+   conversation grows and the reveal/avatar springs animate — so the newest
+   line rises smoothly and is never cropped mid-fill (the reactive per-turn
+   follow lagged and clipped the latest message right as it overflowed). When
+   the content still fits, scrollHeight === clientHeight so this is a no-op and
+   `mt-auto` does the visual bottom-anchoring — the content's BOTTOM stays at
+   the scroller bottom both before and after overflow, so crossing the
+   threshold is seamless. Pinning is suspended if the user scrolls UP to read
+   history (>120px from bottom). Touch devices are left to the keyboard-aware
+   logic untouched. */
+function useStickToBottom(ref: { current: HTMLElement | null }) {
+  useEffect(() => {
+    const root = ref.current
+    if (!root) return
+    if (!window.matchMedia?.('(pointer: fine)').matches) return
+    const scroller = root.closest('[data-lenis-prevent]') as HTMLElement | null
+    if (!scroller) return
+    // Track stickiness from the user's OWN scrolls. We must NOT decide from the
+    // post-growth distance: a freshly-revealed message can add >100px below the
+    // fold, which would read as "scrolled up" and wrongly stop pinning. Instead
+    // remember whether they were at the bottom, and keep them there as content
+    // grows. Scrolling UP past the threshold detaches (read history); scrolling
+    // back down re-attaches.
+    let stick = true
+    const onScroll = () => {
+      stick = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 80
+    }
+    const pin = () => {
+      if (stick) scroller.scrollTop = scroller.scrollHeight
+    }
+    pin()
+    scroller.addEventListener('scroll', onScroll, { passive: true })
+    const ro = new ResizeObserver(pin)
+    ro.observe(root)
+    return () => {
+      scroller.removeEventListener('scroll', onScroll)
+      ro.disconnect()
+    }
+  }, [ref])
 }
 
 /* Megi's avatar — profile photo from /public, falls back to the red "M"
@@ -624,6 +675,8 @@ export default function StartProjectChat() {
   const [a, setA] = useState<Answers>(EMPTY)
   const bottomRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  // Desktop: keep the newest message pinned to the bottom as the chat fills.
+  useStickToBottom(containerRef)
 
   // Keep the *active* form comfortably in view. Centering it (rather than
   // scrolling to the very bottom) ensures the field you're typing in never
