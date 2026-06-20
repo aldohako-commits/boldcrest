@@ -143,7 +143,7 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
             </p>
             <p className="mt-5 text-[1rem] leading-[1.75] text-text-secondary">
               Strategists, designers, filmmakers, and communicators who
-              care about the work as much as you do. No egos — just
+              care about the work as much as you do. No egos, just
               craft and conviction.
             </p>
             <Link
@@ -160,7 +160,7 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
           {/* Desktop paragraph */}
           <p className="hidden max-w-[520px] text-[1.05rem] leading-[1.75] text-text-secondary md:block">
             Strategists, designers, filmmakers, and communicators who
-            care about the work as much as you do. No egos — just
+            care about the work as much as you do. No egos, just
             craft and conviction.
           </p>
         </motion.div>

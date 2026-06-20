@@ -33,8 +33,8 @@ const SERVICE_OPTIONS = [
 ]
 
 const KICKOFF_OPTIONS = [
-  'ASAP — within the next two weeks.',
-  'Soon — next month would be great.',
+  'ASAP, within the next two weeks.',
+  'Soon, next month would be great.',
   'Within the next 3 months.',
   'No rush. Whenever fits your team.',
 ]
@@ -43,7 +43,7 @@ const DEADLINE_OPTIONS = [
   'Within 3 months.',
   'Within 6 months.',
   'In about a year.',
-  'Open-ended — quality over speed.',
+  'Open-ended, quality over speed.',
 ]
 
 const BUDGET_OPTIONS = [
@@ -51,7 +51,7 @@ const BUDGET_OPTIONS = [
   '€5,000 – €15,000',
   '€15,000 – €50,000',
   '€50,000+',
-  'Not sure yet — let\'s figure it out.',
+  'Not sure yet, let\'s figure it out.',
 ]
 
 const SOURCE_OPTIONS = [
@@ -982,7 +982,7 @@ export default function StartProjectChat() {
           <>
             <AgencyTurn>
               <Bubble>
-                Brilliant — I&rsquo;ll talk this over with the team and get
+                Brilliant, I&rsquo;ll talk this over with the team and get
                 back to you.
               </Bubble>
               <Bubble>What&rsquo;s the best email to reach you on?</Bubble>

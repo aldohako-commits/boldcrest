@@ -24,9 +24,9 @@ interface DiaryPost {
 const TRANSITION_DURATION = 600
 
 const LOREM_PARAGRAPHS = [
-  `Every brand carries weight — the weight of intention, the weight of perception, the weight of every decision that brought it here. What separates the ones that endure from the ones that fade is simple: clarity of purpose.`,
-  `We have seen it across industries and across borders. The brands that move people are not louder — they are sharper. They understand that design is not decoration. It is a language.`,
-  `At BoldCrest, we approach every project as if reputation is on the line — because it is. Ours and yours.`,
+  `Every brand carries weight, the weight of intention, the weight of perception, the weight of every decision that brought it here. What separates the ones that endure from the ones that fade is simple: clarity of purpose.`,
+  `We have seen it across industries and across borders. The brands that move people are not louder, they are sharper. They understand that design is not decoration. It is a language.`,
+  `At BoldCrest, we approach every project as if reputation is on the line, because it is. Ours and yours.`,
 ]
 
 /* Portable Text — inline images supported between text */

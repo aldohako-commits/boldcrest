@@ -42,7 +42,7 @@ export async function generateMetadata({
 
   const description =
     project.tagline ||
-    `${project.name}${project.client ? ` for ${project.client}` : ''} — a ${
+    `${project.name}${project.client ? ` for ${project.client}` : ''}, a ${
       project.services?.[0] || 'creative'
     } project by BoldCrest.`
   const path = `/work/${slug}`
@@ -176,7 +176,7 @@ export default async function ProjectPage({
             thumbnailType={project.thumbnailType}
             altBase={[project.client, project.name]
               .filter(Boolean)
-              .join(' — ')}
+              .join(', ')}
             altSuffix={[project.services?.[0], 'BoldCrest']
               .filter(Boolean)
               .join(' · ')}

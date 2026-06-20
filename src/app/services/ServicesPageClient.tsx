@@ -247,7 +247,7 @@ function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
                 <Link
                   href={cap.href}
                   onClick={(e) => e.stopPropagation()}
-                  aria-label={`${cap.category} — ${cap.ctaLabel}`}
+                  aria-label={`${cap.category}, ${cap.ctaLabel}`}
                   className="group flex h-full flex-col"
                 >
                 {/* Top body */}
@@ -569,9 +569,9 @@ function ClientLogos({ partners = [] }: { partners?: Partner[] }) {
 
 const PROCESS_STEPS = [
   { number: '01', title: 'Discovery & Brief', description: 'We listen before we create. Deep immersion into your brand, audience, competitors, and goals to build a brief worth building from.' },
-  { number: '02', title: 'Strategy & Direction', description: 'Insights become a strategic foundation — positioning, messaging hierarchy, creative direction, and a clear plan of action.' },
+  { number: '02', title: 'Strategy & Direction', description: 'Insights become a strategic foundation, positioning, messaging hierarchy, creative direction, and a clear plan of action.' },
   { number: '03', title: 'Creative Development', description: 'Concepts, iterations, and refinement. We present, collaborate, and push until the work is something we\'re both proud of.' },
-  { number: '04', title: 'Production & Delivery', description: 'Pixel-perfect execution across every deliverable. Print, digital, motion — everything ships production-ready, on time.' },
+  { number: '04', title: 'Production & Delivery', description: 'Pixel-perfect execution across every deliverable. Print, digital, motion, everything ships production-ready, on time.' },
   { number: '05', title: 'Ongoing Partnership', description: 'Great brands evolve. We stay close to help you adapt, grow, and keep the work as sharp as the day it launched.' },
 ]
 

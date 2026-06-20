@@ -44,7 +44,7 @@ const capabilities = [
       'Color Grading',
     ],
     description:
-      'Still frames that hold attention. Moving images that move people. Every shoot, every cut, every grade — deliberate.',
+      'Still frames that hold attention. Moving images that move people. Every shoot, every cut, every grade, deliberate.',
     icon: (
       <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
         <rect x="6" y="10" width="28" height="20" rx="2" stroke="currentColor" strokeWidth="1.5" />
@@ -68,7 +68,7 @@ const capabilities = [
       'Media Planning',
     ],
     description:
-      'Strategy, content, and distribution — orchestrated to reach the right audience at the right moment.',
+      'Strategy, content, and distribution, orchestrated to reach the right audience at the right moment.',
     icon: (
       <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
         <path d="M8 12h24v16H22l-6 4v-4H8V12z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />

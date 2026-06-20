@@ -87,7 +87,7 @@ export default function ContentStack({
   altSuffix,
 }: ContentStackProps) {
   const baseAlt =
-    [altBase, altSuffix].filter(Boolean).join(' — ') || 'BoldCrest project'
+    [altBase, altSuffix].filter(Boolean).join(', ') || 'BoldCrest project'
   const items: StackItem[] = []
 
   // Thumbnail as first item

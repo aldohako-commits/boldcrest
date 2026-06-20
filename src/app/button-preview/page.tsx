@@ -19,7 +19,7 @@ export default function ButtonPreviewPage() {
       {/* Black button on a light surface → black lines */}
       <section className="flex min-h-[50vh] flex-col items-center justify-center gap-6 bg-[#ededed] md:min-h-screen">
         <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-black/40">
-          Black button — black lines
+          Black button, black lines
         </p>
         <MagneticBase
           href="#"
@@ -35,7 +35,7 @@ export default function ButtonPreviewPage() {
       {/* White button on a dark surface → white lines */}
       <section className="flex min-h-[50vh] flex-col items-center justify-center gap-6 bg-[#0a0a0a] md:min-h-screen">
         <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-white/40">
-          White button — white lines
+          White button, white lines
         </p>
         <MagneticBase
           href="#"

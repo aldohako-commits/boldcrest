@@ -576,7 +576,7 @@ export default function WorkPageClient({ projects, initialService, initialIndust
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
             >
-              A curated collection of brand identities, campaigns, and visual systems built for ambitious brands. Every project is a partnership — crafted with intention, delivered with precision.
+              A curated collection of brand identities, campaigns, and visual systems built for ambitious brands. Every project is a partnership, crafted with intention, delivered with precision.
             </motion.p>
           </div>
 

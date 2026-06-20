@@ -36,7 +36,7 @@ export async function generateMetadata({
 
   if (!post) return { title: 'Diary' }
 
-  const description = post.excerpt || `${post.title} — from the BoldCrest diary.`
+  const description = post.excerpt || `${post.title}, from the BoldCrest diary.`
   const path = `/diary/${slug}`
   const ogImage = ogImageFrom(post.coverImage)
   const fullTitle = `${post.title} — BoldCrest`

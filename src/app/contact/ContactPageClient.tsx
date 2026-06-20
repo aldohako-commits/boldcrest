@@ -90,7 +90,7 @@ export default function ContactPageClient({
               drives the (compact) row height; this column then stretches to that
               height and distributes its items so the last one (Careers) ends
               level with the bottom of the SEND button. */}
-          <div className="flex flex-col gap-[var(--space-xl)] md:col-span-4 md:col-start-3 md:h-full md:justify-between md:gap-[var(--space-md)]">
+          <div className="flex flex-col gap-[var(--space-lg)] md:col-span-4 md:col-start-3 md:h-full md:justify-between md:gap-[var(--space-md)]">
             <div>
               <p className={LABEL}>Email</p>
               <a href={`mailto:${email}`} className={VALUE}>
