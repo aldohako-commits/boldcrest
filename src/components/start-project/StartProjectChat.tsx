@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, Children } from 'react'
 import { flushSync } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { submitProjectForm } from './actions'
+import { botReply } from './replies'
 
 /* ════════════════════════════════════════════════════
    Types & data
@@ -831,13 +832,12 @@ export default function StartProjectChat() {
             Turn 1 — Megi's greeting
         ═══════════════════════════════════════════ */}
         <AgencyTurn>
-          <Bubble>Hi there 👋</Bubble>
+          <Bubble>Hi there.</Bubble>
           <Bubble>I&rsquo;m Megi.</Bubble>
         </AgencyTurn>
 
         {/* Turn 1 — User identity */}
         <UserTurn heading={userHeading} initial={userInitial}>
-          <Bubble side="right">👋</Bubble>
           <Bubble side="right">Nice to meet you, Megi!</Bubble>
 
           <FormShell active={showIdentity && !identitySubmitted}>
@@ -935,7 +935,7 @@ export default function StartProjectChat() {
         {isReached('message') && (
           <>
             <AgencyTurn>
-              <Bubble>You came to the right place.</Bubble>
+              <Bubble>{botReply('services', a.services[0])}</Bubble>
               <Bubble>
                 In a sentence or two, what are you trying to build?
               </Bubble>
@@ -1011,6 +1011,7 @@ export default function StartProjectChat() {
         {isReached('deadline') && (
           <>
             <AgencyTurn>
+              <Bubble>{botReply('kickoff', a.kickoff)}</Bubble>
               <Bubble>And when do you want it live?</Bubble>
             </AgencyTurn>
 
@@ -1041,7 +1042,7 @@ export default function StartProjectChat() {
         {isReached('budget') && (
           <>
             <AgencyTurn>
-              <Bubble>To wrap up&hellip;</Bubble>
+              <Bubble>{botReply('deadline', a.deadline)}</Bubble>
               <Bubble>What budget range did you have in mind?</Bubble>
             </AgencyTurn>
 
@@ -1072,10 +1073,7 @@ export default function StartProjectChat() {
         {isReached('email') && (
           <>
             <AgencyTurn>
-              <Bubble>
-                Brilliant, I&rsquo;ll talk this over with the team and get
-                back to you.
-              </Bubble>
+              <Bubble>{botReply('budget', a.budget)}</Bubble>
               <Bubble>What&rsquo;s the best email to reach you on?</Bubble>
             </AgencyTurn>
 
@@ -1160,6 +1158,7 @@ export default function StartProjectChat() {
                   <Bubble>Sending&hellip;</Bubble>
                 ) : (
                   <>
+                    <Bubble>{botReply('source', a.source[0])}</Bubble>
                     <Bubble>
                       That&rsquo;s everything, message received.
                     </Bubble>
@@ -1167,7 +1166,7 @@ export default function StartProjectChat() {
                       We&rsquo;ll get back to you within one business day at
                       <span className="text-white"> {a.email}</span>.
                     </Bubble>
-                    <Bubble>Talk soon, {a.name} 🤝</Bubble>
+                    <Bubble>Talk soon, {a.name}.</Bubble>
                   </>
                 )}
               </AgencyTurn>
