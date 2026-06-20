@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -39,10 +39,27 @@ export default function ProjectMarquee({
   const scrollerRef = useRef<HTMLDivElement>(null)
   const drag = useRef({ active: false, startX: 0, startScroll: 0, moved: false, captured: false })
   const frac = useRef(0)
+  // On touch devices the strip scrolls natively (overflow-x); pause the
+  // auto-advance for a beat after any touch so the swipe + its momentum aren't
+  // fought by the auto-scroll. Timestamp of the last touch interaction.
+  const lastTouch = useRef(0)
   // Auto-scroll speed scales with viewport width so the perceived speed
   // (how fast a card sweeps across the screen) stays consistent — a fixed
   // px/sec feels far too fast on a narrow phone. Clamped so it never crawls.
   const speedRef = useRef(125)
+
+  // Keep scrollLeft inside the 2nd copy's window [oneSet, 2·oneSet). The 4 copies
+  // are identical so snapping by ±oneSet is seamless and gives an infinite loop in
+  // BOTH directions — native touch scroll clamps at 0 and would otherwise hit a
+  // hard wall at the start. Shared by mouse-drag, auto-scroll, and the scroll event.
+  const wrap = useCallback(() => {
+    const el = scrollerRef.current
+    if (!el) return
+    const oneSet = el.scrollWidth / 4
+    if (oneSet <= 0) return
+    if (el.scrollLeft < oneSet) el.scrollLeft += oneSet
+    else if (el.scrollLeft >= oneSet * 2) el.scrollLeft -= oneSet
+  }, [])
 
   useEffect(() => {
     const calcSpeed = () => {
@@ -59,17 +76,19 @@ export default function ProjectMarquee({
     if (!el) return
     let raf = 0
     let last = 0
-    const wrap = () => {
+    // Start one set in so there's a full copy to the LEFT to scroll back into.
+    const recenter = () => {
       const oneSet = el.scrollWidth / 4
-      if (oneSet <= 0) return
-      if (el.scrollLeft >= oneSet) el.scrollLeft -= oneSet
-      else if (el.scrollLeft < 0) el.scrollLeft += oneSet
+      if (oneSet > 0 && el.scrollLeft < 1) el.scrollLeft = oneSet
     }
+    recenter()
+    const t = setTimeout(recenter, 150) // retry once thumbnails have measured
+    el.addEventListener('scroll', wrap, { passive: true })
     const tick = (now: number) => {
       if (!last) last = now
       const dt = (now - last) / 1000
       last = now
-      if (!drag.current.active) {
+      if (!drag.current.active && now - lastTouch.current > 1000) {
         // Add only whole-pixel steps — Safari/Firefox round scrollLeft to
         // integers, dropping sub-pixel increments (strip would never move).
         frac.current += speedRef.current * dt
@@ -83,8 +102,12 @@ export default function ProjectMarquee({
       raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [])
+    return () => {
+      cancelAnimationFrame(raf)
+      clearTimeout(t)
+      el.removeEventListener('scroll', wrap)
+    }
+  }, [wrap])
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.pointerType !== 'mouse') return
@@ -108,11 +131,7 @@ export default function ProjectMarquee({
     }
     if (!d.moved) return
     el.scrollLeft = d.startScroll - delta
-    const oneSet = el.scrollWidth / 4
-    if (oneSet > 0) {
-      if (el.scrollLeft >= oneSet) el.scrollLeft -= oneSet
-      else if (el.scrollLeft < 0) el.scrollLeft += oneSet
-    }
+    wrap()
   }
   const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!drag.current.active) return
@@ -161,7 +180,10 @@ export default function ProjectMarquee({
         onPointerLeave={endDrag}
         onClickCapture={onClickCapture}
         onDragStart={(e) => e.preventDefault()}
-        className="relative cursor-grab touch-pan-y overflow-x-auto overflow-y-hidden select-none [scrollbar-width:none] active:cursor-grabbing [&_a]:select-none [&_img]:pointer-events-none [&::-webkit-scrollbar]:hidden"
+        onTouchStart={() => { lastTouch.current = performance.now() }}
+        onTouchMove={() => { lastTouch.current = performance.now() }}
+        onTouchEnd={() => { lastTouch.current = performance.now() }}
+        className="relative cursor-grab touch-pan-x touch-pan-y overflow-x-auto overflow-y-hidden select-none [scrollbar-width:none] active:cursor-grabbing [&_a]:select-none [&_img]:pointer-events-none [&::-webkit-scrollbar]:hidden"
       >
         <div className="flex w-max gap-6 md:gap-8">
           {repeated.map((project, i) => {

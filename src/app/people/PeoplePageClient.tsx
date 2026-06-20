@@ -86,18 +86,43 @@ function PhotoMarquee() {
   const scrollerRef = useRef<HTMLDivElement>(null)
   const drag = useRef({ active: false, startX: 0, startScroll: 0 })
   const frac = useRef(0)
+  // Timestamp of the last touch interaction — pause the auto-advance for a beat
+  // after any touch so the native swipe + its momentum aren't fought by it.
+  const lastTouch = useRef(0)
   const SPEED = 70 // px per second
+
+  // Keep scrollLeft inside the 2nd copy's window [oneSet, 2·oneSet). Because the
+  // 4 copies are identical, snapping by ±oneSet is visually seamless and gives an
+  // infinite loop in BOTH directions — crucially for native touch scroll, which
+  // clamps at 0 and otherwise hits a hard wall at the start (can't swipe back to
+  // the last photos). Shared by mouse-drag, auto-scroll, and the scroll event.
+  const wrap = useCallback(() => {
+    const el = scrollerRef.current
+    if (!el) return
+    const oneSet = el.scrollWidth / 4
+    if (oneSet <= 0) return
+    if (el.scrollLeft < oneSet) el.scrollLeft += oneSet
+    else if (el.scrollLeft >= oneSet * 2) el.scrollLeft -= oneSet
+  }, [])
 
   useEffect(() => {
     const el = scrollerRef.current
     if (!el) return
     let raf = 0
     let last = 0
+    // Start one set in so there's a full copy to the LEFT to scroll back into.
+    const recenter = () => {
+      const oneSet = el.scrollWidth / 4
+      if (oneSet > 0 && el.scrollLeft < 1) el.scrollLeft = oneSet
+    }
+    recenter()
+    const t = setTimeout(recenter, 150) // retry once images have measured
+    el.addEventListener('scroll', wrap, { passive: true })
     const tick = (now: number) => {
       if (!last) last = now
       const dt = (now - last) / 1000
       last = now
-      if (!drag.current.active) {
+      if (!drag.current.active && now - lastTouch.current > 1000) {
         // Accumulate fractional pixels and only add whole-pixel steps — Safari/
         // Firefox round scrollLeft to integers, so sub-pixel increments are lost.
         frac.current += SPEED * dt
@@ -105,15 +130,18 @@ function PhotoMarquee() {
         if (step > 0) {
           frac.current -= step
           el.scrollLeft += step
-          const oneSet = el.scrollWidth / 4
-          if (oneSet > 0 && el.scrollLeft >= oneSet) el.scrollLeft -= oneSet
+          wrap()
         }
       }
       raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [])
+    return () => {
+      cancelAnimationFrame(raf)
+      clearTimeout(t)
+      el.removeEventListener('scroll', wrap)
+    }
+  }, [wrap])
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.pointerType !== 'mouse') return
@@ -127,17 +155,14 @@ function PhotoMarquee() {
     const el = scrollerRef.current
     if (!el) return
     el.scrollLeft = drag.current.startScroll - (e.clientX - drag.current.startX)
-    const oneSet = el.scrollWidth / 4
-    if (oneSet > 0) {
-      if (el.scrollLeft >= oneSet) el.scrollLeft -= oneSet
-      else if (el.scrollLeft < 0) el.scrollLeft += oneSet
-    }
+    wrap()
   }
   const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!drag.current.active) return
     drag.current.active = false
     scrollerRef.current?.releasePointerCapture?.(e.pointerId)
   }
+  const onTouch = () => { lastTouch.current = performance.now() }
 
   if (photos.length === 0) return null
 
@@ -150,6 +175,9 @@ function PhotoMarquee() {
       onPointerCancel={endDrag}
       onPointerLeave={endDrag}
       onDragStart={(e) => e.preventDefault()}
+      onTouchStart={onTouch}
+      onTouchMove={onTouch}
+      onTouchEnd={onTouch}
       className="flex h-[44dvh] w-full shrink-0 cursor-grab touch-pan-x select-none overflow-x-auto [scrollbar-width:none] [@media(max-height:820px)]:h-[38dvh] active:cursor-grabbing [&::-webkit-scrollbar]:hidden"
     >
       <div className="flex h-full w-max">
@@ -184,19 +212,43 @@ function FacesGallery({ team }: { team: FaceItem[] }) {
   const scrollerRef = useRef<HTMLDivElement>(null)
   const drag = useRef({ active: false, startX: 0, startScroll: 0 })
   const frac = useRef(0)
+  // Timestamp of the last touch interaction — pause the auto-advance for a beat
+  // after any touch so the native swipe + its momentum aren't fought by it.
+  const lastTouch = useRef(0)
   const SPEED = 40 // px per second
   const repeated = team.length ? [...team, ...team, ...team, ...team] : []
+
+  // Keep scrollLeft inside the 2nd copy's window [oneSet, 2·oneSet). The 4 copies
+  // are identical so snapping by ±oneSet is seamless and gives an infinite loop in
+  // BOTH directions — native touch scroll clamps at 0 and would otherwise hit a
+  // hard wall at the start. Shared by mouse-drag, auto-scroll, and the scroll event.
+  const wrap = useCallback(() => {
+    const el = scrollerRef.current
+    if (!el) return
+    const oneSet = el.scrollWidth / 4
+    if (oneSet <= 0) return
+    if (el.scrollLeft < oneSet) el.scrollLeft += oneSet
+    else if (el.scrollLeft >= oneSet * 2) el.scrollLeft -= oneSet
+  }, [])
 
   useEffect(() => {
     const el = scrollerRef.current
     if (!el || !team.length) return
     let raf = 0
     let last = 0
+    // Start one set in so there's a full copy to the LEFT to scroll back into.
+    const recenter = () => {
+      const oneSet = el.scrollWidth / 4
+      if (oneSet > 0 && el.scrollLeft < 1) el.scrollLeft = oneSet
+    }
+    recenter()
+    const t = setTimeout(recenter, 150) // retry once images have measured
+    el.addEventListener('scroll', wrap, { passive: true })
     const tick = (now: number) => {
       if (!last) last = now
       const dt = (now - last) / 1000
       last = now
-      if (!drag.current.active) {
+      if (!drag.current.active && now - lastTouch.current > 1000) {
         // Accumulate fractional pixels and only add whole-pixel steps — Safari/
         // Firefox round scrollLeft to integers, so sub-pixel increments are lost.
         frac.current += SPEED * dt
@@ -204,15 +256,18 @@ function FacesGallery({ team }: { team: FaceItem[] }) {
         if (step > 0) {
           frac.current -= step
           el.scrollLeft += step
-          const oneSet = el.scrollWidth / 4
-          if (oneSet > 0 && el.scrollLeft >= oneSet) el.scrollLeft -= oneSet
+          wrap()
         }
       }
       raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [team.length])
+    return () => {
+      cancelAnimationFrame(raf)
+      clearTimeout(t)
+      el.removeEventListener('scroll', wrap)
+    }
+  }, [team.length, wrap])
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.pointerType !== 'mouse') return
@@ -226,17 +281,14 @@ function FacesGallery({ team }: { team: FaceItem[] }) {
     const el = scrollerRef.current
     if (!el) return
     el.scrollLeft = drag.current.startScroll - (e.clientX - drag.current.startX)
-    const oneSet = el.scrollWidth / 4
-    if (oneSet > 0) {
-      if (el.scrollLeft >= oneSet) el.scrollLeft -= oneSet
-      else if (el.scrollLeft < 0) el.scrollLeft += oneSet
-    }
+    wrap()
   }
   const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!drag.current.active) return
     drag.current.active = false
     scrollerRef.current?.releasePointerCapture?.(e.pointerId)
   }
+  const onTouch = () => { lastTouch.current = performance.now() }
 
   if (!team.length) {
     return <p className="py-20 text-center text-text-tertiary">Team members coming soon.</p>
@@ -251,6 +303,9 @@ function FacesGallery({ team }: { team: FaceItem[] }) {
       onPointerCancel={endDrag}
       onPointerLeave={endDrag}
       onDragStart={(e) => e.preventDefault()}
+      onTouchStart={onTouch}
+      onTouchMove={onTouch}
+      onTouchEnd={onTouch}
       className="w-full cursor-grab touch-pan-x select-none overflow-x-auto [scrollbar-width:none] active:cursor-grabbing [&::-webkit-scrollbar]:hidden"
     >
       {/* Single row on mobile (larger images, no nested vertical scroll); two rows on desktop */}
