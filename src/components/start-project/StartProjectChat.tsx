@@ -832,12 +832,13 @@ export default function StartProjectChat() {
             Turn 1 — Megi's greeting
         ═══════════════════════════════════════════ */}
         <AgencyTurn>
-          <Bubble>Hi there.</Bubble>
+          <Bubble>Hi there 👋</Bubble>
           <Bubble>I&rsquo;m Megi.</Bubble>
         </AgencyTurn>
 
         {/* Turn 1 — User identity */}
         <UserTurn heading={userHeading} initial={userInitial}>
+          <Bubble side="right">👋</Bubble>
           <Bubble side="right">Nice to meet you, Megi!</Bubble>
 
           <FormShell active={showIdentity && !identitySubmitted}>
@@ -1166,7 +1167,7 @@ export default function StartProjectChat() {
                       We&rsquo;ll get back to you within one business day at
                       <span className="text-white"> {a.email}</span>.
                     </Bubble>
-                    <Bubble>Talk soon, {a.name}.</Bubble>
+                    <Bubble>Talk soon, {a.name} 🤝</Bubble>
                   </>
                 )}
               </AgencyTurn>
