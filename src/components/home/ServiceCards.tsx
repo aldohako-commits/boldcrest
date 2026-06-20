@@ -231,7 +231,13 @@ export default function ServiceCards() {
               </h2>
             </div>
 
-            <div className="flex flex-col gap-6">
+            {/* Promote the CTA copy to its OWN compositor layer (translateZ + z-10)
+                so it always paints ABOVE the panel's background tile. On iOS the
+                URL bar toggling near the section end changes 100dvh, re-lays-out
+                this bottom-pinned block, and Safari can leave a stale background
+                tile over the first line of the paragraph (the "box" covering the
+                text). A separate, isolated layer can't be occluded by that tile. */}
+            <div className="relative z-10 flex flex-col gap-6 [transform:translateZ(0)] [-webkit-transform:translateZ(0)]">
               <p className="max-w-[320px] text-[0.85rem] leading-[1.7] text-white/80">
                 We live in the details. The pixels, the strategy, the
                 timing. If you&apos;re building something real, we&apos;ll
