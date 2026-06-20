@@ -2,22 +2,32 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 /**
- * Vanity-subdomain redirects.
+ * Vanity subdomains that EMBED a ClickUp form inside the BoldCrest site.
  *
- * Each of these subdomains points at this Vercel project (DNS + project domain);
- * when a request comes in we look at the Host header and 307-redirect it to the
- * real destination (ClickUp forms, Synology Drive, etc.). Any host that isn't
- * listed here falls straight through to the normal site.
+ * Each host points at this Vercel project; instead of redirecting to the bare
+ * ClickUp page we REWRITE (URL stays on the subdomain) to an on-site route that
+ * renders the form in an iframe with the site header/footer. These are
+ * single-purpose hosts, so EVERY request on them is rewritten to the form.
+ *
+ * Form URLs live with the page: careers in `app/careers`, the rest in
+ * `app/forms/forms.config.ts` (served at /forms/<slug>). Rewrites run before the
+ * coming-soon gate (these aren't canonical hosts), so the forms work pre-launch.
+ */
+const SUBDOMAIN_EMBEDS: Record<string, string> = {
+  'careers.boldcrest.com': '/careers',
+  'branding.boldcrest.com': '/forms/branding',
+  'timeoff.boldcrest.com': '/forms/timeoff',
+  'employee.boldcrest.com': '/forms/employee',
+  'client.boldcrest.com': '/forms/client',
+}
+
+/**
+ * Vanity subdomains that 307-redirect to an EXTERNAL destination (Synology).
  *
  * 307 (temporary) is used on purpose so the targets can change later without
  * browsers caching the old destination. Switch to 308 if a target is permanent.
  */
 const SUBDOMAIN_REDIRECTS: Record<string, string> = {
-  'careers.boldcrest.com': 'https://forms.clickup.com/765766/f/qbu6-78675/YYNYNPGM162O3GYR61',
-  'branding.boldcrest.com': 'https://forms.clickup.com/765766/f/qbu6-40361/90O1PL1P7J6U3HO2RS',
-  'timeoff.boldcrest.com': 'https://forms.clickup.com/765766/f/qbu6-78355/ZRZLB67MPJBR7YCSBJ',
-  'employee.boldcrest.com': 'https://forms.clickup.com/765766/f/qbu6-74875/D08J11PMYODUN5U4AH',
-  'client.boldcrest.com': 'https://forms.clickup.com/765766/f/qbu6-72315/V2M4G4AELYAJ143MQT',
   'drive.boldcrest.com': 'https://boldarchive.cz1.quickconnect.to/?launchApp=SYNO.SDS.Drive.Application',
   'archive.boldcrest.com': 'http://quickconnect.to/BoldArchive',
 }
@@ -54,6 +64,13 @@ const CANONICAL_HOSTS = new Set(['boldcrest.com', 'www.boldcrest.com'])
 
 export function proxy(req: NextRequest) {
   const host = (req.headers.get('host') ?? '').toLowerCase().split(':')[0]
+
+  const embedPath = SUBDOMAIN_EMBEDS[host]
+  if (embedPath) {
+    const url = req.nextUrl.clone()
+    url.pathname = embedPath
+    return NextResponse.rewrite(url)
+  }
 
   const destination = SUBDOMAIN_REDIRECTS[host]
   if (destination) {
