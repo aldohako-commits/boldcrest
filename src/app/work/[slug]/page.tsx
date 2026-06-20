@@ -10,6 +10,7 @@ import {
 import ProjectHero from '@/components/portfolio/ProjectHero'
 import ProjectDetails from '@/components/portfolio/ProjectDetails'
 import ContentStack from '@/components/portfolio/ContentStack'
+import { getVimeoAspect } from '@/lib/vimeo'
 import RelatedProjects from '@/components/portfolio/RelatedProjects'
 import JsonLd from '@/components/JsonLd'
 import {
@@ -82,6 +83,24 @@ export default async function ProjectPage({
 
   if (!project) notFound()
 
+  // Resolve each video's native aspect ratio (server-side, cached for a week) so
+  // portfolio videos render at their true shape (square/portrait/16:9) instead of
+  // being cropped into a fixed 16:9 box.
+  const mediaWithAspect = project.media
+    ? await Promise.all(
+        project.media.map(
+          async (block: { _type?: string; vimeoUrl?: string }) =>
+            block?._type === 'videoMedia' && block.vimeoUrl
+              ? { ...block, aspect: await getVimeoAspect(block.vimeoUrl) }
+              : block,
+        ),
+      )
+    : project.media
+  const thumbnailVideoAspect =
+    project.thumbnailType === 'video'
+      ? await getVimeoAspect(project.thumbnailVideo)
+      : null
+
   // Four projects in the same category (service); fall back to recent work to
   // always fill the row.
   const { data: relatedData } = await sanityFetch({
@@ -150,9 +169,10 @@ export default async function ProjectPage({
       <section className="px-[var(--gutter)] pb-[var(--space-2xl)] pt-[var(--space-xl)]">
         <div className="relative w-full">
           <ContentStack
-            media={project.media}
+            media={mediaWithAspect}
             thumbnail={project.thumbnail}
             thumbnailVideo={project.thumbnailVideo}
+            thumbnailVideoAspect={thumbnailVideoAspect}
             thumbnailType={project.thumbnailType}
             altBase={[project.client, project.name]
               .filter(Boolean)

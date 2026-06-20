@@ -14,6 +14,8 @@ interface VideoMedia {
   _key: string
   type: 'video'
   vimeoUrl?: string
+  /** Native aspect ratio (w/h) resolved server-side from Vimeo oEmbed. */
+  aspect?: number | null
 }
 
 interface ImageMedia {
@@ -40,6 +42,7 @@ interface ContentStackProps {
   media?: MediaBlock[]
   thumbnail?: ThumbnailImage
   thumbnailVideo?: string
+  thumbnailVideoAspect?: number | null
   thumbnailType?: string
   /** Descriptive base for image alt text, e.g. "Client — Project Name". */
   altBase?: string
@@ -78,6 +81,7 @@ export default function ContentStack({
   media,
   thumbnail,
   thumbnailVideo,
+  thumbnailVideoAspect,
   thumbnailType,
   altBase,
   altSuffix,
@@ -91,7 +95,7 @@ export default function ContentStack({
     items.push({
       type: 'video',
       key: 'thumb-video',
-      content: <VimeoEmbed url={thumbnailVideo} className="aspect-[16/9] bg-bg-card" />,
+      content: <VimeoEmbed url={thumbnailVideo} aspect={thumbnailVideoAspect} className="bg-bg-card" />,
       thumbSource: thumbnail?.asset?._ref ? thumbnail : null,
     })
   } else if (thumbnail?.asset?._ref) {
@@ -123,7 +127,7 @@ export default function ContentStack({
         items.push({
           type: 'video',
           key: video._key,
-          content: <VimeoEmbed url={video.vimeoUrl} className="aspect-[16/9] bg-bg-card" />,
+          content: <VimeoEmbed url={video.vimeoUrl} aspect={video.aspect} className="bg-bg-card" />,
           thumbSource: null,
         })
       } else if (block._type === 'imageMedia' || block._type === 'image') {
