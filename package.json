@@ -27,6 +27,7 @@
     "poly-decomp": "^0.3.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "resend": "^6.14.0",
     "sanity": "^4.22.0",
     "styled-components": "^6.3.11",
     "svg-path-commander": "^2.1.11",

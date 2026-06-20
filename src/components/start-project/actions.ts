@@ -1,21 +1,43 @@
 'use server'
 
+import { sendFormEmail, buildBody } from '@/lib/email'
+
+const TO = 'sales@boldcrest.com'
+
 export async function submitProjectForm(formData: FormData) {
   const data = {
-    name: formData.get('name') as string,
-    position: formData.get('position') as string,
-    company: formData.get('company') as string,
-    email: formData.get('email') as string,
-    services: formData.get('services') as string,
-    message: formData.get('message') as string,
-    kickoff: formData.get('kickoff') as string,
-    deadline: formData.get('deadline') as string,
-    budget: formData.get('budget') as string,
-    source: formData.get('source') as string,
+    name: (formData.get('name') as string) || '',
+    position: (formData.get('position') as string) || '',
+    company: (formData.get('company') as string) || '',
+    email: (formData.get('email') as string) || '',
+    services: (formData.get('services') as string) || '',
+    message: (formData.get('message') as string) || '',
+    kickoff: (formData.get('kickoff') as string) || '',
+    deadline: (formData.get('deadline') as string) || '',
+    budget: (formData.get('budget') as string) || '',
+    source: (formData.get('source') as string) || '',
   }
 
-  // TODO: Replace with actual email service / database write
-  console.log('Project form submission:', data)
+  const { html, text } = buildBody([
+    ['Name', data.name],
+    ['Position', data.position],
+    ['Company', data.company],
+    ['Email', data.email],
+    ['Services', data.services],
+    ['Message', data.message],
+    ['Kickoff', data.kickoff],
+    ['Deadline', data.deadline],
+    ['Budget', data.budget],
+    ['Heard about us', data.source],
+  ])
+
+  await sendFormEmail({
+    to: TO,
+    subject: `New project inquiry${data.company ? ` — ${data.company}` : data.name ? ` — ${data.name}` : ''}`,
+    replyTo: data.email || undefined,
+    html: `<h2 style="font-family:Arial,sans-serif;font-size:18px">New "Start a Project" inquiry</h2>${html}`,
+    text: `New "Start a Project" inquiry\n\n${text}`,
+  })
 
   return { success: true }
 }
