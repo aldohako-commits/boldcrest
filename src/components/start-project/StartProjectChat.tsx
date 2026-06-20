@@ -270,24 +270,40 @@ function useStickToBottom(ref: { current: HTMLElement | null }) {
     if (!isFinePointer()) return
     const scroller = root.closest('[data-lenis-prevent]') as HTMLElement | null
     if (!scroller) return
-    // Generous threshold: a single freshly-revealed message (or the trailing
-    // avatar + gap below the active form, ~110px) can sit below the fold the
-    // instant before pin() runs — that must still read as "at the bottom", or
-    // stick would flip false on its own reveal and never recover. Only a real
-    // user scroll UP (well past this) detaches to read history.
+    // Stop Chrome's scroll-anchoring from nudging scrollTop as each message
+    // reveals. Those nudges fire `scroll` events with no user behind them; the
+    // old code read one (gap just over its threshold) as "user scrolled up",
+    // latched stick=false, and the pin stranded the view above the newest line
+    // with no way back. Desktop-only (this hook returns early on coarse pointer),
+    // so mobile's scroller is untouched.
+    const prevAnchor = scroller.style.overflowAnchor
+    scroller.style.overflowAnchor = 'none'
+
+    // `stick` = follow the bottom. It is flipped ONLY by genuine user scroll
+    // input (wheel / touchpad / touch), never by generic `scroll` events — those
+    // also fire for our own pin() and for reveal reflow, which is what made the
+    // old scroll-event approach race and detach on its own. The ResizeObserver
+    // re-pins on every content change while stick holds.
     let stick = true
-    const onScroll = () => {
-      stick = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 160
-    }
+    const atBottom = () =>
+      scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 160
     const pin = () => {
       if (stick) scroller.scrollTop = scroller.scrollHeight
     }
+    // wheel fires before the scroll lands, so settle a frame, then decide: a
+    // scroll UP detaches (read history); returning to the bottom re-attaches and
+    // the next reveal follows again.
+    const onIntent = () => requestAnimationFrame(() => { stick = atBottom() })
+
     pin()
-    scroller.addEventListener('scroll', onScroll, { passive: true })
+    scroller.addEventListener('wheel', onIntent, { passive: true })
+    scroller.addEventListener('touchmove', onIntent, { passive: true })
     const ro = new ResizeObserver(pin)
     ro.observe(root)
     return () => {
-      scroller.removeEventListener('scroll', onScroll)
+      scroller.style.overflowAnchor = prevAnchor
+      scroller.removeEventListener('wheel', onIntent)
+      scroller.removeEventListener('touchmove', onIntent)
       ro.disconnect()
     }
   }, [ref])
