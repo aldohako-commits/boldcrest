@@ -141,9 +141,9 @@ export default function ContactPageClient({
 
             <div>
               <p className={LABEL}>Other</p>
-              <Link href="/careers" className={VALUE}>
+              <a href="https://careers.boldcrest.com" className={VALUE}>
                 Careers
-              </Link>
+              </a>
             </div>
           </div>
 

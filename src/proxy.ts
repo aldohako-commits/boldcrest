@@ -81,6 +81,15 @@ export function proxy(req: NextRequest) {
     return NextResponse.redirect(CANONICAL_SITE, 308)
   }
 
+  // The public boldcrest.com/careers URL is retired — careers now lives at
+  // careers.boldcrest.com. 308-redirect the old path there so existing links,
+  // bookmarks and search results still land on the form. NOTE: this is gated to
+  // the CANONICAL hosts only; careers.boldcrest.com is handled by the rewrite
+  // above (it's not a canonical host), so it never reaches this rule — no loop.
+  if (CANONICAL_HOSTS.has(host) && req.nextUrl.pathname === '/careers') {
+    return NextResponse.redirect('https://careers.boldcrest.com', 308)
+  }
+
   if (COMING_SOON && CANONICAL_HOSTS.has(host)) {
     const { pathname } = req.nextUrl
     const isAllowed =

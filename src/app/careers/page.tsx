@@ -2,7 +2,11 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Careers',
-  alternates: { canonical: '/careers' },
+  // Canonical is the public careers host. boldcrest.com/careers 308-redirects to
+  // careers.boldcrest.com (see proxy.ts); this page is the render target the
+  // subdomain rewrites to, so its canonical points at that subdomain — not at
+  // the retired www path (which would be a canonical pointing to a redirect).
+  alternates: { canonical: 'https://careers.boldcrest.com' },
   description:
     'Join the BoldCrest team. Tell us about yourself and apply. It goes straight to our team.',
   openGraph: {

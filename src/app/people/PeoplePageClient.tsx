@@ -917,7 +917,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
         >
-          <CTAButton href="/careers" label="Visit Careers" showArrow />
+          <CTAButton href="https://careers.boldcrest.com" label="Visit Careers" showArrow />
         </motion.div>
       </div>
     </section>

@@ -37,7 +37,7 @@ export async function submitProjectForm(formData: FormData) {
   await Promise.allSettled([
     sendFormEmail({
       to: TO,
-      subject: `New project inquiry${data.company ? ` — ${data.company}` : data.name ? ` — ${data.name}` : ''}`,
+      subject: 'Sales Form Submission - Website',
       replyTo: data.email || undefined,
       html: `<h2 style="font-family:Arial,sans-serif;font-size:18px">New "Start a Project" inquiry</h2>${html}`,
       text: `New "Start a Project" inquiry\n\n${text}`,

@@ -138,6 +138,9 @@ export default function Footer({ forceShow = false }: { forceShow?: boolean }) {
               <Link href="/contact" className={linkClass}>
                 &#8250; Contact Us
               </Link>
+              <a href="https://careers.boldcrest.com" className={linkClass}>
+                &#8250; Careers
+              </a>
             </div>
 
             {/* Social */}

@@ -21,7 +21,7 @@ export async function submitContactForm(formData: FormData) {
 
   await sendFormEmail({
     to: TO,
-    subject: `New contact form message${data.name ? ` — ${data.name}` : ''}`,
+    subject: 'Contact Form Submission - Website',
     replyTo: data.email || undefined,
     html: `<h2 style="font-family:Arial,sans-serif;font-size:18px">New contact form submission</h2>${html}`,
     text: `New contact form submission\n\n${text}`,
