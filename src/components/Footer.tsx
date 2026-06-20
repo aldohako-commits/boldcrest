@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useRef } from 'react'
 
 const serviceLinks = [
   { label: 'Branding', href: '/work?service=Branding' },
@@ -39,6 +40,49 @@ function scrollToTop() {
 
 export default function Footer({ forceShow = false }: { forceShow?: boolean }) {
   const pathname = usePathname()
+  const footerRef = useRef<HTMLElement>(null)
+
+  // Tint the iOS Safari bars to the footer's colour while the footer occupies the
+  // bottom of the viewport (where the bottom bar sits), so the bar stops reading
+  // black over the light footer. Reverts to the page dark elsewhere. The
+  // theme-color meta is updated live — Safari re-tints on change.
+  useEffect(() => {
+    const DARK = '#0a0a0a'
+    const FOOTER = '#EDEDED' // must match the <footer> background below
+    let metas = Array.from(
+      document.querySelectorAll('meta[name="theme-color"]'),
+    ) as HTMLMetaElement[]
+    if (metas.length === 0) {
+      const m = document.createElement('meta')
+      m.setAttribute('name', 'theme-color')
+      document.head.appendChild(m)
+      metas = [m]
+    }
+    const set = (c: string) => metas.forEach((m) => m.setAttribute('content', c))
+    let raf = 0
+    const update = () => {
+      raf = 0
+      const el = footerRef.current
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      const ih = window.innerHeight
+      // The footer covers the bottom strip of the viewport (the bar lives there).
+      const overFooter = r.top <= ih - 72 && r.bottom >= ih - 8
+      set(overFooter ? FOOTER : DARK)
+    }
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update)
+    }
+    update()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll, { passive: true })
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+      set(DARK)
+    }
+  }, [pathname])
 
   // forceShow lets a page render the footer itself (e.g. the diary single page,
   // whose fixed-overlay deck would otherwise hide the global one behind it).
@@ -52,6 +96,7 @@ export default function Footer({ forceShow = false }: { forceShow?: boolean }) {
 
   return (
     <footer
+      ref={footerRef}
       className="flex flex-col"
       style={{ background: '#EDEDED', color: '#000000' }}
     >
