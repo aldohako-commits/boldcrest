@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useStartProject } from './start-project/StartProjectProvider'
 
@@ -19,6 +20,7 @@ interface MobileMenuProps {
 
 export default function MobileMenu({ open, onClose }: MobileMenuProps) {
   const { open: openStartProject } = useStartProject()
+  const pathname = usePathname()
   return (
     <AnimatePresence>
       {open && (
@@ -54,7 +56,22 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
           >
             {/* Header row inside the menu — logo + close */}
             <div className="flex items-center justify-between px-5 h-14">
-              <Link href="/" onClick={onClose}>
+              <Link
+                href="/"
+                onClick={(e) => {
+                  // Already home: close the menu and scroll to the top instead
+                  // of a no-op navigation. Otherwise navigate home as normal.
+                  if (pathname === '/') {
+                    e.preventDefault()
+                    window.dispatchEvent(new CustomEvent('boldcrest:back-to-top'))
+                    // Defer the scroll until the menu has finished its exit
+                    // animation — scrolling while the menu unmounts cancels the
+                    // smooth scroll, leaving the page where it was.
+                    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 360)
+                  }
+                  onClose()
+                }}
+              >
                 <svg
                   viewBox="0 0 384.09 384"
                   className="h-[1.6rem] w-[1.6rem]"

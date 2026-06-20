@@ -92,8 +92,19 @@ export default function Header() {
               transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
             }}
           >
-            {/* Logo */}
-            <Link href="/" className="z-10 flex items-center">
+            {/* Logo — goes home; if already home, smooth-scrolls to the top
+                (and resets slide-deck pages) instead of doing nothing. */}
+            <Link
+              href="/"
+              className="z-10 flex items-center"
+              onClick={(e) => {
+                if (pathname === '/') {
+                  e.preventDefault()
+                  window.dispatchEvent(new CustomEvent('boldcrest:back-to-top'))
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                }
+              }}
+            >
               <svg
                 viewBox="0 0 384.09 384"
                 className="h-[1.6rem] w-[1.6rem]"
