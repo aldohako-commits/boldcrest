@@ -667,7 +667,11 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
             </div>
 
             <FadeUp delay={0.25} active={active(1)}>
-              <p className="mx-auto mt-[var(--space-2xl)] max-w-[900px] font-display text-[clamp(1.4rem,2.8vw,2.4rem)] font-bold leading-[1.25] tracking-[-0.01em] text-text-primary">
+              {/* Mobile size scales with the viewport so the longer first line
+                  ("We've been told we're too involved.") stays on ONE row down to
+                  small phones; the shorter second line then matches automatically
+                  (same <p>). Desktop unchanged via md:. */}
+              <p className="mx-auto mt-[var(--space-2xl)] max-w-[900px] font-display text-[clamp(0.9rem,4.6vw,1.4rem)] font-bold leading-[1.25] tracking-[-0.01em] text-text-primary md:text-[clamp(1.4rem,2.8vw,2.4rem)]">
                 &ldquo;We&apos;ve been told we&apos;re too involved.&rdquo;
                 <br />
                 <span className="text-text-tertiary">We consider that a compliment.</span>
