@@ -37,10 +37,10 @@ export async function submitProjectForm(formData: FormData) {
   await Promise.allSettled([
     sendFormEmail({
       to: TO,
-      subject: 'Sales Form Submission - Website',
+      subject: 'Sales Form Submission - WebsiteForms - BoldCrest',
       replyTo: data.email || undefined,
-      html: `<h2 style="font-family:Arial,sans-serif;font-size:18px">New "Start a Project" inquiry</h2>${html}`,
-      text: `New "Start a Project" inquiry\n\n${text}`,
+      html: `<h2 style="font-family:Arial,sans-serif;font-size:18px">New Sales Form Submission - BoldCrest</h2>${html}`,
+      text: `New Sales Form Submission - BoldCrest\n\n${text}`,
     }),
     // Create a matching Opportunity in the ClickUp sales pipeline.
     createOpportunity(data),

@@ -21,10 +21,10 @@ export async function submitContactForm(formData: FormData) {
 
   await sendFormEmail({
     to: TO,
-    subject: 'Contact Form Submission - Website',
+    subject: 'Contact Form Submission - WebsiteForms - BoldCrest',
     replyTo: data.email || undefined,
-    html: `<h2 style="font-family:Arial,sans-serif;font-size:18px">New Contact Form Submission - BoldCrest.com</h2>${html}`,
-    text: `New Contact Form Submission - BoldCrest.com\n\n${text}`,
+    html: `<h2 style="font-family:Arial,sans-serif;font-size:18px">New Contact Form Submission - BoldCrest</h2>${html}`,
+    text: `New Contact Form Submission - BoldCrest\n\n${text}`,
   })
 
   // Always report success to the visitor; delivery failures are logged

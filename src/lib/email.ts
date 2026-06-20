@@ -13,7 +13,7 @@ import { Resend } from 'resend'
 const apiKey = process.env.RESEND_API_KEY
 const resend = apiKey ? new Resend(apiKey) : null
 
-const FROM = process.env.FORM_FROM_EMAIL || 'BoldCrest Website <website@boldcrest.com>'
+const FROM = process.env.FORM_FROM_EMAIL || 'WebsiteForm - BoldCrest <website@boldcrest.com>'
 
 export interface FormEmail {
   to: string
@@ -80,9 +80,9 @@ export function buildBody(rows: Array<[label: string, value: string | undefined]
       const valueHtml = EMAIL_RE.test(value)
         ? `<a href="mailto:${esc(value)}" style="color:#1a73e8;text-decoration:none">${esc(value)}</a>`
         : `<span style="white-space:pre-wrap">${esc(v)}</span>`
-      return `<p style="margin:0 0 10px;font-size:15px;color:#111"><strong style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:#888">${esc(
+      return `<p style="margin:0 0 16px;font-size:15px;color:#111"><strong style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:#888">${esc(
         label,
-      )}</strong> <span style="color:#bbb">|</span> ${valueHtml}</p>`
+      )}</strong><span style="color:#bbb;margin:0 8px">|</span>${valueHtml}</p>`
     })
     .join('')
   const text = present.map(([label, v]) => `${label} | ${v}`).join('\n')
