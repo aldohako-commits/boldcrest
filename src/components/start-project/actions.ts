@@ -1,6 +1,7 @@
 'use server'
 
 import { sendFormEmail, buildBody } from '@/lib/email'
+import { createOpportunity } from '@/lib/clickup'
 
 const TO = 'sales@boldcrest.com'
 
@@ -31,13 +32,19 @@ export async function submitProjectForm(formData: FormData) {
     ['Heard about us', data.source],
   ])
 
-  await sendFormEmail({
-    to: TO,
-    subject: `New project inquiry${data.company ? ` — ${data.company}` : data.name ? ` — ${data.name}` : ''}`,
-    replyTo: data.email || undefined,
-    html: `<h2 style="font-family:Arial,sans-serif;font-size:18px">New "Start a Project" inquiry</h2>${html}`,
-    text: `New "Start a Project" inquiry\n\n${text}`,
-  })
+  // Run both in parallel; neither failure should block the visitor's success
+  // state (each logs + degrades gracefully on a missing key/token).
+  await Promise.allSettled([
+    sendFormEmail({
+      to: TO,
+      subject: `New project inquiry${data.company ? ` — ${data.company}` : data.name ? ` — ${data.name}` : ''}`,
+      replyTo: data.email || undefined,
+      html: `<h2 style="font-family:Arial,sans-serif;font-size:18px">New "Start a Project" inquiry</h2>${html}`,
+      text: `New "Start a Project" inquiry\n\n${text}`,
+    }),
+    // Create a matching Opportunity in the ClickUp sales pipeline.
+    createOpportunity(data),
+  ])
 
   return { success: true }
 }
