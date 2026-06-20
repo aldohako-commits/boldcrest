@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback, Children } from 'react'
 import { flushSync } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { submitProjectForm } from './actions'
-import { botReply } from './replies'
+import { botReply, greeting } from './replies'
 
 /* ════════════════════════════════════════════════════
    Types & data
@@ -742,6 +742,13 @@ const ORDER: Step[] = [
 export default function StartProjectChat() {
   const [step, setStep] = useState<Step>('name')
   const [a, setA] = useState<Answers>(EMPTY)
+  // One random seed per conversation, fixed for its lifetime, so the greeting /
+  // welcome / sign-off variants (see replies.ts) read differently each visit but
+  // never change across the reveal animation or re-renders. Restarting the chat
+  // remounts this component → fresh seed → fresh phrasing. Generated in a state
+  // initializer (client-only — the panel only mounts after open), so it never
+  // re-rolls and there's no SSR/hydration mismatch.
+  const [seed] = useState(() => Math.floor(Math.random() * 1_000_000))
   const bottomRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   // Desktop: follow the conversation by keeping the newest line pinned to the
@@ -881,14 +888,14 @@ export default function StartProjectChat() {
             Turn 1 — Megi's greeting
         ═══════════════════════════════════════════ */}
         <AgencyTurn>
-          <Bubble>Hi there 👋</Bubble>
+          <Bubble>{greeting('agencyHello', seed)}</Bubble>
           <Bubble>I&rsquo;m Megi.</Bubble>
         </AgencyTurn>
 
         {/* Turn 1 — User identity */}
         <UserTurn heading={userHeading} initial={userInitial}>
           <Bubble side="right">👋</Bubble>
-          <Bubble side="right">Nice to meet you, Megi!</Bubble>
+          <Bubble side="right">{greeting('userHello', seed)}</Bubble>
 
           <FormShell active={showIdentity && !identitySubmitted}>
             <InlineInput
@@ -944,8 +951,8 @@ export default function StartProjectChat() {
         {isReached('services') && (
           <>
             <AgencyTurn>
-              <Bubble>The pleasure is mine, {a.name}.</Bubble>
-              <Bubble>How can we help?</Bubble>
+              <Bubble>{greeting('agencyWelcome', seed, a.name)}</Bubble>
+              <Bubble>{greeting('agencyAsk', seed)}</Bubble>
             </AgencyTurn>
 
             <UserTurn heading={userHeading} initial={userInitial}>
@@ -1216,7 +1223,7 @@ export default function StartProjectChat() {
                       We&rsquo;ll get back to you at
                       <span className="text-white"> {a.email}</span>.
                     </Bubble>
-                    <Bubble>Talk soon, {a.name} 🤝</Bubble>
+                    <Bubble>{greeting('agencyBye', seed, a.name)}</Bubble>
                   </>
                 )}
               </AgencyTurn>
