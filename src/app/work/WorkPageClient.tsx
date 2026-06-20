@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -499,6 +500,24 @@ export default function WorkPageClient({ projects, initialService, initialIndust
   const [industryFilter, setIndustryFilter] = useState(initialIndustry || 'All')
   const [openFilter, setOpenFilter] = useState<'services' | 'industry' | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+
+  // Mirror the active filters into the URL with router.replace (so Next owns the
+  // history entry and the browser Back button from a project restores them — a
+  // native replaceState is dropped on back because Next restores its own cached
+  // state). replace (not push) keeps the back button going to the project list
+  // once, not through every filter tweak; a fresh /work visit has no query, so
+  // filters start clean and never get permanently stuck.
+  const router = useRouter()
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (serviceFilter !== 'All') params.set('service', serviceFilter)
+    if (industryFilter !== 'All') params.set('industry', industryFilter)
+    const qs = params.toString()
+    const target = qs ? `/work?${qs}` : '/work'
+    if (window.location.pathname + window.location.search !== target) {
+      router.replace(target, { scroll: false })
+    }
+  }, [serviceFilter, industryFilter, router])
 
   const allServices = useMemo(() => {
     const set = new Set<string>()

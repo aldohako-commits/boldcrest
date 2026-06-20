@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -101,6 +102,21 @@ export default function DiaryPageClient({ posts, initialCategory }: DiaryPageCli
   const [activeFilter, setActiveFilter] = useState(
     initialCategory && initialCategory !== 'All' ? initialCategory : 'All'
   )
+
+  // Mirror the active category into the URL with router.replace (Next must own
+  // the history entry so the browser Back button from a post restores it; a
+  // native replaceState is dropped on back). A fresh /diary visit has no query,
+  // so the filter starts clean and never gets permanently stuck.
+  const router = useRouter()
+  useEffect(() => {
+    const target =
+      activeFilter !== 'All'
+        ? `/diary?category=${encodeURIComponent(activeFilter)}`
+        : '/diary'
+    if (window.location.pathname + window.location.search !== target) {
+      router.replace(target, { scroll: false })
+    }
+  }, [activeFilter, router])
 
   const categories = useMemo(() => {
     const set = new Set<string>()
