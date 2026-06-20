@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef } from 'react'
+import { useFormEmbed } from '@/lib/embed'
 
 const serviceLinks = [
   { label: 'Branding', href: '/work?service=Branding' },
@@ -40,6 +41,7 @@ function scrollToTop() {
 
 export default function Footer({ forceShow = false }: { forceShow?: boolean }) {
   const pathname = usePathname()
+  const { isEmbed } = useFormEmbed()
   const footerRef = useRef<HTMLElement>(null)
 
   // Tint the iOS Safari bars to the footer's colour while the footer occupies the
@@ -88,8 +90,9 @@ export default function Footer({ forceShow = false }: { forceShow?: boolean }) {
   // whose fixed-overlay deck would otherwise hide the global one behind it).
   if (!forceShow) {
     if (pathname?.startsWith('/studio')) return null
-    // Careers is a full-screen embedded form — no footer.
-    if (pathname === '/careers') return null
+    // Full-screen embedded ClickUp forms (/careers, /forms/*, and the vanity
+    // form subdomains) — no footer on any device.
+    if (isEmbed) return null
     // Diary single pages render their own footer inside the article slide.
     if (pathname?.startsWith('/diary/')) return null
   }

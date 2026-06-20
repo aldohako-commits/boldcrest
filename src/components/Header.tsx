@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import MobileMenu from './MobileMenu'
 import { useStartProject } from './start-project/StartProjectProvider'
+import { useFormEmbed } from '@/lib/embed'
 
 const navLinks = [
   { href: '/work', label: 'Work' },
@@ -21,6 +22,10 @@ export default function Header() {
   const pathname = usePathname()
   const isStudio = pathname?.startsWith('/studio')
   const { open: openStartProject } = useStartProject()
+  // On a vanity form subdomain, relative links get rewritten back to the form,
+  // so point the logo/nav at the absolute canonical site (empty base elsewhere).
+  const { linkBase } = useFormEmbed()
+  const embed = linkBase !== ''
 
   useEffect(() => {
     if (isStudio) return
@@ -95,10 +100,10 @@ export default function Header() {
             {/* Logo — goes home; if already home, smooth-scrolls to the top
                 (and resets slide-deck pages) instead of doing nothing. */}
             <Link
-              href="/"
+              href={`${linkBase}/`}
               className="z-10 flex items-center"
               onClick={(e) => {
-                if (pathname === '/') {
+                if (!embed && pathname === '/') {
                   e.preventDefault()
                   window.dispatchEvent(new CustomEvent('boldcrest:back-to-top'))
                   window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -123,11 +128,11 @@ export default function Header() {
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
-                  href={link.href}
+                  href={`${linkBase}${link.href}`}
                   onClick={(e) => {
                     // Clicking the current page's nav item returns to the top
                     // (slide-deck pages reset their deck via the event).
-                    if (pathname === link.href) {
+                    if (!embed && pathname === link.href) {
                       e.preventDefault()
                       window.dispatchEvent(new CustomEvent('boldcrest:back-to-top'))
                       window.scrollTo({ top: 0, behavior: 'smooth' })

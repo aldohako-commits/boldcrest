@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useStartProject } from './start-project/StartProjectProvider'
+import { useFormEmbed } from '@/lib/embed'
 
 const navLinks = [
   { href: '/work', label: 'Work' },
@@ -21,6 +22,10 @@ interface MobileMenuProps {
 export default function MobileMenu({ open, onClose }: MobileMenuProps) {
   const { open: openStartProject } = useStartProject()
   const pathname = usePathname()
+  // On a vanity form subdomain, point links at the absolute canonical site so
+  // they escape the form (relative paths get rewritten back to it).
+  const { linkBase } = useFormEmbed()
+  const embed = linkBase !== ''
   return (
     <AnimatePresence>
       {open && (
@@ -57,11 +62,11 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
             {/* Header row inside the menu — logo + close */}
             <div className="flex items-center justify-between px-5 h-14">
               <Link
-                href="/"
+                href={`${linkBase}/`}
                 onClick={(e) => {
                   // Already home: close the menu and scroll to the top instead
                   // of a no-op navigation. Otherwise navigate home as normal.
-                  if (pathname === '/') {
+                  if (!embed && pathname === '/') {
                     e.preventDefault()
                     window.dispatchEvent(new CustomEvent('boldcrest:back-to-top'))
                     // Defer the scroll until the menu has finished its exit
@@ -103,7 +108,7 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
                   }}
                 >
                   <Link
-                    href={link.href}
+                    href={`${linkBase}${link.href}`}
                     onClick={onClose}
                     className="block py-0.5 font-display text-[2rem] font-normal leading-[1.2] text-white/60 transition-colors duration-200 hover:text-white"
                   >

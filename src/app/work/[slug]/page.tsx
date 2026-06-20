@@ -166,7 +166,7 @@ export default async function ProjectPage({
       </div>
 
       {/* Portfolio media — centred, with the navigator to its right */}
-      <section className="px-[var(--gutter)] pb-[var(--space-2xl)] pt-[var(--space-xl)]">
+      <section className="px-[var(--gutter)] pb-[var(--space-lg)] pt-[var(--space-xl)] md:pb-[var(--space-2xl)]">
         <div className="relative w-full">
           <ContentStack
             media={mediaWithAspect}
