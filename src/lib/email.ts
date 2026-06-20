@@ -80,9 +80,11 @@ export function buildBody(rows: Array<[label: string, value: string | undefined]
       const valueHtml = EMAIL_RE.test(value)
         ? `<a href="mailto:${esc(value)}" style="color:#1a73e8;text-decoration:none">${esc(value)}</a>`
         : `<span style="white-space:pre-wrap">${esc(v)}</span>`
+      // Spacing around the "|" uses &nbsp; (not CSS margin, which many mail
+      // clients strip — that collapsed it to "Label|value" on some devices).
       return `<p style="margin:0 0 16px;font-size:15px;color:#111"><strong style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:#888">${esc(
         label,
-      )}</strong><span style="color:#bbb;margin:0 8px">|</span>${valueHtml}</p>`
+      )}</strong><span style="color:#bbb">&nbsp;|&nbsp;</span>${valueHtml}</p>`
     })
     .join('')
   const text = present.map(([label, v]) => `${label} | ${v}`).join('\n')
