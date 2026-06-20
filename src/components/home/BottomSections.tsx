@@ -70,7 +70,11 @@ function RevealWord({
 
 /* ── Team strip: stacked portraits (left 40%) + pull quote (right 60%) ── */
 function TeamStrip({ members }: { members: TeamMember[] }) {
-  const faces = members.slice(0, 4)
+  // A random 4 of the whole team, re-picked on each load (set in the mount
+  // effect below) so the strip isn't always the same first four — over refreshes
+  // everyone gets a turn. Empty until mounted, which also avoids a hydration
+  // mismatch since the faces only render client-side.
+  const [faces, setFaces] = useState<TeamMember[]>([])
   const [mounted, setMounted] = useState(false)
   const [active, setActive] = useState(0)
   const [hovered, setHovered] = useState<number | null>(null)
@@ -85,7 +89,14 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
 
   useEffect(() => {
     setMounted(true)
-  }, [])
+    // Fisher-Yates shuffle, then take 4 — fresh random combination per load.
+    const pool = [...members]
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[pool[i], pool[j]] = [pool[j], pool[i]]
+    }
+    setFaces(pool.slice(0, 4))
+  }, [members])
 
   useEffect(() => {
     if (!mounted || faces.length === 0) return
