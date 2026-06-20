@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { client } from '@/sanity/lib/client'
 import { allProjectsQuery, allDiaryPostsQuery } from '@/sanity/lib/queries'
-import { imageUrlFrom } from '@/lib/seo'
+import { sitemapImageFrom } from '@/lib/seo'
 
 const BASE_URL = 'https://www.boldcrest.com'
 
@@ -27,7 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ])
 
   const projectUrls: MetadataRoute.Sitemap = (projects ?? []).map((p) => {
-    const img = imageUrlFrom(p.thumbnail)
+    const img = sitemapImageFrom(p.thumbnail)
     return {
       url: `${BASE_URL}/work/${p.slug.current}`,
       lastModified: p._updatedAt ? new Date(p._updatedAt) : undefined,
@@ -38,7 +38,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   })
 
   const diaryUrls: MetadataRoute.Sitemap = (posts ?? []).map((p) => {
-    const img = imageUrlFrom(p.coverImage)
+    const img = sitemapImageFrom(p.coverImage)
     return {
       url: `${BASE_URL}/diary/${p.slug.current}`,
       lastModified: new Date(p._updatedAt || p.publishedAt || Date.now()),

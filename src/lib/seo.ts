@@ -26,10 +26,24 @@ export function ogImageFrom(image?: SanityImage): string {
   return DEFAULT_OG
 }
 
-/** A larger source URL for image sitemaps / structured data. */
+/** A larger source URL for structured data (JSON, where `&` needs no escaping). */
 export function imageUrlFrom(image?: SanityImage, width = 1600): string | null {
   if (image?.asset?._ref) {
     return urlFor(image).width(width).auto('format').url()
+  }
+  return null
+}
+
+/**
+ * Image URL for the XML sitemap. Deliberately omits `.auto('format')` so the URL
+ * carries a SINGLE query param (`?w=…`) and no bare `&` — Next emits image
+ * <image:loc> values unescaped, and a raw `&` makes Google reject the whole
+ * sitemap with a parsing error. `auto=format` only negotiates webp/avif, which
+ * is irrelevant for a sitemap image reference.
+ */
+export function sitemapImageFrom(image?: SanityImage, width = 1600): string | null {
+  if (image?.asset?._ref) {
+    return urlFor(image).width(width).url()
   }
   return null
 }
