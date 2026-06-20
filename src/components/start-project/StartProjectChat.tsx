@@ -789,12 +789,12 @@ export default function StartProjectChat() {
   const showIdentityCompany = isReached('company')
   const identitySubmitted = isReached('services')
 
-  // Desktop (no keyboard): bottom-anchor the conversation so it sits at the end
-  // of the panel with the section's padding, instead of floating with a void
-  // beneath. mt-auto only on fine pointers — mobile/touch keeps its top-grown,
-  // keyboard-aware behaviour untouched.
+  // Standard chat flow: the conversation starts at the TOP and grows downward;
+  // scrolling only engages once it overflows. useStickToBottom then keeps the
+  // newest line in view as it fills (desktop), and the user can scroll up for
+  // history. NO bottom-anchor — short conversations sit at the top.
   return (
-    <div ref={containerRef} className="flex flex-col gap-12 [@media(pointer:fine)]:mt-auto">
+    <div ref={containerRef} className="flex flex-col gap-12">
         {/* ═══════════════════════════════════════════
             Turn 1 — Megi's greeting
         ═══════════════════════════════════════════ */}
