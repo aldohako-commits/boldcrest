@@ -165,7 +165,7 @@ export function CTAButton({
         style={{ height: '1.2em' }}
       >
         <span
-          className="flex flex-col transition-transform duration-[0.5s] group-hover:-translate-y-1/2"
+          className="relative top-[0.1em] flex flex-col transition-transform duration-[0.5s] group-hover:-translate-y-1/2"
           style={{ transitionTimingFunction: CUBIC }}
         >
           <span className="leading-[1.2]">{label}</span>
@@ -210,7 +210,7 @@ export function InlineButton({
         style={{ height: '1.2em' }}
       >
         <span
-          className="flex flex-col transition-transform duration-[0.5s] group-hover:-translate-y-1/2"
+          className="relative top-[0.1em] flex flex-col transition-transform duration-[0.5s] group-hover:-translate-y-1/2"
           style={{ transitionTimingFunction: CUBIC }}
         >
           <span className="leading-[1.2]">{label}</span>
@@ -316,7 +316,7 @@ export function SubmitButton({
         style={{ height: '1.2em' }}
       >
         <span
-          className="flex flex-col transition-transform duration-[0.5s] group-hover:-translate-y-1/2"
+          className="relative top-[0.1em] flex flex-col transition-transform duration-[0.5s] group-hover:-translate-y-1/2"
           style={{ transitionTimingFunction: CUBIC }}
         >
           <span className="leading-[1.2]">
