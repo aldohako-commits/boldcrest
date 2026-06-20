@@ -755,6 +755,22 @@ export default function StartProjectChat() {
     return () => vv.removeEventListener('resize', onResize)
   }, [scrollActiveIntoView])
 
+  // Clear the keyboard-safe bottom padding when we land on a step with NO text
+  // field. The text steps set `scroller.paddingBottom = keyboard+96` on focus so
+  // the input clears the on-screen keyboard; leaving for a checkbox/radio step
+  // (services/kickoff/deadline/budget/source) closes the keyboard but could
+  // leave that padding behind, showing a big empty void below the options on
+  // mobile. Reset it here. Text steps re-set their own padding on focus, so this
+  // never fights the keyboard-open behaviour.
+  useEffect(() => {
+    const TEXT_STEPS = new Set<Step>(['name', 'position', 'company', 'message', 'email'])
+    if (TEXT_STEPS.has(step)) return
+    const scroller = containerRef.current?.closest(
+      '[data-lenis-prevent]',
+    ) as HTMLElement | null
+    if (scroller) scroller.style.paddingBottom = ''
+  }, [step])
+
   const handleSubmit = async () => {
     setStep('submitting')
     const fd = new FormData()
