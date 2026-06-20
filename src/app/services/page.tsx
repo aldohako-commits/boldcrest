@@ -5,7 +5,10 @@ import ServicesPageClient from './ServicesPageClient'
 import { BreadcrumbJsonLd, ServiceJsonLd, FAQJsonLd } from '@/components/services/JsonLd'
 
 export const metadata: Metadata = {
-  title: 'Creative Agency Services | Brand Development, Production & Communication | BoldCrest',
+  // Short, keyword-rich title; the root layout template appends "— BoldCrest"
+  // once (every other page follows this pattern). Don't include the brand here
+  // or it doubles. The full keyword detail lives in the description below.
+  title: 'Creative Agency Services',
   description:
     'BoldCrest is a Tirana-based creative agency offering brand development, photography, video, animation, and communication. 300+ projects, 30+ brands, 7+ years of creative excellence.',
   keywords: ['creative agency Tirana', 'branding agency', 'creative services', 'best branding agencies Tirana'],
