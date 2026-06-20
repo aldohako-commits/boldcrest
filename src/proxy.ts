@@ -59,7 +59,7 @@ const DOMAIN_REDIRECTS = new Set([
  *
  * TO GO LIVE: flip COMING_SOON to false and redeploy. That's the only change.
  */
-const COMING_SOON = true
+const COMING_SOON = false
 const CANONICAL_HOSTS = new Set(['boldcrest.com', 'www.boldcrest.com'])
 
 export function proxy(req: NextRequest) {
