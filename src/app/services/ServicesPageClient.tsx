@@ -211,7 +211,10 @@ function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
                 style={{ pointerEvents: isActive ? 'none' : 'auto' }}
               >
                 <span className="sr-only">{cap.number}</span>
-                <div className="flex flex-1 items-start justify-center pt-10 md:pt-12">
+                {/* pt-5 on mobile matches the expanded card's `p-5` so the
+                    collapsed vertical titles start at the SAME y as the open
+                    card's heading. Desktop keeps pt-12 = the expanded p-12. */}
+                <div className="flex flex-1 items-start justify-center pt-5 md:pt-12">
                   <span
                     className="font-display text-[clamp(1.3rem,1.9vw,1.9rem)] font-bold tracking-[-0.01em]"
                     style={{
