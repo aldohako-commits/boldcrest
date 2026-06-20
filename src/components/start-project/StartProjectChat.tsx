@@ -236,18 +236,23 @@ function useFollowAvatar(ref: { current: HTMLDivElement | null }, count: number)
     const ae = document.activeElement
     if (ae instanceof HTMLInputElement || ae instanceof HTMLTextAreaElement) return
     const el = ref.current
-    // Follow next frame, then AGAIN once the avatar's layout-spring settles. The
-    // avatar slides DOWN as each new message lands; framer's layout transform
-    // means a mid-slide getBoundingClientRect reports a position higher than its
-    // resting place, so the first scroll undershoots and the avatar ends up
-    // cropped below the fold (e.g. when the account manager sends two messages
-    // in a row). Re-running after it comes to rest keeps the pic fully visible.
-    const raf = requestAnimationFrame(() => ensureVisibleInScroller(el, 'smooth', 40))
-    const settle = window.setTimeout(() => ensureVisibleInScroller(el, 'smooth', 40), 560)
-    return () => {
-      cancelAnimationFrame(raf)
-      window.clearTimeout(settle)
+    // Track the avatar EVERY frame while its layout-spring runs (~560ms), rather
+    // than scrolling once now and once after it settles. The avatar slides DOWN
+    // as each new message lands; framer animates that with a transform, so
+    // getBoundingClientRect reports its live mid-slide position. Nudging the
+    // scroller instantly (behavior 'auto') on each of those frames keeps the
+    // avatar pinned just above the fold the whole way down — the page rises in
+    // lock-step with it instead of lagging a beat behind, then jumping to catch
+    // up. The avatar's own spring still supplies the smooth motion. We run a
+    // little past the spring duration so the final resting position is settled.
+    let raf = 0
+    const startedAt = performance.now()
+    const tick = (now: number) => {
+      ensureVisibleInScroller(el, 'auto', 40)
+      if (now - startedAt < 640) raf = requestAnimationFrame(tick)
     }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
   }, [ref, count])
 }
 
