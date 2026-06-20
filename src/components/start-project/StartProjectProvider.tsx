@@ -210,7 +210,7 @@ export default function StartProjectProvider({ children }: { children: ReactNode
                   of scrolling internally, which breaks the keyboard math. */}
               <div
                 data-lenis-prevent
-                className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-8"
+                className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-6 py-8"
               >
                 <StartProjectChat key={chatKey} />
               </div>

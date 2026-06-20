@@ -736,8 +736,12 @@ export default function StartProjectChat() {
   const showIdentityCompany = isReached('company')
   const identitySubmitted = isReached('services')
 
+  // Desktop (no keyboard): bottom-anchor the conversation so it sits at the end
+  // of the panel with the section's padding, instead of floating with a void
+  // beneath. mt-auto only on fine pointers — mobile/touch keeps its top-grown,
+  // keyboard-aware behaviour untouched.
   return (
-    <div ref={containerRef} className="flex flex-col gap-12">
+    <div ref={containerRef} className="flex flex-col gap-12 [@media(pointer:fine)]:mt-auto">
         {/* ═══════════════════════════════════════════
             Turn 1 — Megi's greeting
         ═══════════════════════════════════════════ */}

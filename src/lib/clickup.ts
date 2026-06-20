@@ -23,7 +23,17 @@ const FIELD = {
   source: '94c907c2-82e6-4208-81c3-05e2b985f840', // dropdown
   opportunityType: 'fabea3c8-75be-40bf-adbc-188a267301f6', // dropdown
   pointOfContact: 'f0508d1e-ea58-4720-b6a8-ca52c865df9f', // short_text
+  opportunityValue: 'faa549b5-2ad9-4f99-a8a5-be9fabfddad1', // currency
 } as const
+
+// Turn the budget answer into a numeric Opportunity Value. We take the first
+// number in the string as a conservative (lower-bound) estimate:
+//   "Under €5,000" → 5000 · "€5,000 – €15,000" → 5000 · "€50,000+" → 50000 ·
+//   "Not sure yet…" → null (skip). The exact range stays in the description.
+function budgetToValue(budget: string): number | null {
+  const m = budget.replace(/[,\s]/g, '').match(/\d+/)
+  return m ? Number(m[0]) : null
+}
 
 const SOURCE_WEBSITE = '5c7f8a3e-901b-4f76-90e7-954bafa4ea7f'
 const TYPE_PROJECT = '4aff09c7-ba59-4ad4-8215-053b1a067ccb'
@@ -69,6 +79,8 @@ export async function createOpportunity(input: OpportunityInput) {
   ]
   if (input.email) custom_fields.push({ id: FIELD.contactEmail, value: input.email })
   if (serviceIds.length) custom_fields.push({ id: FIELD.service, value: serviceIds })
+  const value = budgetToValue(input.budget)
+  if (value !== null) custom_fields.push({ id: FIELD.opportunityValue, value })
   const poc = [input.name, input.position].filter(Boolean).join(', ')
   if (poc) custom_fields.push({ id: FIELD.pointOfContact, value: poc })
 
