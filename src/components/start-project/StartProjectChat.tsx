@@ -209,6 +209,12 @@ function ensureVisibleInScroller(
 function useFollowAvatar(ref: { current: HTMLDivElement | null }, count: number) {
   useEffect(() => {
     if (count === 0 || !ref.current) return
+    // DESKTOP ONLY (fine pointer) uses a continuous pin-to-bottom
+    // (useStickToBottom) that follows the conversation through reveals AND
+    // reflows, so this reactive per-turn follow — which lags on desktop and
+    // leaves the newest question/options below the fold, then jumps late — is
+    // skipped there. Touch keeps it exactly as before (mobile is unaffected).
+    if (window.matchMedia?.('(pointer: fine)').matches) return
     const ae = document.activeElement
     if (ae instanceof HTMLInputElement || ae instanceof HTMLTextAreaElement) return
     const el = ref.current
@@ -225,6 +231,43 @@ function useFollowAvatar(ref: { current: HTMLDivElement | null }, count: number)
       window.clearTimeout(settle)
     }
   }, [ref, count])
+}
+
+/* DESKTOP ONLY (fine pointer): continuously keep the scroller pinned to the
+   bottom as the conversation reveals, the avatars spring, and the identity form
+   collapses into the services step — so the newest account-manager line +
+   options stay in view (no lag below the fold) and selecting an option never
+   triggers a late catch-up jump. A no-op while content still fits (scrollHeight
+   === clientHeight) so SHORT conversations stay TOP-anchored — start from the
+   top, scroll only once it overflows. Stickiness is tracked from the user's own
+   scrolls: a freshly-revealed message can add >100px below the fold, which must
+   NOT read as "scrolled up" — so we remember whether they were at the bottom and
+   keep them there; scrolling UP detaches (read history), scrolling back
+   re-attaches. Touch devices never run this (matchMedia gate) — their
+   keyboard-aware logic is untouched. */
+function useStickToBottom(ref: { current: HTMLElement | null }) {
+  useEffect(() => {
+    const root = ref.current
+    if (!root) return
+    if (!window.matchMedia?.('(pointer: fine)').matches) return
+    const scroller = root.closest('[data-lenis-prevent]') as HTMLElement | null
+    if (!scroller) return
+    let stick = true
+    const onScroll = () => {
+      stick = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 80
+    }
+    const pin = () => {
+      if (stick) scroller.scrollTop = scroller.scrollHeight
+    }
+    pin()
+    scroller.addEventListener('scroll', onScroll, { passive: true })
+    const ro = new ResizeObserver(pin)
+    ro.observe(root)
+    return () => {
+      scroller.removeEventListener('scroll', onScroll)
+      ro.disconnect()
+    }
+  }, [ref])
 }
 
 /* Megi's avatar — profile photo from /public, falls back to the red "M"
@@ -624,6 +667,9 @@ export default function StartProjectChat() {
   const [a, setA] = useState<Answers>(EMPTY)
   const bottomRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  // Desktop: follow the conversation by keeping the newest line pinned to the
+  // bottom once it overflows (no-op while it fits → stays top-anchored).
+  useStickToBottom(containerRef)
 
   // Keep the *active* form comfortably in view. Centering it (rather than
   // scrolling to the very bottom) ensures the field you're typing in never
