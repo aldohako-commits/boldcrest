@@ -16,9 +16,9 @@ function extractVimeoId(url: string): string | null {
 
 export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedProps) {
   const videoId = extractVimeoId(url)
-  // Native aspect from oEmbed; default to 16:9 when unknown. The cover iframe
-  // below is sized relative to this box, so any shape renders the same clean way
-  // 16:9 always has — just in the correct frame.
+  // Native aspect from oEmbed; default to 16:9 when unknown. The box is set to
+  // this aspect and the background player fills it exactly, so the clip shows at
+  // its true shape.
   const aspectRatio = aspect && aspect > 0 ? aspect : 16 / 9
 
   if (!videoId) {
@@ -38,7 +38,10 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
     <div className={`relative overflow-hidden ${className}`} style={{ aspectRatio }}>
       <iframe
         src={embedUrl}
-        className="pointer-events-none absolute top-1/2 left-1/2 h-[200%] w-[200%] -translate-x-1/2 -translate-y-1/2 border-none"
+        // Fill the native-aspect box 1:1. The old 200% overscan was a hack from
+        // when the box was forced to 16:9 (to crop the letterbox); on a box that
+        // already matches the clip's aspect it just zooms the video 2x.
+        className="pointer-events-none absolute inset-0 h-full w-full border-none"
         allow="autoplay; fullscreen; picture-in-picture"
         allowFullScreen
         loading="lazy"
