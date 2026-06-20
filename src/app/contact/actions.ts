@@ -23,8 +23,8 @@ export async function submitContactForm(formData: FormData) {
     to: TO,
     subject: 'Contact Form Submission - Website',
     replyTo: data.email || undefined,
-    html: `<h2 style="font-family:Arial,sans-serif;font-size:18px">New contact form submission</h2>${html}`,
-    text: `New contact form submission\n\n${text}`,
+    html: `<h2 style="font-family:Arial,sans-serif;font-size:18px">New Contact Form Submission - BoldCrest.com</h2>${html}`,
+    text: `New Contact Form Submission - BoldCrest.com\n\n${text}`,
   })
 
   // Always report success to the visitor; delivery failures are logged

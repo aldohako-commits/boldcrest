@@ -60,19 +60,31 @@ export function esc(value: string | undefined | null): string {
     .replace(/"/g, '&quot;')
 }
 
-/** Build a simple labelled HTML + text body from field rows (skips empty ones). */
+/** Matches a bare email address (used to render values as mailto links). */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+/**
+ * Build a simple labelled HTML + text body from field rows (skips empty ones).
+ *
+ * Each row renders inline as `LABEL | value` — many mail clients strip
+ * `display:block`, so the label and value were collapsing onto one another; the
+ * explicit " | " keeps them readable. Email-looking values become a real
+ * `mailto:` anchor whose href is ONLY the address, so clicking it composes to
+ * the address alone (not the glued "Email…" text the client would auto-link).
+ */
 export function buildBody(rows: Array<[label: string, value: string | undefined]>) {
   const present = rows.filter(([, v]) => v && v.trim())
   const html = present
-    .map(
-      ([label, v]) =>
-        `<p style="margin:0 0 12px"><strong style="display:block;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:#888">${esc(
-          label,
-        )}</strong><span style="font-size:15px;color:#111;white-space:pre-wrap">${esc(
-          v,
-        )}</span></p>`,
-    )
+    .map(([label, v]) => {
+      const value = (v as string).trim()
+      const valueHtml = EMAIL_RE.test(value)
+        ? `<a href="mailto:${esc(value)}" style="color:#1a73e8;text-decoration:none">${esc(value)}</a>`
+        : `<span style="white-space:pre-wrap">${esc(v)}</span>`
+      return `<p style="margin:0 0 10px;font-size:15px;color:#111"><strong style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:#888">${esc(
+        label,
+      )}</strong> <span style="color:#bbb">|</span> ${valueHtml}</p>`
+    })
     .join('')
-  const text = present.map(([label, v]) => `${label}: ${v}`).join('\n')
+  const text = present.map(([label, v]) => `${label} | ${v}`).join('\n')
   return { html, text }
 }
