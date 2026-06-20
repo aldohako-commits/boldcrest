@@ -1070,7 +1070,7 @@ export default function StartProjectChat() {
                 ) : (
                   <>
                     <Bubble>
-                      That&rsquo;s everything — message received.
+                      That&rsquo;s everything, message received.
                     </Bubble>
                     <Bubble>
                       We&rsquo;ll get back to you within one business day at
