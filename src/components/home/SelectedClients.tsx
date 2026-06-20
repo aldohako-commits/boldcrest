@@ -129,6 +129,11 @@ export default function SelectedClients({ partners }: SelectedClientsProps) {
           {row2Items.map(renderPartner)}
         </div>
       </div>
+
+      {/* Zero-height marker at the logos' bottom — ColorTransitionZone reads its
+          position to start the mobile dark→light flip when the logos' bottom
+          reaches the top third of the screen (see ColorTransitionZone). */}
+      <div data-zone-flip-anchor aria-hidden="true" />
     </section>
   )
 }

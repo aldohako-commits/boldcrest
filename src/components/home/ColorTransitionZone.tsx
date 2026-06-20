@@ -54,12 +54,52 @@ export default function ColorTransitionZone({ children }: { children: React.Reac
 
   const D = '#0a0a0a'
   const L = '#EDEDED'
-  // Mobile: hold DARK through the portfolio, then the dark→light flip starts as
-  // soon as the clients logos' BOTTOM reaches the top third of the screen
-  // (~progress 0.27, derived from the zone geometry at the fully-loaded layout)
-  // and is 0.03 wide so it runs at the SAME speed as the light→dark flip
-  // (0.95→0.98, also 0.03). Desktop unchanged.
-  const stops = isMobile ? [0, 0.27, 0.3, 0.95, 0.98] : [0, 0.035, 0.92, 0.96]
+
+  // Mobile: the dark→light flip must start exactly when the clients logos' BOTTOM
+  // reaches the TOP THIRD of the screen. That screen position maps to a different
+  // scroll-progress value on every device (the zone height — esp. the tall pinned
+  // "What We Do" + lazy-loaded images — changes where any fixed progress lands),
+  // so a hardcoded stop is wrong per-device. Instead compute the flip-start
+  // progress from LIVE geometry at runtime: the framer offset is
+  // ['start 0.8','end 0.05'], so progress 0 ↔ scrollY (zoneTop-0.8·ih) and
+  // progress 1 ↔ (zoneBottom-0.05·ih); the flip should start at scrollY
+  // (logosBottom - ih/3). Recompute on resize AND on any zone-size change
+  // (ResizeObserver) so it stays correct as images settle. 0.03 wide = same
+  // speed as the light→dark flip. (Desktop keeps its fixed ramp, untouched.)
+  const [flipStart, setFlipStart] = useState(0.27)
+  useEffect(() => {
+    if (!isMobile) return
+    const el = ref.current
+    if (!el) return
+    const recompute = () => {
+      const anchor = el.querySelector('[data-zone-flip-anchor]') as HTMLElement | null
+      if (!anchor) return
+      const ih = window.innerHeight
+      const zr = el.getBoundingClientRect()
+      const p0 = zr.top + window.scrollY - 0.8 * ih
+      const p1 = zr.bottom + window.scrollY - 0.05 * ih
+      if (p1 - p0 <= 0) return
+      const logosBottom = anchor.getBoundingClientRect().top + window.scrollY
+      const targetY = logosBottom - ih / 3
+      const start = Math.max(0.001, Math.min(0.9, (targetY - p0) / (p1 - p0)))
+      setFlipStart(start)
+    }
+    recompute()
+    const ro = new ResizeObserver(recompute)
+    ro.observe(el)
+    window.addEventListener('resize', recompute, { passive: true })
+    const t1 = setTimeout(recompute, 400)
+    const t2 = setTimeout(recompute, 1500)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', recompute)
+      clearTimeout(t1)
+      clearTimeout(t2)
+    }
+  }, [isMobile])
+
+  const flipEnd = Math.min(0.93, flipStart + 0.03)
+  const stops = isMobile ? [0, flipStart, flipEnd, 0.95, 0.98] : [0, 0.035, 0.92, 0.96]
   const bgRange = isMobile ? [D, D, L, L, D] : [D, L, L, D]
   const fgRange = isMobile ? [L, L, D, D, L] : [L, D, D, L]
 
