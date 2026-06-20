@@ -263,13 +263,22 @@ function useFollowAvatar(ref: { current: HTMLDivElement | null }, count: number)
    keep them there; scrolling UP detaches (read history), scrolling back
    re-attaches. Touch devices never run this (matchMedia gate) — their
    keyboard-aware logic is untouched. */
-function useStickToBottom(ref: { current: HTMLElement | null }) {
+function useStickToBottom(
+  ref: { current: HTMLElement | null },
+  resumeKey: unknown,
+) {
+  // `stick` (follow-the-bottom) and the scroller live in refs so the resume
+  // effect below can re-attach the follow without tearing down the listeners.
+  const stickRef = useRef(true)
+  const scrollerRef = useRef<HTMLElement | null>(null)
+
   useEffect(() => {
     const root = ref.current
     if (!root) return
     if (!isFinePointer()) return
     const scroller = root.closest('[data-lenis-prevent]') as HTMLElement | null
     if (!scroller) return
+    scrollerRef.current = scroller
     // Stop Chrome's scroll-anchoring from nudging scrollTop as each message
     // reveals. Those nudges fire `scroll` events with no user behind them; the
     // old code read one (gap just over its threshold) as "user scrolled up",
@@ -279,21 +288,20 @@ function useStickToBottom(ref: { current: HTMLElement | null }) {
     const prevAnchor = scroller.style.overflowAnchor
     scroller.style.overflowAnchor = 'none'
 
-    // `stick` = follow the bottom. It is flipped ONLY by genuine user scroll
+    // stickRef = follow the bottom. It is flipped ONLY by genuine user scroll
     // input (wheel / touchpad / touch), never by generic `scroll` events — those
     // also fire for our own pin() and for reveal reflow, which is what made the
     // old scroll-event approach race and detach on its own. The ResizeObserver
     // re-pins on every content change while stick holds.
-    let stick = true
     const atBottom = () =>
       scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 160
     const pin = () => {
-      if (stick) scroller.scrollTop = scroller.scrollHeight
+      if (stickRef.current) scroller.scrollTop = scroller.scrollHeight
     }
     // wheel fires before the scroll lands, so settle a frame, then decide: a
-    // scroll UP detaches (read history); returning to the bottom re-attaches and
-    // the next reveal follows again.
-    const onIntent = () => requestAnimationFrame(() => { stick = atBottom() })
+    // scroll UP detaches (read history / see a long option list); returning to
+    // the bottom re-attaches, and advancing the flow re-attaches too (below).
+    const onIntent = () => requestAnimationFrame(() => { stickRef.current = atBottom() })
 
     pin()
     scroller.addEventListener('wheel', onIntent, { passive: true })
@@ -305,8 +313,26 @@ function useStickToBottom(ref: { current: HTMLElement | null }) {
       scroller.removeEventListener('wheel', onIntent)
       scroller.removeEventListener('touchmove', onIntent)
       ro.disconnect()
+      scrollerRef.current = null
     }
   }, [ref])
+
+  // Advancing the flow (resumeKey changes) RE-ATTACHES the follow. Scrolling up
+  // to read history or to see every option in a tall list detaches it — but the
+  // moment you make a choice and move on, the conversation should track Megi's
+  // new replies + avatar to the bottom again instead of staying stranded where
+  // you'd scrolled. Snap to the bottom now; the ResizeObserver then follows each
+  // reveal as it lands. Desktop-only.
+  useEffect(() => {
+    if (!isFinePointer()) return
+    stickRef.current = true
+    const scroller = scrollerRef.current
+    if (scroller) {
+      requestAnimationFrame(() => {
+        if (stickRef.current) scroller.scrollTop = scroller.scrollHeight
+      })
+    }
+  }, [resumeKey])
 }
 
 /* Megi's avatar — profile photo from /public, falls back to the red "M"
@@ -714,8 +740,10 @@ export default function StartProjectChat() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   // Desktop: follow the conversation by keeping the newest line pinned to the
-  // bottom once it overflows (no-op while it fits → stays top-anchored).
-  useStickToBottom(containerRef)
+  // bottom. Passing `step` re-attaches the follow each time the flow advances,
+  // so scrolling up (to read history or see a long option list) never strands
+  // the conversation once you make a choice and move on.
+  useStickToBottom(containerRef, step)
 
   // Keep the *active* form comfortably in view. Centering it (rather than
   // scrolling to the very bottom) ensures the field you're typing in never
