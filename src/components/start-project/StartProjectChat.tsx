@@ -5,6 +5,7 @@ import { flushSync } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { submitProjectForm } from './actions'
 import { botReply, greeting } from './replies'
+import { trackLead } from '@/lib/analytics'
 
 /* ════════════════════════════════════════════════════
    Types & data
@@ -862,7 +863,13 @@ export default function StartProjectChat() {
     fd.set('budget', a.budget)
     fd.set('source', a.source.join(', '))
     const res = await submitProjectForm(fd)
-    if (res.success) setStep('sent')
+    if (res.success) {
+      setStep('sent')
+      trackLead('start_project', {
+        services: a.services.join(', '),
+        budget: a.budget,
+      })
+    }
   }
 
   const userHeading = (() => {

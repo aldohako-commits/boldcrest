@@ -3,6 +3,7 @@
 import { useState, useActionState, useRef } from 'react'
 import Link from 'next/link'
 import { submitContactForm } from './actions'
+import { trackLead } from '@/lib/analytics'
 
 interface SocialLink {
   platform: string
@@ -46,7 +47,10 @@ export default function ContactPageClient({
   const [, formAction, isPending] = useActionState(
     async (_prevState: unknown, formData: FormData) => {
       const result = await submitContactForm(formData)
-      if (result.success) setSubmitted(true)
+      if (result.success) {
+        setSubmitted(true)
+        trackLead('contact')
+      }
       return result
     },
     null,
