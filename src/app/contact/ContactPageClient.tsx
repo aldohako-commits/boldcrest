@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useActionState } from 'react'
+import { useState, useActionState, useRef } from 'react'
 import Link from 'next/link'
 import { submitContactForm } from './actions'
 
@@ -27,7 +27,7 @@ const LABEL =
 const VALUE =
   'text-[1.15rem] leading-[1.5] text-white transition-colors duration-300 hover:text-text-secondary'
 const FIELD =
-  'w-full border-b border-border bg-transparent pb-3 text-[1rem] text-white outline-none transition-colors duration-300 placeholder:text-text-tertiary focus:border-white/40'
+  'w-full border-b border-border bg-transparent pb-3 text-[1rem] text-white outline-none transition-colors duration-300 placeholder:text-text-tertiary focus:border-white/40 disabled:cursor-not-allowed disabled:opacity-40'
 
 export default function ContactPageClient({
   contactEmail,
@@ -38,6 +38,10 @@ export default function ContactPageClient({
   // from <button> elements, so the SEND pill is styled inline and its hover
   // state is driven here to mirror the site's CTA pill ("Start a Project").
   const [sendHover, setSendHover] = useState(false)
+  const [refreshHover, setRefreshHover] = useState(false)
+  // Uncontrolled form: reset() clears the fields when the visitor chooses to
+  // send another message via the refresh control next to the Sent button.
+  const formRef = useRef<HTMLFormElement>(null)
 
   const [, formAction, isPending] = useActionState(
     async (_prevState: unknown, formData: FormData) => {
@@ -47,6 +51,11 @@ export default function ContactPageClient({
     },
     null,
   )
+
+  const handleReset = () => {
+    formRef.current?.reset()
+    setSubmitted(false)
+  }
 
   const socials =
     socialLinks?.map((s) => ({ label: s.platform, href: s.url })) ??
@@ -150,76 +159,103 @@ export default function ContactPageClient({
           {/* Right: form — field lines end inset from the right edge by the same
               amount the left column is indented from the left (symmetric margins) */}
           <div className="md:col-span-4 md:col-start-7">
-            {submitted ? (
-              <div className="flex min-h-[300px] flex-col items-center justify-center text-center">
-                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-accent">
-                  <svg
-                    width="28"
-                    height="28"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="white"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M20 6L9 17l-5-5" />
-                  </svg>
-                </div>
-                <h3 className="font-display text-[2rem] font-bold">Message Sent</h3>
-                <p className="mt-3 text-[1rem] text-text-secondary">
-                  We&apos;ll get back to you shortly.
-                </p>
-              </div>
-            ) : (
-              <form action={formAction} className="flex flex-col gap-[var(--space-lg)]">
-                <input
-                  name="name"
-                  type="text"
-                  required
-                  placeholder="Full Name*"
-                  className={FIELD}
-                />
-                <input
-                  name="email"
-                  type="email"
-                  required
-                  placeholder="Email*"
-                  className={FIELD}
-                />
-                <input
-                  name="company"
-                  type="text"
-                  placeholder="Company"
-                  className={FIELD}
-                />
-                <textarea
-                  name="message"
-                  required
-                  rows={4}
-                  placeholder="Message*"
-                  className={`${FIELD} resize-none`}
-                />
-                <div>
+            <form
+              ref={formRef}
+              action={formAction}
+              className="flex flex-col gap-[var(--space-lg)]"
+            >
+              <input
+                name="name"
+                type="text"
+                required
+                disabled={submitted}
+                placeholder="Full Name*"
+                className={FIELD}
+              />
+              <input
+                name="email"
+                type="email"
+                required
+                disabled={submitted}
+                placeholder="Email*"
+                className={FIELD}
+              />
+              <input
+                name="company"
+                type="text"
+                disabled={submitted}
+                placeholder="Company"
+                className={FIELD}
+              />
+              <textarea
+                name="message"
+                required
+                disabled={submitted}
+                rows={4}
+                placeholder="Message*"
+                className={`${FIELD} resize-none`}
+              />
+              {/* Send / Sent pill on the left; once sent, a refresh control sits
+                  on the right edge (parallel to it) to clear the form and start
+                  over. */}
+              <div className="flex items-center justify-between">
+                <button
+                  type="submit"
+                  disabled={isPending || submitted}
+                  onMouseEnter={() => setSendHover(true)}
+                  onMouseLeave={() => setSendHover(false)}
+                  className="inline-flex items-center justify-center rounded-[var(--radius-pill)] px-5 py-[0.55rem] text-[0.7rem] font-semibold uppercase tracking-[0.12em] transition-all duration-[0.5s] disabled:cursor-not-allowed"
+                  style={{
+                    borderStyle: 'solid',
+                    borderWidth: '1px',
+                    borderColor:
+                      !submitted && sendHover
+                        ? 'rgba(255,255,255,0.6)'
+                        : 'rgba(255,255,255,0.25)',
+                    color:
+                      !submitted && sendHover ? '#fff' : 'rgba(255,255,255,0.55)',
+                    transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)',
+                  }}
+                >
+                  {isPending ? 'Sending…' : submitted ? 'Sent' : 'Send'}
+                </button>
+
+                {submitted && (
                   <button
-                    type="submit"
-                    disabled={isPending}
-                    onMouseEnter={() => setSendHover(true)}
-                    onMouseLeave={() => setSendHover(false)}
-                    className="inline-flex items-center justify-center rounded-[var(--radius-pill)] px-5 py-[0.55rem] text-[0.7rem] font-semibold uppercase tracking-[0.12em] transition-all duration-[0.5s] disabled:cursor-not-allowed disabled:opacity-50"
+                    type="button"
+                    onClick={handleReset}
+                    aria-label="Send another message"
+                    title="Send another message"
+                    onMouseEnter={() => setRefreshHover(true)}
+                    onMouseLeave={() => setRefreshHover(false)}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full transition-all duration-[0.5s]"
                     style={{
                       borderStyle: 'solid',
                       borderWidth: '1px',
-                      borderColor: sendHover ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.25)',
-                      color: sendHover ? '#fff' : 'rgba(255,255,255,0.55)',
+                      borderColor: refreshHover
+                        ? 'rgba(255,255,255,0.6)'
+                        : 'rgba(255,255,255,0.25)',
+                      color: refreshHover ? '#fff' : 'rgba(255,255,255,0.55)',
                       transitionTimingFunction: 'cubic-bezier(0.645, 0.045, 0.355, 1)',
                     }}
                   >
-                    {isPending ? 'Sending…' : 'Send'}
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M23 4v6h-6" />
+                      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                    </svg>
                   </button>
-                </div>
-              </form>
-            )}
+                )}
+              </div>
+            </form>
           </div>
         </div>
       </section>
