@@ -63,6 +63,13 @@ export default function CookieBanner() {
 
   const choose = (value: 'accepted' | 'denied') => {
     persistConsent(value)
+    // Let consent-gated scripts (e.g. GoogleAnalytics) react immediately, so
+    // accepting loads them without waiting for a page reload.
+    try {
+      window.dispatchEvent(new CustomEvent('cookie-consent', { detail: value }))
+    } catch {
+      /* CustomEvent unsupported */
+    }
     setVisible(false)
   }
 
