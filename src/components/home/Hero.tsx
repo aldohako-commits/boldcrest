@@ -150,7 +150,7 @@ export default function Hero() {
   return (
     <section className="px-[var(--gutter)] pt-[clamp(8rem,17vh,14rem)] pb-[var(--space-2xl)]">
       {/* Desktop lines */}
-      <h1 className="hidden font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[1.05] tracking-[-0.03em] md:block">
+      <h1 className="hidden cursor-default select-none [-webkit-tap-highlight-color:transparent] font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[1.05] tracking-[-0.03em] md:block">
         {DESKTOP_LINES.map((line, lineIndex) => (
           <span key={lineIndex} className={`block ${lineIndex < DESKTOP_LINES.length - 1 ? 'overflow-hidden' : ''}`}>
             {line.map((word, wordIndex) => (
@@ -169,7 +169,7 @@ export default function Hero() {
       </h1>
 
       {/* Mobile lines */}
-      <h1 className="font-display text-[clamp(3rem,12vw,5rem)] font-bold leading-[1.05] tracking-[-0.03em] md:hidden">
+      <h1 className="cursor-default select-none [-webkit-tap-highlight-color:transparent] font-display text-[clamp(3rem,12vw,5rem)] font-bold leading-[1.05] tracking-[-0.03em] md:hidden">
         {MOBILE_LINES.map((line, lineIndex) => (
           <span key={lineIndex} className={`block ${lineIndex < MOBILE_LINES.length - 1 ? 'overflow-hidden' : ''}`}>
             {line.map((word, wordIndex) => (

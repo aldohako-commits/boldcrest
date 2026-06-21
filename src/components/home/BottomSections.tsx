@@ -79,14 +79,6 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
   const [active, setActive] = useState(0)
   const [hovered, setHovered] = useState<number | null>(null)
 
-  const sectionRef = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ['start 0.85', 'start 0.3'],
-  })
-  const textX = useTransform(scrollYProgress, [0, 1], [40, 0])
-  const textOpacity = useTransform(scrollYProgress, [0, 1], [0, 1])
-
   useEffect(() => {
     setMounted(true)
     // Fisher-Yates shuffle, then take 4 — fresh random combination per load.
@@ -119,18 +111,21 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
       .slice(0, 2)
 
   return (
-    <section ref={sectionRef} className="px-[var(--gutter)] py-[var(--space-2xl)]">
+    <section className="px-[var(--gutter)] py-[var(--space-2xl)]">
       <div className="mx-auto flex max-w-[var(--max-width)] flex-col items-center gap-12 md:flex-row md:items-center md:gap-8">
         {/* Left: headline + body text — 55% */}
         <motion.div
           className="order-2 w-full md:order-1 md:w-[55%]"
-          // `will-change` promotes this scroll-linked block to its own
-          // compositor layer up front. Without it, the browser creates/destroys
-          // the layer as scrollYProgress enters/leaves the animated range, which
-          // shows up as a one-off scroll stutter each direction (down and back
-          // up) on mobile's native scroll. Purely a paint hint — no visual,
-          // layout, or timing change.
-          style={{ x: textX, opacity: textOpacity, willChange: 'transform, opacity' }}
+          // One-shot reveal via IntersectionObserver (whileInView), NOT
+          // scroll-linked. The previous useScroll/useTransform version read
+          // layout on every scroll frame; on mobile's native scroll that caused
+          // a small catch-up "jump" each time the trigger zone was entered/left
+          // (once down, once back up). This plays the same fade + slide once and
+          // is fully decoupled from scroll position — same look, no jump.
+          initial={{ opacity: 0, x: 40 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
           {/* Desktop — inline button */}
           <p className="mb-6 hidden font-display text-[clamp(2.5rem,6vw,6rem)] font-bold leading-[1.1] tracking-[-0.03em] md:block">
