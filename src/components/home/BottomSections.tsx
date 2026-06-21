@@ -124,7 +124,13 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
         {/* Left: headline + body text — 55% */}
         <motion.div
           className="order-2 w-full md:order-1 md:w-[55%]"
-          style={{ x: textX, opacity: textOpacity }}
+          // `will-change` promotes this scroll-linked block to its own
+          // compositor layer up front. Without it, the browser creates/destroys
+          // the layer as scrollYProgress enters/leaves the animated range, which
+          // shows up as a one-off scroll stutter each direction (down and back
+          // up) on mobile's native scroll. Purely a paint hint — no visual,
+          // layout, or timing change.
+          style={{ x: textX, opacity: textOpacity, willChange: 'transform, opacity' }}
         >
           {/* Desktop — inline button */}
           <p className="mb-6 hidden font-display text-[clamp(2.5rem,6vw,6rem)] font-bold leading-[1.1] tracking-[-0.03em] md:block">

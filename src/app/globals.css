@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+/* Hover variant gated on `any-hover` rather than Tailwind's default `hover`
+   (which is `@media (hover: hover)`). `any-hover: hover` is true whenever ANY
+   connected input can hover — so hover effects work on an iPad/iPhone with a
+   mouse or trackpad, while staying OFF on touch-only devices (no sticky hover).
+   Scoped as a new variant; the default `hover:` is left untouched. */
+@custom-variant hover-fine {
+  @media (any-hover: hover) {
+    &:hover {
+      @slot;
+    }
+  }
+}
+
 /* ============================================
    BOLDCREST DESIGN SYSTEM
    ============================================ */
