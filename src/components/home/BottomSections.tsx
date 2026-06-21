@@ -78,6 +78,14 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
   const [mounted, setMounted] = useState(false)
   const [active, setActive] = useState(0)
   const [hovered, setHovered] = useState<number | null>(null)
+  // Only react to hover where a real hover-capable pointer exists (mouse/
+  // trackpad — incl. an iPad with a mouse). On touch-only screens this stays
+  // false, so a finger scrolling vertically over the cards can't trigger the
+  // hover-scale, which read as a glitch over the staff photos on mobile.
+  const [canHover, setCanHover] = useState(false)
+  useEffect(() => {
+    setCanHover(window.matchMedia('(any-hover: hover)').matches)
+  }, [])
 
   useEffect(() => {
     setMounted(true)
@@ -190,14 +198,10 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
                       scale: isActive ? 1.05 : 0.95,
                       zIndex: isActive ? 10 : faces.length - i,
                     }}
-                    whileHover={{
-                      scale: 1.1,
-                      zIndex: 20,
-                      rotate: 0,
-                    }}
+                    whileHover={canHover ? { scale: 1.1, zIndex: 20, rotate: 0 } : undefined}
                     transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                    onMouseEnter={() => setHovered(i)}
-                    onMouseLeave={() => setHovered(null)}
+                    onMouseEnter={canHover ? () => setHovered(i) : undefined}
+                    onMouseLeave={canHover ? () => setHovered(null) : undefined}
                   >
                     {hasImage ? (
                       <Image

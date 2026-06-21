@@ -225,11 +225,20 @@ function FacesGallery({ team }: { team: FaceItem[] }) {
   const wrap = useCallback(() => {
     const el = scrollerRef.current
     if (!el) return
-    const oneSet = el.scrollWidth / 4
+    // Exact width of ONE copy, measured as the offset of the 2nd copy's first
+    // item. scrollWidth/4 is ~0.25 of a gap short — the 4 copies share 4N-1 gaps,
+    // not 4N — so snapping by it drifted a few px and showed a small jump once
+    // per loop. Measuring the real stride keeps the wrap seamless.
+    const kids = (el.firstElementChild as HTMLElement | null)?.children
+    const n = team.length
+    const oneSet =
+      kids && n > 0 && kids.length > n
+        ? (kids[n] as HTMLElement).offsetLeft - (kids[0] as HTMLElement).offsetLeft
+        : el.scrollWidth / 4
     if (oneSet <= 0) return
     if (el.scrollLeft < oneSet) el.scrollLeft += oneSet
     else if (el.scrollLeft >= oneSet * 2) el.scrollLeft -= oneSet
-  }, [])
+  }, [team.length])
 
   useEffect(() => {
     const el = scrollerRef.current
@@ -238,7 +247,12 @@ function FacesGallery({ team }: { team: FaceItem[] }) {
     let last = 0
     // Start one set in so there's a full copy to the LEFT to scroll back into.
     const recenter = () => {
-      const oneSet = el.scrollWidth / 4
+      const kids = (el.firstElementChild as HTMLElement | null)?.children
+      const n = team.length
+      const oneSet =
+        kids && n > 0 && kids.length > n
+          ? (kids[n] as HTMLElement).offsetLeft - (kids[0] as HTMLElement).offsetLeft
+          : el.scrollWidth / 4
       if (oneSet > 0 && el.scrollLeft < 1) el.scrollLeft = oneSet
     }
     recenter()
