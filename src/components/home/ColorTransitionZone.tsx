@@ -117,6 +117,17 @@ export default function ColorTransitionZone({ children }: { children: React.Reac
       // If fg luminance > 128, it's a light foreground (on dark bg)
       const isLight = lum > 128
 
+      // HARD contrast against the CURRENT background (not the interpolated fg).
+      // The fg ramp passes through mid-grey at the same moment the bg does, so
+      // anything tied to --zone-fg goes muddy grey-on-grey mid-transition. For
+      // elements that must always stay legible (e.g. the TeamStrip "Meet the
+      // People" pill), --zone-contrast flips cleanly: dark ink on a light bg,
+      // light ink on a dark bg — no interpolation, so it's never washed out.
+      const [cbR, cbG, cbB] = parseColor(color)
+      const bgIsLight = luminance(cbR, cbG, cbB) > 128
+      const contrast = bgIsLight ? '#0a0a0a' : '#EDEDED'
+      const contrastFaint = bgIsLight ? 'rgba(10,10,10,0.4)' : 'rgba(237,237,237,0.3)'
+
       const setVars = (elm: HTMLElement) => {
         elm.style.setProperty('--zone-fg', fg)
         elm.style.setProperty('--zone-fg-half', `rgba(${r},${g},${b},0.5)`)
@@ -125,6 +136,8 @@ export default function ColorTransitionZone({ children }: { children: React.Reac
         elm.style.setProperty('--zone-fg-subtle', `rgba(${r},${g},${b},0.1)`)
         elm.style.setProperty('--zone-border', `rgba(${r},${g},${b},${isLight ? 0.15 : 0.1})`)
         elm.style.setProperty('--zone-logo-filter', isLight ? 'brightness(0) invert(1)' : 'brightness(0)')
+        elm.style.setProperty('--zone-contrast', contrast)
+        elm.style.setProperty('--zone-contrast-faint', contrastFaint)
         elm.style.setProperty('--zone-bg', color)
       }
 
@@ -156,6 +169,7 @@ export default function ColorTransitionZone({ children }: { children: React.Reac
         ;[
           '--zone-fg', '--zone-fg-half', '--zone-fg-muted', '--zone-fg-faint',
           '--zone-fg-subtle', '--zone-border', '--zone-logo-filter', '--zone-bg',
+          '--zone-contrast', '--zone-contrast-faint',
         ].forEach((v) => wrapper.style.removeProperty(v))
       }
     }
@@ -172,6 +186,8 @@ export default function ColorTransitionZone({ children }: { children: React.Reac
         '--zone-fg-subtle': 'rgba(237,237,237,0.1)',
         '--zone-border': 'rgba(237,237,237,0.15)',
         '--zone-logo-filter': 'brightness(0) invert(1)',
+        '--zone-contrast': '#EDEDED',
+        '--zone-contrast-faint': 'rgba(237,237,237,0.3)',
         '--zone-bg': '#0a0a0a',
       } as React.CSSProperties}
     >

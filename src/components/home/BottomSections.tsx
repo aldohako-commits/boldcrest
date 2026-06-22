@@ -169,8 +169,12 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
             </p>
             <Link
               href="/people"
-              className="mt-8 flex w-full items-center justify-between rounded-full border px-8 py-5 text-[0.85rem] font-semibold uppercase tracking-[0.1em] transition-all duration-300"
-              style={{ borderColor: 'var(--zone-fg-faint, rgba(237,237,237,0.15))', color: 'var(--zone-fg, #EDEDED)' }}
+              className="mt-8 flex w-full items-center justify-between rounded-full px-8 py-5 text-[0.85rem] font-semibold uppercase tracking-[0.1em] transition-all duration-300"
+              // Filled pill that swaps between the project's two button versions
+              // (see /button-preview): WHITE pill + dark text on the dark bg,
+              // flipping to BLACK pill + light text once the bg transitions light
+              // — so it always reads. Fill follows --zone-contrast, text --zone-bg.
+              style={{ backgroundColor: 'var(--zone-contrast, #EDEDED)', color: 'var(--zone-bg, #0a0a0a)' }}
             >
               Meet the People
               <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
