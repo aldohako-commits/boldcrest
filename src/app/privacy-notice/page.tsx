@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyNoticePage() {
   return (
-    <LegalLayout label="Legal" title="Privacy Notice" effectiveDate="June 10, 2026">
+    <LegalLayout label="Legal" title="Privacy Notice" effectiveDate="June 22, 2026">
       <h2>Introduction</h2>
       <p>At BoldCrest, privacy is part of good design.</p>
       <p>
@@ -183,6 +183,17 @@ export default function PrivacyNoticePage() {
         <li>Understand visitor behavior</li>
         <li>Support marketing and advertising activities</li>
       </ul>
+      <p>
+        Specifically, where you provide consent, we use{' '}
+        <strong>Google Analytics 4</strong> (Google) to measure website usage and
+        the <strong>Meta Pixel</strong> (Meta Platforms) to measure advertising
+        performance and support retargeting. These tools set cookies and may
+        transfer limited data to Google and Meta, including to servers in the United
+        States, under the safeguards described in &ldquo;International Data
+        Transfers&rdquo; below. We also use Vercel Web Analytics, which does not use
+        cookies. No analytics or marketing technologies load until you accept them in
+        our cookie banner.
+      </p>
       <p>
         Additional information is available in our{' '}
         <Link href="/cookie-policy">Cookie Policy</Link>.

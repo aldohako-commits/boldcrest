@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function CookiePolicyPage() {
   return (
-    <LegalLayout label="Legal" title="Cookie Policy" effectiveDate="June 10, 2026">
+    <LegalLayout label="Legal" title="Cookie Policy" effectiveDate="June 22, 2026">
       <h2>Introduction</h2>
       <p>
         This Cookie Policy explains how BoldCrest SH.P.K. (&ldquo;BoldCrest&rdquo;,
@@ -79,6 +79,13 @@ export default function CookiePolicyPage() {
         We use this information to improve our website, services, and user
         experience.
       </p>
+      <p>
+        We currently use <strong>Google Analytics 4</strong>, provided by Google,
+        for website analytics. It sets cookies such as &ldquo;_ga&rdquo; and
+        &ldquo;_ga_*&rdquo;, typically stored for up to two years, and loads only
+        after you accept analytics cookies. We also use Vercel Web Analytics, which
+        measures aggregate traffic without using cookies.
+      </p>
 
       <h3>Functional Cookies</h3>
       <p>
@@ -101,6 +108,38 @@ export default function CookiePolicyPage() {
       <p>
         These technologies may be provided by advertising and social media
         platforms and may track interactions across websites and devices.
+      </p>
+      <p>
+        Where you accept marketing cookies, we use the{' '}
+        <strong>Meta (Facebook) Pixel</strong>, provided by Meta Platforms, to
+        measure the performance of our advertising and to show more relevant ads. It
+        sets a cookie named &ldquo;_fbp&rdquo;, typically stored for about three
+        months, and shares limited interaction data with Meta. No marketing cookies
+        are set unless you accept them.
+      </p>
+
+      <h2>Cookies We Currently Use</h2>
+      <p>The specific cookies and similar technologies we currently use are:</p>
+      <ul>
+        <li>
+          <strong>boldcrest-cookie-consent</strong> (BoldCrest) — remembers your
+          cookie choice. Strictly necessary; stored for about one year.
+        </li>
+        <li>
+          <strong>_ga, _ga_*</strong> (Google Analytics 4, by Google) — measures
+          website usage and performance. Analytics; stored for up to two years. Set
+          only after you accept.
+        </li>
+        <li>
+          <strong>_fbp</strong> (Meta / Facebook Pixel, by Meta Platforms) —
+          measures advertising performance and supports retargeting. Marketing;
+          stored for about three months. Set only after you accept.
+        </li>
+      </ul>
+      <p>
+        We also use Vercel Web Analytics, which measures aggregate traffic without
+        cookies. This list may change as our technology evolves; the categories
+        above always describe how each technology is used.
       </p>
 
       <h2>Third-Party Technologies</h2>
