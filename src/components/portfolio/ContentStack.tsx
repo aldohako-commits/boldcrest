@@ -412,11 +412,10 @@ export default function ContentStack({
 
   return (
     <div className="flex justify-center gap-[var(--space-2xl)]">
-      {/* Invisible left spacer mirroring the navigator so the media is centred.
-          Both it and the rail are desktop-only (fine pointer): on touch we use
-          slide-tapping + native scroll, so the rail is hidden. */}
+      {/* Invisible left spacer mirroring the navigator so the media stays centred.
+          Matches the rail width per device (narrower on touch). */}
       {total > 1 && (
-        <div aria-hidden className="hidden w-[32px] shrink-0 min-[960px]:block pointer-coarse:hidden" />
+        <div aria-hidden className="hidden w-[42px] shrink-0 min-[960px]:block pointer-coarse:w-[32px]" />
       )}
       {/* Media stack — centred (capped width), the navigator sits to its right */}
       <div ref={mediaStackRef} className="flex w-full min-w-0 max-w-[1200px] flex-col">
@@ -434,13 +433,14 @@ export default function ContentStack({
         ))}
       </div>
 
-      {/* Thumbnail navigator — desktop only. Wrapper is a full-viewport-height
-          sticky box pinned to the top; `items-center` keeps the rail vertically
-          CENTERED on the page. The rail itself is capped at the viewport height
-          minus breathing room and its thumbnails shrink to fit, so even the
-          biggest project (21 slides) stays within the screen edge-to-edge. */}
+      {/* Thumbnail navigator. Wrapper is a full-viewport-height sticky box; on
+          DESKTOP it top-aligns the rail at the header offset (unchanged look), on
+          TOUCH (pointer-coarse) it centers the rail on the page. The rail is capped
+          to the viewport height and its thumbnails shrink to fit, so even the
+          biggest project (21 slides) stays fully visible on smaller screens —
+          adaptive, not edge-to-edge. */}
       {total > 1 && (
-        <div className="sticky top-0 hidden h-[100dvh] shrink-0 items-center self-start min-[960px]:flex pointer-coarse:hidden">
+        <div className="sticky top-0 hidden h-[100dvh] shrink-0 flex-col justify-start self-start pt-[120px] min-[960px]:flex pointer-coarse:justify-center pointer-coarse:pt-0">
         <nav
           ref={railRef}
           aria-label="Project media"
@@ -450,14 +450,14 @@ export default function ContentStack({
           onPointerCancel={endRailGesture}
           onClickCapture={onRailClickCapture}
           onDragStart={(e) => e.preventDefault()}
-          className="relative flex max-h-[calc(100dvh-7rem)] w-[32px] cursor-grab touch-pan-y select-none flex-col gap-[3px] active:cursor-grabbing [&_img]:pointer-events-none [&_img]:select-none"
+          className="relative flex max-h-[calc(100dvh-9rem)] w-[42px] shrink-0 cursor-grab touch-pan-y select-none flex-col gap-[3px] active:cursor-grabbing pointer-coarse:max-h-[calc(100dvh-4rem)] pointer-coarse:w-[32px] [&_img]:pointer-events-none [&_img]:select-none"
         >
-          {/* Continuous indicator line — tracks scroll/drag position, thicker
-              and sticking out slightly past the sides of the rail. */}
+          {/* Position-indicator line — DESKTOP only. It's the "rail bar that gives
+              position"; on touch we navigate by tapping slides, so it's removed. */}
           <span
             aria-hidden
             style={{ top: `${progress * 100}%` }}
-            className="pointer-events-none absolute -left-[5px] -right-[5px] z-10 h-[3px] -translate-y-1/2 rounded-full bg-white/75"
+            className="pointer-events-none absolute -left-[5px] -right-[5px] z-10 h-[3px] -translate-y-1/2 rounded-full bg-white/75 pointer-coarse:hidden"
           />
           {items.map((item, i) => {
             const isActive = active === i
