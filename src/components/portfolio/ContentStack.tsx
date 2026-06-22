@@ -7,8 +7,6 @@ import { sanityImageLoader } from '@/sanity/lib/loader'
 import VimeoEmbed from '@/components/VimeoEmbed'
 import { useLenis } from '@/components/LenisProvider'
 
-const HEADER_OFFSET = 120
-
 interface VideoMedia {
   _type: 'videoMedia'
   _key: string
@@ -185,24 +183,25 @@ export default function ContentStack({
   // 0..1 position of the indicator line = how far we've scrolled through the media
   const [progress, setProgress] = useState(0)
 
-  // Per-item "snap" = the scroll position that brings item i to the header offset,
-  // clamped to the document's real scroll range. EVERYTHING (active item, indicator
-  // line, drag-scrub) is expressed against these snaps so the rail shares ONE
-  // coordinate system with the thumbnails. The old code mapped the line by uniform
-  // scroll-fraction while the thumbnails are laid out by item index — and because
-  // media heights are unequal those disagreed, so the line drifted off the active
-  // thumbnail (worst near the end, where the last item's snap clamps).
+  // Per-item "snap" = the scroll position that CENTERS item i in the viewport,
+  // clamped to the document's real scroll range. (Top-aligning to the header left
+  // a near-viewport-tall slide's center well below the screen center — it read as
+  // "slightly lowered".) EVERYTHING (active item, indicator line, drag-scrub) is
+  // expressed against these snaps so the rail shares ONE coordinate system with the
+  // thumbnails: marker on a thumbnail ⇒ that slide centered on screen.
   const getSnaps = useCallback(() => {
     const maxScroll = Math.max(
       0,
       document.documentElement.scrollHeight - window.innerHeight,
     )
     const y = window.scrollY
+    const half = window.innerHeight / 2
     const snaps: number[] = []
     for (let i = 0; i < total; i++) {
       const el = itemRefs.current[i]
-      const docTop = el ? el.getBoundingClientRect().top + y : 0
-      snaps[i] = Math.min(Math.max(0, docTop - HEADER_OFFSET), maxScroll)
+      const r = el?.getBoundingClientRect()
+      const docCenter = r ? r.top + y + r.height / 2 : 0
+      snaps[i] = Math.min(Math.max(0, docCenter - half), maxScroll)
     }
     return snaps
   }, [total])
@@ -255,6 +254,7 @@ export default function ContentStack({
       0,
       document.documentElement.scrollHeight - window.innerHeight,
     )
+    const half = window.innerHeight / 2
     const buttons = railBtnRefs.current.slice(0, total).map((b) => ({
       top: b ? b.offsetTop : 0,
       h: b ? b.offsetHeight : 1,
@@ -262,8 +262,9 @@ export default function ContentStack({
     const snaps: number[] = []
     for (let i = 0; i < total; i++) {
       const el = itemRefs.current[i]
-      const docTop = el ? el.getBoundingClientRect().top + y : 0
-      snaps[i] = Math.min(Math.max(0, docTop - HEADER_OFFSET), maxScroll)
+      const r = el?.getBoundingClientRect()
+      const docCenter = r ? r.top + y + r.height / 2 : 0
+      snaps[i] = Math.min(Math.max(0, docCenter - half), maxScroll)
     }
     scrubGeom.current = {
       railTop: rail.getBoundingClientRect().top,
@@ -389,16 +390,17 @@ export default function ContentStack({
     }
   }, [total, computeState])
 
-  // Jump to a thumbnail's media. Drive it through Lenis with an explicit target
-  // (item top minus the header offset) — the same path the scrub uses. A native
-  // `scrollIntoView` here fights Lenis's own smooth-scroll and settles a little
-  // short, so clicking a far thumbnail used to land on the previous item.
-  // On touch (coarse pointer) jump INSTANTLY: smooth-scrolling through the big
-  // images is what iOS WebKit blanks to black, so we skip the scroll-through.
+  // Jump to a thumbnail's media, CENTERED in the viewport (same alignment as the
+  // snaps/scrub). A native `scrollIntoView` here fights Lenis's own smooth-scroll
+  // and settles a little short, so clicking a far thumbnail used to land on the
+  // previous item. On touch (coarse pointer) jump INSTANTLY: smooth-scrolling
+  // through the big images is what iOS WebKit blanks to black, so we skip it.
   const scrollToItem = (i: number) => {
     const el = itemRefs.current[i]
     if (!el) return
-    const target = el.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET
+    const r = el.getBoundingClientRect()
+    const target =
+      r.top + window.scrollY + r.height / 2 - window.innerHeight / 2
     const coarse =
       typeof window !== 'undefined' &&
       window.matchMedia?.('(pointer: coarse)').matches
