@@ -193,7 +193,7 @@ function PhotoMarquee() {
       onTouchStart={onTouch}
       onTouchMove={onTouch}
       onTouchEnd={onTouch}
-      className="flex h-[44dvh] w-full shrink-0 cursor-grab touch-pan-x select-none overflow-x-auto [scrollbar-width:none] [@media(max-height:820px)]:h-[38dvh] active:cursor-grabbing [&::-webkit-scrollbar]:hidden"
+      className="flex h-[44dvh] w-full shrink-0 cursor-grab touch-pan-x select-none overflow-x-auto [scrollbar-width:none] [@media(max-height:820px)]:h-[38dvh] [@media(min-height:950px)]:h-[50dvh] [@media(min-height:1200px)]:h-[56dvh] active:cursor-grabbing [&::-webkit-scrollbar]:hidden"
     >
       <div className="flex h-full w-max">
         {repeated.map((n, i) => (
