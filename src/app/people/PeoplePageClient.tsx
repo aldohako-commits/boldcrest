@@ -388,7 +388,10 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
   const [current, setCurrent] = useState(0)
   const [isLocked, setIsLocked] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  // Custom pull-to-refresh (mobile, first slide only) — see the PTR effect below.
+  // Any touch-capable device (phone AND iPad) — the deck locks scroll on all of
+  // them, so the custom pull-to-refresh must run on all of them, not just <768px.
+  const [isTouch, setIsTouch] = useState(false)
+  // Custom pull-to-refresh (touch devices, first slide only) — see the PTR effect.
   const [pull, setPull] = useState(0)
   const [refreshing, setRefreshing] = useState(false)
   const pullAmt = useRef(0)
@@ -411,6 +414,9 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
     const mq = window.matchMedia('(max-width: 767px)')
     const update = () => setIsMobile(mq.matches)
     update()
+    // Coarse pointer OR touch events present → includes iPad (which is ≥768 so
+    // it isn't "mobile", yet is still touch-driven and scroll-locked here).
+    setIsTouch('ontouchstart' in window || window.matchMedia('(any-pointer: coarse)').matches)
     mq.addEventListener('change', update)
     return () => mq.removeEventListener('change', update)
   }, [])
@@ -572,7 +578,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
   // reveals a spinner and reloads past a threshold. A downward swipe on slide 0
   // otherwise does nothing (no previous slide), so this reuses an idle gesture.
   useEffect(() => {
-    if (!isMobile || current !== 0) return
+    if (!isTouch || current !== 0) return
     const el = containerRef.current
     if (!el) return
     const THRESHOLD = 56
@@ -632,7 +638,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
       el.removeEventListener('touchend', onEnd)
       el.removeEventListener('touchcancel', onEnd)
     }
-  }, [isMobile, current])
+  }, [isTouch, current])
 
   // Keyboard handler
   useEffect(() => {
@@ -712,27 +718,25 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
       {/* Pull-to-refresh spinner — sibling of the translated wrapper so it stays
           fixed to the viewport top while the deck slides. Hidden above the top
           edge at rest; follows the finger down, then spins + reloads. */}
-      {isMobile && (
+      {isTouch && (
         <div
           aria-hidden
-          className="pointer-events-none absolute left-1/2 top-3 z-[55] flex h-9 w-9 items-center justify-center rounded-full bg-white text-black shadow-md"
+          className="pointer-events-none absolute left-1/2 top-3 z-[55]"
           style={{
-            transform: `translate(-50%, ${Math.min(pull, 90) - 52}px)`,
+            transform: `translate(-50%, ${Math.min(pull, 90) - 48}px)`,
             opacity: refreshing ? 1 : Math.min(1, pull / 56),
             transition: pull === 0 ? 'transform 0.3s ease, opacity 0.3s ease' : 'none',
           }}
         >
-          <svg
-            className={refreshing ? 'animate-spin' : ''}
-            style={refreshing ? undefined : { transform: `rotate(${pull * 3}deg)` }}
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <path d="M21 12a9 9 0 1 1-2.64-6.36" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-            <path d="M21 3v6h-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          {/* Thin ring with a single bright arc — reads like the native iOS/Chrome
+              refresh spinner (no opaque pill). Winds up as you pull, spins on release. */}
+          <div
+            className={`h-7 w-7 rounded-full border-2 border-white/25 ${refreshing ? 'animate-spin' : ''}`}
+            style={{
+              borderTopColor: '#ffffff',
+              transform: refreshing ? undefined : `rotate(${pull * 4}deg)`,
+            }}
+          />
         </div>
       )}
 
