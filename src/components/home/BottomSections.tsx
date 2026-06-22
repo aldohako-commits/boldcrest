@@ -135,8 +135,14 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
-          {/* Desktop — inline button */}
-          <p className="mb-6 hidden font-display text-[clamp(2.5rem,6vw,6rem)] font-bold leading-[1.1] tracking-[-0.03em] md:block">
+          {/* Desktop — inline button. Color tracks --zone-fg so the headline
+              stays readable while the page bg is mid-transition (dark text on the
+              light band, light text once the bg returns dark) — same scroll-synced
+              foreground the diary cards above use; fallback to light pre-JS. */}
+          <p
+            className="mb-6 hidden font-display text-[clamp(2.5rem,6vw,6rem)] font-bold leading-[1.1] tracking-[-0.03em] md:block"
+            style={{ color: 'var(--zone-fg, #EDEDED)' }}
+          >
             No egos<span className="text-accent">,</span><br />
             just{' '}
             <InlineButton href="/people" label="The Team" showArrow /><br />
@@ -145,19 +151,26 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
 
           {/* Mobile — text + paragraph + full-width button */}
           <div className="mb-6 md:hidden">
-            <p className="font-display text-[clamp(2.5rem,10vw,4rem)] font-bold leading-[1.1] tracking-[-0.03em]">
+            <p
+              className="font-display text-[clamp(2.5rem,10vw,4rem)] font-bold leading-[1.1] tracking-[-0.03em]"
+              style={{ color: 'var(--zone-fg, #EDEDED)' }}
+            >
               No egos<span className="text-accent">,</span><br />
               just the team<br />
               behind the bold<span className="text-accent">.</span>
             </p>
-            <p className="mt-5 text-[1rem] leading-[1.75] text-text-secondary">
+            <p
+              className="mt-5 text-[1rem] leading-[1.75]"
+              style={{ color: 'var(--zone-fg-muted, rgba(237,237,237,0.45))' }}
+            >
               Strategists, designers, filmmakers, and communicators who
               care about the work as much as you do. No egos, just
               craft and conviction.
             </p>
             <Link
               href="/people"
-              className="mt-8 flex w-full items-center justify-between rounded-full border border-white/20 px-8 py-5 text-[0.85rem] font-semibold uppercase tracking-[0.1em] text-white transition-all duration-300 hover:border-white/40"
+              className="mt-8 flex w-full items-center justify-between rounded-full border px-8 py-5 text-[0.85rem] font-semibold uppercase tracking-[0.1em] transition-all duration-300"
+              style={{ borderColor: 'var(--zone-fg-faint, rgba(237,237,237,0.15))', color: 'var(--zone-fg, #EDEDED)' }}
             >
               Meet the People
               <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
@@ -167,7 +180,10 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
           </div>
 
           {/* Desktop paragraph */}
-          <p className="hidden max-w-[520px] text-[1.05rem] leading-[1.75] text-text-secondary md:block">
+          <p
+            className="hidden max-w-[520px] text-[1.05rem] leading-[1.75] md:block"
+            style={{ color: 'var(--zone-fg-muted, rgba(237,237,237,0.45))' }}
+          >
             Strategists, designers, filmmakers, and communicators who
             care about the work as much as you do. No egos, just
             craft and conviction.

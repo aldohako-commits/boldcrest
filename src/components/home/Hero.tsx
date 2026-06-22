@@ -92,20 +92,26 @@ function Word({
         'transition-all duration-[0.35s] hover-fine:uppercase hover-fine:font-black hover-fine:tracking-[0.02em]'
       break
     case 'unseen':
-      // NO blur: Safari clips a `filter: blur` element horizontally to its own
-      // box when any ancestor has `overflow-x: clip` (our html/body — load-bearing
-      // for the sticky sections), which showed as a hard "crop" on the left/right
-      // of "unseen" on iPad — and it clips at the box regardless of blur radius,
-      // so trimming the blur didn't help. The vanish now reads via a stronger
-      // drop + shrink instead of the buggy halo.
+      // Blur restored. The crop in the screenshot is a Safari bug: it clips a
+      // `filter: blur` element's halo to the element's OWN border-box when an
+      // ancestor has `overflow-x: clip` (our html/body — load-bearing for the
+      // sticky sections), so the soft edges got sliced into hard vertical lines on
+      // the left/right of "unseen". Fix = the `boxPad` below (`px-[0.5em]`) widens
+      // the box so the 10px halo lands INSIDE it instead of at the clipped edge.
       hoverClasses =
-        'transition-all duration-[0.6s] hover-fine:opacity-0 hover-fine:translate-y-[16px] hover-fine:scale-90'
+        'transition-all duration-[0.6s] hover-fine:opacity-0 hover-fine:blur-[10px] hover-fine:translate-y-[16px] hover-fine:scale-90'
       break
   }
 
+  // Always-on horizontal breathing room for the blurred word, NOT gated on the
+  // hover transition — so the box is already wide enough the instant the blur
+  // applies (no wobble) and the halo is never clipped. `-mx` cancels the padding
+  // width so resting layout / letter-spacing is pixel-identical.
+  const boxPad = effect === 'unseen' ? 'px-[0.5em] -mx-[0.5em]' : ''
+
   return (
     <motion.span
-      className={`relative inline-block cursor-default select-none [-webkit-tap-highlight-color:transparent] ${hoverReady ? hoverClasses : ''}`}
+      className={`relative inline-block cursor-default select-none [-webkit-tap-highlight-color:transparent] ${boxPad} ${hoverReady ? hoverClasses : ''}`}
       initial={{ opacity: 0, y: '100%' }}
       animate={{ opacity: 1, y: 0 }}
       onAnimationComplete={() => setHoverReady(true)}

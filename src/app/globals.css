@@ -106,7 +106,12 @@ html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overscroll-behavior-y: none;
+  /* `auto` (the default) so the browser's native pull-to-refresh works on
+     devices that have it. The overscroll/refresh area shows this background, so
+     pin it to the dark page bg — it matches the floating header + theme-color
+     (#0a0a0a), instead of flashing white above the content when you pull down. */
+  overscroll-behavior-y: auto;
+  background-color: var(--bg);
   /* Safari only suppresses horizontal scroll when the clip is on <html>, not
      <body> alone — without this, off-viewport decorative content (e.g. the
      fanned team portraits on the homepage) leaks into a horizontal scroll on
@@ -128,7 +133,8 @@ body {
      <html> rule above already clips horizontally for Safari; this is a
      belt-and-suspenders that must stay `clip` too. */
   overflow-x: clip;
-  overscroll-behavior-y: none;
+  /* `auto` so native pull-to-refresh isn't blocked (see <html> note above). */
+  overscroll-behavior-y: auto;
   line-height: 1.6;
   margin: 0;
   padding: 0;

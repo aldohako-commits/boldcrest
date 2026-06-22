@@ -111,25 +111,35 @@ export default function ColorTransitionZone({ children }: { children: React.Reac
     lastColor.current = color
     cancelAnimationFrame(rafRef.current)
     rafRef.current = requestAnimationFrame(() => {
-      const wrapper = document.querySelector('.bg-bg') as HTMLElement
-      if (wrapper) wrapper.style.backgroundColor = color
-
-      const zone = ref.current
-      if (!zone) return
       const fg = fgColor.get()
       const [r, g, b] = parseColor(fg)
       const lum = luminance(r, g, b)
       // If fg luminance > 128, it's a light foreground (on dark bg)
       const isLight = lum > 128
 
-      zone.style.setProperty('--zone-fg', fg)
-      zone.style.setProperty('--zone-fg-half', `rgba(${r},${g},${b},0.5)`)
-      zone.style.setProperty('--zone-fg-muted', `rgba(${r},${g},${b},0.45)`)
-      zone.style.setProperty('--zone-fg-faint', `rgba(${r},${g},${b},0.15)`)
-      zone.style.setProperty('--zone-fg-subtle', `rgba(${r},${g},${b},0.1)`)
-      zone.style.setProperty('--zone-border', `rgba(${r},${g},${b},${isLight ? 0.15 : 0.1})`)
-      zone.style.setProperty('--zone-logo-filter', isLight ? 'brightness(0) invert(1)' : 'brightness(0)')
-      zone.style.setProperty('--zone-bg', color)
+      const setVars = (elm: HTMLElement) => {
+        elm.style.setProperty('--zone-fg', fg)
+        elm.style.setProperty('--zone-fg-half', `rgba(${r},${g},${b},0.5)`)
+        elm.style.setProperty('--zone-fg-muted', `rgba(${r},${g},${b},0.45)`)
+        elm.style.setProperty('--zone-fg-faint', `rgba(${r},${g},${b},0.15)`)
+        elm.style.setProperty('--zone-fg-subtle', `rgba(${r},${g},${b},0.1)`)
+        elm.style.setProperty('--zone-border', `rgba(${r},${g},${b},${isLight ? 0.15 : 0.1})`)
+        elm.style.setProperty('--zone-logo-filter', isLight ? 'brightness(0) invert(1)' : 'brightness(0)')
+        elm.style.setProperty('--zone-bg', color)
+      }
+
+      const wrapper = document.querySelector('.bg-bg') as HTMLElement
+      if (wrapper) {
+        wrapper.style.backgroundColor = color
+        // Mirror the foreground vars onto the shared page wrapper so sections
+        // that live BELOW the zone (TeamStrip etc.) invert in sync with the bg
+        // during the transition. The zone div still sets its own (closer) vars,
+        // so the zone's own children are completely unaffected.
+        setVars(wrapper)
+      }
+
+      const zone = ref.current
+      if (zone) setVars(zone)
     })
   }, [fgColor])
 
@@ -139,7 +149,15 @@ export default function ColorTransitionZone({ children }: { children: React.Reac
     return () => {
       cancelAnimationFrame(rafRef.current)
       const wrapper = document.querySelector('.bg-bg') as HTMLElement
-      if (wrapper) wrapper.style.backgroundColor = ''
+      if (wrapper) {
+        wrapper.style.backgroundColor = ''
+        // Drop the mirrored fg vars too so other pages reusing .bg-bg don't
+        // inherit a stale home-zone foreground color.
+        ;[
+          '--zone-fg', '--zone-fg-half', '--zone-fg-muted', '--zone-fg-faint',
+          '--zone-fg-subtle', '--zone-border', '--zone-logo-filter', '--zone-bg',
+        ].forEach((v) => wrapper.style.removeProperty(v))
+      }
     }
   }, [])
 

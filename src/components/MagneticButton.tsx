@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useCallback, ReactNode } from 'react'
+import { useRef, useCallback, useState, useEffect, ReactNode } from 'react'
 import Link from 'next/link'
 
 /* Three monochrome pill outlines that trail the cursor with staggered
@@ -40,6 +40,17 @@ function MagneticBase({
 }: MagneticBaseProps) {
   const containerRef = useRef<HTMLElement>(null)
   const layerRefs = useRef<(HTMLSpanElement | null)[]>([])
+
+  // Only wire up the magnetic hover handlers for real hover-capable pointers
+  // (mouse/trackpad). On touch, iOS/iPadOS treats the first tap on an element
+  // whose mouseover/mousemove handler reveals content (our trailing outlines) as
+  // a "hover" and withholds the click — so links like "Visit Careers" needed a
+  // SECOND tap to actually navigate. With no handlers attached on touch, the
+  // first tap is a clean click. (Matches the `any-hover` gating used elsewhere.)
+  const [canHover, setCanHover] = useState(false)
+  useEffect(() => {
+    setCanHover(window.matchMedia('(any-hover: hover)').matches)
+  }, [])
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLElement>) => {
@@ -102,8 +113,8 @@ function MagneticBase({
         onClick={onClick}
         className={`group relative cursor-pointer ${className}`}
         style={style}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
+        onMouseMove={canHover ? handleMouseMove : undefined}
+        onMouseLeave={canHover ? handleMouseLeave : undefined}
       >
         {trail}
       </button>
@@ -118,8 +129,8 @@ function MagneticBase({
       rel={rel}
       className={`group relative ${className}`}
       style={style}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
+      onMouseMove={canHover ? handleMouseMove : undefined}
+      onMouseLeave={canHover ? handleMouseLeave : undefined}
     >
       {trail}
     </Link>
