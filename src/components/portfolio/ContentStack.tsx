@@ -308,11 +308,16 @@ export default function ContentStack({
   }
 
   const onRailPointerDown = (e: React.PointerEvent<HTMLElement>) => {
-    // Mouse AND touch scrub. The rail is `touch-none`, so a finger drag on it
-    // scrubs the stack instead of scrolling the page; a tap (no movement past the
-    // threshold) still falls through to a thumbnail's onClick. Touch used to feel
-    // glitchy because the old proportional scrub jumped around — the item-space
-    // scrub + unconditional capture release fix that.
+    // ONLY the mouse scrubs. Driving the scroll from JS on every touch-move fights
+    // iOS WebKit (Safari AND Chrome on iPad both use WebKit): it jitters and, worse,
+    // blanks the large media to black because the engine can't repaint fast enough.
+    // On touch the rail is `touch-pan-y`, so a finger drag scrolls the page
+    // natively (smooth, no blank-outs) and a tap still jumps to a thumbnail.
+    if (e.pointerType !== 'mouse') {
+      // Fully reset so a touch tap is never mistaken for a drag's trailing click.
+      scrub.current = { active: false, moved: false, startY: 0, captured: false }
+      return
+    }
     scrub.current = { active: true, moved: false, startY: e.clientY, captured: false }
   }
   const onRailPointerMove = (e: React.PointerEvent<HTMLElement>) => {
@@ -388,12 +393,17 @@ export default function ContentStack({
   // (item top minus the header offset) — the same path the scrub uses. A native
   // `scrollIntoView` here fights Lenis's own smooth-scroll and settles a little
   // short, so clicking a far thumbnail used to land on the previous item.
+  // On touch (coarse pointer) jump INSTANTLY: smooth-scrolling through the big
+  // images is what iOS WebKit blanks to black, so we skip the scroll-through.
   const scrollToItem = (i: number) => {
     const el = itemRefs.current[i]
     if (!el) return
     const target = el.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET
-    if (lenis) lenis.scrollTo(target)
-    else el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    const coarse =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(pointer: coarse)').matches
+    if (lenis) lenis.scrollTo(target, { immediate: coarse })
+    else el.scrollIntoView({ behavior: coarse ? 'auto' : 'smooth', block: 'start' })
   }
 
   if (total === 0) return null
@@ -431,7 +441,7 @@ export default function ContentStack({
           onPointerCancel={endRailGesture}
           onClickCapture={onRailClickCapture}
           onDragStart={(e) => e.preventDefault()}
-          className="sticky top-[120px] hidden w-[42px] shrink-0 cursor-grab touch-none select-none flex-col gap-[3px] self-start active:cursor-grabbing min-[960px]:flex pointer-coarse:w-[60px] [&_img]:pointer-events-none [&_img]:select-none"
+          className="sticky top-[120px] hidden w-[42px] shrink-0 cursor-grab touch-pan-y select-none flex-col gap-[3px] self-start active:cursor-grabbing min-[960px]:flex pointer-coarse:w-[60px] [&_img]:pointer-events-none [&_img]:select-none"
         >
           {/* Continuous indicator line — tracks scroll/drag position, thicker
               and sticking out slightly past the sides of the rail. */}
