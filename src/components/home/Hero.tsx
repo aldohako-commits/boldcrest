@@ -92,11 +92,14 @@ function Word({
         'transition-all duration-[0.35s] hover-fine:uppercase hover-fine:font-black hover-fine:tracking-[0.02em]'
       break
     case 'unseen':
-      // blur trimmed 12px→8px so the filter halo stays clear of the screen edge:
-      // Safari clips the halo against the page's overflow-x:clip and left a "crop"
-      // on the sides during the unseen tap animation on iPad.
+      // NO blur: Safari clips a `filter: blur` element horizontally to its own
+      // box when any ancestor has `overflow-x: clip` (our html/body — load-bearing
+      // for the sticky sections), which showed as a hard "crop" on the left/right
+      // of "unseen" on iPad — and it clips at the box regardless of blur radius,
+      // so trimming the blur didn't help. The vanish now reads via a stronger
+      // drop + shrink instead of the buggy halo.
       hoverClasses =
-        'transition-all duration-[0.6s] hover-fine:opacity-0 hover-fine:blur-[8px] hover-fine:translate-y-[10px] hover-fine:scale-95'
+        'transition-all duration-[0.6s] hover-fine:opacity-0 hover-fine:translate-y-[16px] hover-fine:scale-90'
       break
   }
 
