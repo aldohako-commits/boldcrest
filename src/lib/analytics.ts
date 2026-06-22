@@ -26,8 +26,19 @@ export function metaTrack(
   custom = false,
 ) {
   if (typeof window === 'undefined') return
-  const fbq = (window as unknown as { fbq?: Fbq }).fbq
-  if (typeof fbq === 'function') fbq(custom ? 'trackCustom' : 'track', event, params ?? {})
+  // The pixel loads async (consent-gated + afterInteractive Script), so a
+  // mount-time event (ViewContent) can fire before `fbq` exists and be lost.
+  // Retry briefly until the stub is defined; give up after ~3s (e.g. consent
+  // denied → fbq never loads). Click/submit events find fbq ready on attempt 0.
+  const fire = (tries = 0) => {
+    const fbq = (window as unknown as { fbq?: Fbq }).fbq
+    if (typeof fbq === 'function') {
+      fbq(custom ? 'trackCustom' : 'track', event, params ?? {})
+      return
+    }
+    if (tries < 20) window.setTimeout(() => fire(tries + 1), 150)
+  }
+  fire()
 }
 
 /** A form submission turned into a lead. `form` distinguishes the two forms. */
