@@ -51,7 +51,7 @@ export default function ProcessTable({
   }
 
   return (
-    <section ref={ref} className="px-[var(--gutter)] pt-[var(--space-lg)] pb-[var(--space-xl)]">
+    <section ref={ref} className="px-[var(--gutter)] pt-[var(--space-lg)] pb-[var(--space-lg)]">
       <div className="mx-auto max-w-[var(--max-width)]">
         <motion.p
           className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
