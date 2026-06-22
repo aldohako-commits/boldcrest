@@ -202,19 +202,36 @@ export function InlineButton({
   showArrow = true,
   className = '',
   lineColor,
+  adaptive = false,
 }: {
   href: string
   label: string
   showArrow?: boolean
   className?: string
   lineColor?: string
+  /** Follow the color-transition zone: BLACK pill on the dark bg, flipping to a
+   *  WHITE pill (dark text) on the light band — instead of the fixed black pill.
+   *  Opt-in so the other InlineButton usages are unaffected. */
+  adaptive?: boolean
 }) {
   return (
     <MagneticBase
       href={href}
       lineColor={lineColor}
       className={`inline-flex items-center gap-3 rounded-[var(--radius-pill)] border border-white/25 px-[1em] py-[0.42em] align-middle text-[0.35em] font-semibold uppercase tracking-[0.15em] text-text-secondary transition-all duration-[0.5s] hover:border-white/60 hover:text-white ${className}`}
-      style={{ transitionTimingFunction: CUBIC, backgroundColor: '#000' }}
+      style={
+        adaptive
+          ? {
+              // Match the "No egos" headline: track the --zone-* vars per scroll
+              // frame with NO easing, so the pill inverts in lockstep with the
+              // text instead of lagging behind the 0.5s class transition.
+              transition: 'none',
+              backgroundColor: 'var(--zone-bg, #000)',
+              color: 'var(--zone-contrast, #EDEDED)',
+              borderColor: 'var(--zone-contrast-faint, rgba(237,237,237,0.3))',
+            }
+          : { transitionTimingFunction: CUBIC, backgroundColor: '#000' }
+      }
     >
       <span
         className="relative z-10 inline-flex overflow-hidden"
