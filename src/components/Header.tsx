@@ -16,7 +16,15 @@ const navLinks = [
 ]
 
 export default function Header() {
-  const [scrolled, setScrolled] = useState(false)
+  // Two independent scroll signals, OR'd together. Normal pages drive
+  // `realScrolled` (window scroll); body-locked decks (People / diary single)
+  // can't scroll the window, so they drive `virtualScrolled` via a `bc-scroll`
+  // event instead. Keeping them separate stops a stray window scroll on a locked
+  // page (e.g. iOS address-bar settle on the first swipe, scrollY back to 0) from
+  // clobbering the virtual state and dropping the pill.
+  const [realScrolled, setRealScrolled] = useState(false)
+  const [virtualScrolled, setVirtualScrolled] = useState(false)
+  const scrolled = realScrolled || virtualScrolled
   const [mobileOpen, setMobileOpen] = useState(false)
   const [vw, setVw] = useState(0)
   const pathname = usePathname()
@@ -29,10 +37,10 @@ export default function Header() {
 
   useEffect(() => {
     if (isStudio) return
-    const onScroll = () => setScrolled(window.scrollY > 80)
+    const onScroll = () => setRealScrolled(window.scrollY > 80)
     // Pages that lock body scroll (full-screen decks) emit a virtual scroll
     const onVirtual = (e: Event) =>
-      setScrolled(((e as CustomEvent).detail?.scrollY ?? 0) > 80)
+      setVirtualScrolled(((e as CustomEvent).detail?.scrollY ?? 0) > 80)
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('bc-scroll', onVirtual)
     return () => {
