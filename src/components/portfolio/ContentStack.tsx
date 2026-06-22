@@ -170,6 +170,16 @@ export default function ContentStack({
   // because media have unequal heights, lands on the wrong item.
   const DRAG_THRESHOLD = 10
   const scrub = useRef({ active: false, moved: false, startY: 0, captured: false })
+  // Geometry frozen at the start of a drag-scrub. The whole gesture maps the
+  // finger against THIS snapshot — never live layout — so a programmatic scroll
+  // mid-gesture can't feed a stale getBoundingClientRect/scrollY read back into
+  // the next target and oscillate (the iPad "weird up and down" at slow speeds).
+  const scrubGeom = useRef<{
+    railTop: number
+    railH: number
+    buttons: { top: number; h: number }[]
+    snaps: number[]
+  } | null>(null)
   const rafRef = useRef(0)
   const [active, setActive] = useState(0)
   // 0..1 position of the indicator line = how far we've scrolled through the media
@@ -207,6 +217,11 @@ export default function ContentStack({
   const computeState = useCallback(() => {
     const rail = railRef.current
     if (!rail || total === 0) return
+    // While a drag is actively scrubbing, scrubTo owns the marker (it follows the
+    // finger). Bailing here stops the scroll-driven value from fighting it every
+    // frame. Gated on `active` too so the marker resumes the moment the finger
+    // lifts (`moved` lingers until the next press, to suppress the drag's click).
+    if (scrub.current.active && scrub.current.moved) return
     const snaps = getSnaps()
     const y = window.scrollY
     // active = last item whose snap we've reached; f = progress toward the next.
@@ -229,33 +244,65 @@ export default function ContentStack({
     setProgress((cur + f * (nxt - cur)) / railH)
   }, [total, getSnaps])
 
-  // Drag the rail to scrub: the cursor maps to the thumbnail under it (+ how far
-  // through it), then to that item's snap range — so dragging over a thumbnail
-  // scrolls to that media, matching a click. (deuxhuithuit-style minimap, but
-  // per-item rather than uniform so it can't drift off the thumbnails.)
-  const scrubTo = (clientY: number) => {
+  // Snapshot the rail + snap geometry once, at the moment a drag begins. Read
+  // here (before any programmatic scroll) the values are consistent; reading them
+  // again mid-gesture on iOS returns stale scroll/rect values that oscillate.
+  const freezeScrubGeom = () => {
     const rail = railRef.current
     if (!rail || total === 0) return
-    const railRect = rail.getBoundingClientRect()
-    const railH = rail.offsetHeight || 1
-    const localY = Math.min(railH, Math.max(0, clientY - railRect.top))
-    // thumbnail under the cursor
+    const y = window.scrollY
+    const maxScroll = Math.max(
+      0,
+      document.documentElement.scrollHeight - window.innerHeight,
+    )
+    const buttons = railBtnRefs.current.slice(0, total).map((b) => ({
+      top: b ? b.offsetTop : 0,
+      h: b ? b.offsetHeight : 1,
+    }))
+    const snaps: number[] = []
+    for (let i = 0; i < total; i++) {
+      const el = itemRefs.current[i]
+      const docTop = el ? el.getBoundingClientRect().top + y : 0
+      snaps[i] = Math.min(Math.max(0, docTop - HEADER_OFFSET), maxScroll)
+    }
+    scrubGeom.current = {
+      railTop: rail.getBoundingClientRect().top,
+      railH: rail.offsetHeight || 1,
+      buttons,
+      snaps,
+    }
+  }
+
+  // Drag the rail to scrub: the finger maps to the thumbnail under it (+ how far
+  // through it), then to that item's snap range — so dragging over a thumbnail
+  // scrolls to that media, matching a click. Everything reads from the FROZEN
+  // snapshot, so the target is a pure function of the finger position (no live
+  // layout reads to go stale and oscillate). The marker follows the finger.
+  const scrubTo = (clientY: number) => {
+    const g = scrubGeom.current
+    if (!g) return
+    const localY = Math.min(g.railH, Math.max(0, clientY - g.railTop))
     let i = 0
-    for (let k = 0; k < total; k++) {
-      const b = railBtnRefs.current[k]
-      if (!b) continue
-      if (localY >= b.offsetTop) i = k
+    for (let k = 0; k < g.buttons.length; k++) {
+      if (localY >= g.buttons[k].top) i = k
       else break
     }
-    const b = railBtnRefs.current[i]
-    const slot = b ? b.offsetHeight + 3 /* gap-[3px] */ : railH / total
-    const f = b ? Math.min(1, Math.max(0, (localY - b.offsetTop) / slot)) : 0
-    const snaps = getSnaps()
-    const s0 = snaps[i]
-    const s1 = i < total - 1 ? snaps[i + 1] : s0
+    const b = g.buttons[i]
+    const slot = b.h + 3 /* gap-[3px] */
+    const f = Math.min(1, Math.max(0, (localY - b.top) / slot))
+    const s0 = g.snaps[i]
+    const s1 = i < g.snaps.length - 1 ? g.snaps[i + 1] : s0
     const target = s0 + f * (s1 - s0)
-    setProgress(localY / railH) // line follows the cursor immediately
-    // `force` lets the jump land even though Lenis is paused for the drag (below).
+    setActive(i) // highlight the thumbnail under the finger
+    // Marker in the SAME thumbnail-center space computeState uses, so it rides the
+    // thumbnails smoothly during the drag and doesn't snap when the finger lifts.
+    const cur = g.buttons[i].top + g.buttons[i].h / 2
+    const nxt =
+      i < g.buttons.length - 1
+        ? g.buttons[i + 1].top + g.buttons[i + 1].h / 2
+        : cur
+    setProgress((cur + f * (nxt - cur)) / g.railH)
+    // `force` lets the jump land even though Lenis is paused for the drag.
     if (lenis) lenis.scrollTo(target, { immediate: true, force: true })
     else window.scrollTo(0, target)
   }
@@ -274,6 +321,7 @@ export default function ContentStack({
       // Real drag: take over the pointer (only now, so a plain click still
       // reaches a thumbnail button) and start scrubbing.
       scrub.current.moved = true
+      freezeScrubGeom() // snapshot geometry BEFORE the first programmatic scroll
       // Pause Lenis for the duration of the drag. Otherwise Lenis ALSO reads the
       // same finger as a scroll gesture (it keeps native touch listeners) and adds
       // its own delta on top of our scrubTo — the two fight and the page jitters up
@@ -302,9 +350,13 @@ export default function ContentStack({
       scrub.current.captured = false
     }
     scrub.current.active = false
+    scrubGeom.current = null
     // Resume Lenis (idempotent — safe even if this gesture was only a tap and we
     // never stopped it). Its internal position is already synced via scrubTo.
     lenis?.start()
+    // Reconcile the marker to the settled scroll position (active is now false, so
+    // computeState no longer bails) — snaps the line onto the final thumbnail.
+    computeState()
   }
   // Swallow the click that follows a real drag so it doesn't also jump.
   const onRailClickCapture = (e: React.MouseEvent<HTMLElement>) => {
