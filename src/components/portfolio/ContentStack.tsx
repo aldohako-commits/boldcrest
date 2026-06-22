@@ -255,7 +255,8 @@ export default function ContentStack({
     const s1 = i < total - 1 ? snaps[i + 1] : s0
     const target = s0 + f * (s1 - s0)
     setProgress(localY / railH) // line follows the cursor immediately
-    if (lenis) lenis.scrollTo(target, { immediate: true })
+    // `force` lets the jump land even though Lenis is paused for the drag (below).
+    if (lenis) lenis.scrollTo(target, { immediate: true, force: true })
     else window.scrollTo(0, target)
   }
 
@@ -273,6 +274,11 @@ export default function ContentStack({
       // Real drag: take over the pointer (only now, so a plain click still
       // reaches a thumbnail button) and start scrubbing.
       scrub.current.moved = true
+      // Pause Lenis for the duration of the drag. Otherwise Lenis ALSO reads the
+      // same finger as a scroll gesture (it keeps native touch listeners) and adds
+      // its own delta on top of our scrubTo — the two fight and the page jitters up
+      // and down. Stopped, Lenis ignores input; scrubTo drives scroll with `force`.
+      lenis?.stop()
       try {
         railRef.current?.setPointerCapture?.(e.pointerId)
         scrub.current.captured = true
@@ -296,6 +302,9 @@ export default function ContentStack({
       scrub.current.captured = false
     }
     scrub.current.active = false
+    // Resume Lenis (idempotent — safe even if this gesture was only a tap and we
+    // never stopped it). Its internal position is already synced via scrubTo.
+    lenis?.start()
   }
   // Swallow the click that follows a real drag so it doesn't also jump.
   const onRailClickCapture = (e: React.MouseEvent<HTMLElement>) => {
