@@ -99,7 +99,7 @@ function Word({
       // the left/right of "unseen". Fix = the `boxPad` below (`px-[0.5em]`) widens
       // the box so the 10px halo lands INSIDE it instead of at the clipped edge.
       hoverClasses =
-        'transition-all duration-[0.6s] hover-fine:opacity-0 hover-fine:blur-[10px] hover-fine:translate-y-[16px] hover-fine:scale-90'
+        'transition-all duration-[0.6s] hover-fine:opacity-0 hover-fine:blur-[10px] hover-fine:scale-90'
       break
   }
 
