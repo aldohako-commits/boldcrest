@@ -38,7 +38,7 @@ export default function OutcomesServices({
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   return (
-    <section ref={ref} className="px-[var(--gutter)] pt-[var(--space-lg)] pb-[var(--space-lg)]">
+    <section ref={ref} className="px-[var(--gutter)] pt-0 pb-[var(--space-lg)]">
       <div className="mx-auto grid max-w-[var(--max-width)] gap-10 md:grid-cols-2 md:gap-16">
         {/* LEFT — Outcomes */}
         <motion.div

@@ -170,7 +170,7 @@ export default function ProjectMarquee({
   if (items.length === 0) return null
 
   return (
-    <section ref={ref} className="overflow-hidden py-[var(--space-2xl)]">
+    <section ref={ref} className="overflow-hidden py-[var(--space-xl)] md:py-[var(--space-2xl)]">
       {heading && (
         <div className="px-[var(--gutter)]">
           <motion.h2
