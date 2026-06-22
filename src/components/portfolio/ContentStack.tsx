@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
 import Image from 'next/image'
 import { urlFor } from '@/sanity/lib/image'
 import { sanityImageLoader } from '@/sanity/lib/loader'
@@ -54,6 +54,22 @@ interface StackItem {
   content: React.ReactNode
   // Small image source for the thumbnail rail (null → video/no-image placeholder)
   thumbSource: ThumbnailImage | { asset: { _ref: string } } | null
+  // Native aspect ratio (w/h) of the SLIDE, so the rail thumbnail keeps the slide's
+  // real proportions (square→square, tall→tall) instead of a forced/cropped box.
+  aspect: number
+}
+
+// Fallback when a slide's native ratio is unknown (matches the 1800×1200 default).
+const FALLBACK_ASPECT = 3 / 2
+
+// Sanity asset refs encode dimensions, e.g. `image-abc123-1200x800-jpg` → 1200/800.
+function refAspect(ref: string | undefined | null): number | null {
+  if (!ref) return null
+  const m = ref.match(/-(\d+)x(\d+)-/)
+  if (!m) return null
+  const w = Number(m[1])
+  const h = Number(m[2])
+  return w > 0 && h > 0 ? w / h : null
 }
 
 function getImageRef(img: ImageMedia): string | null {
@@ -95,6 +111,10 @@ export default function ContentStack({
       key: 'thumb-video',
       content: <VimeoEmbed url={thumbnailVideo} aspect={thumbnailVideoAspect} className="bg-bg-card" />,
       thumbSource: thumbnail?.asset?._ref ? thumbnail : null,
+      aspect:
+        thumbnailVideoAspect ||
+        refAspect(thumbnail?.asset?._ref) ||
+        FALLBACK_ASPECT,
     })
   } else if (thumbnail?.asset?._ref) {
     items.push({
@@ -113,6 +133,7 @@ export default function ContentStack({
         />
       ),
       thumbSource: thumbnail,
+      aspect: refAspect(thumbnail.asset._ref) || FALLBACK_ASPECT,
     })
   }
 
@@ -127,6 +148,7 @@ export default function ContentStack({
           key: video._key,
           content: <VimeoEmbed url={video.vimeoUrl} aspect={video.aspect} className="bg-bg-card" />,
           thumbSource: null,
+          aspect: video.aspect || FALLBACK_ASPECT,
         })
       } else if (block._type === 'imageMedia' || block._type === 'image') {
         const img = block as ImageMedia
@@ -149,6 +171,7 @@ export default function ContentStack({
             />
           ),
           thumbSource: source,
+          aspect: refAspect(ref) || FALLBACK_ASPECT,
         })
       }
     }
@@ -182,6 +205,23 @@ export default function ContentStack({
   const [active, setActive] = useState(0)
   // 0..1 position of the indicator line = how far we've scrolled through the media
   const [progress, setProgress] = useState(0)
+  // Resolved rail width (px). Normally the responsive base width; only shrinks below
+  // it — uniformly, so EVERY thumbnail keeps its native aspect — when the natural
+  // column (sum of aspect-derived heights) wouldn't fit the safe vertical area.
+  const [railW, setRailW] = useState<number | null>(null)
+  // Desktop sticky `top` offset (px). Set so the rail PINS vertically centred in the
+  // viewport: it flows aligned with the portfolio top, then sticks at centre once the
+  // portfolio top scrolls past. null on touch (the rail is fixed there instead).
+  const [railTop, setRailTop] = useState<number | null>(null)
+  // Desktop horizontal nudge (px, ≤ 0). On wide screens the rail sits at its natural
+  // gap right of the portfolio (shift 0). As the window narrows and the rail would get
+  // pushed toward the screen edge, we slide it LEFT so it sits centred in the gutter
+  // between the portfolio's right edge and the screen edge (equal black bars either
+  // side). Never shifts right, so wide layouts are untouched.
+  const [railShiftX, setRailShiftX] = useState(0)
+  // Latest per-slide native aspects, read by the width effect on resize.
+  const aspectsRef = useRef<number[]>([])
+  aspectsRef.current = items.map((it) => it.aspect)
 
   // Per-item "snap" = the scroll position that CENTERS item i in the viewport,
   // clamped to the document's real scroll range. (Top-aligning to the header left
@@ -282,27 +322,34 @@ export default function ContentStack({
   const scrubTo = (clientY: number) => {
     const g = scrubGeom.current
     if (!g) return
-    const localY = Math.min(g.railH, Math.max(0, clientY - g.railTop))
+    // Scrub is mouse-only, so live layout reads are safe here (the frozen snapshot
+    // existed to avoid iOS touch oscillation, a path this never runs). Reading the
+    // rail's LIVE top + height keeps the cursor mapped to the right thumbnail and the
+    // marker exactly under the pointer whether the rail is stuck or still scrolling.
+    const rail = railRef.current
+    const railTop = rail ? rail.getBoundingClientRect().top : g.railTop
+    const railH = rail?.offsetHeight || g.railH
+    // The resting indicator (computeState) lives in thumbnail-CENTRE space: the line
+    // marks the centre of the active thumbnail, interpolated toward the next as you
+    // scroll. Map the cursor through that SAME space so the marker is under the pointer
+    // AND already at the portfolio's position — no jump when you release. Clamp to the
+    // first/last centres so the line never points where the portfolio can't scroll.
+    const centers = g.buttons.map((bt) => bt.top + bt.h / 2)
+    const last = centers.length - 1
+    const my = Math.min(centers[last], Math.max(centers[0], clientY - railTop))
     let i = 0
-    for (let k = 0; k < g.buttons.length; k++) {
-      if (localY >= g.buttons[k].top) i = k
+    for (let k = 0; k < last; k++) {
+      if (my >= centers[k]) i = k
       else break
     }
-    const b = g.buttons[i]
-    const slot = b.h + 3 /* gap-[3px] */
-    const f = Math.min(1, Math.max(0, (localY - b.top) / slot))
+    const c0 = centers[i]
+    const c1 = i < last ? centers[i + 1] : c0
+    const f = c1 > c0 ? (my - c0) / (c1 - c0) : 0
     const s0 = g.snaps[i]
     const s1 = i < g.snaps.length - 1 ? g.snaps[i + 1] : s0
     const target = s0 + f * (s1 - s0)
-    setActive(i) // highlight the thumbnail under the finger
-    // Marker in the SAME thumbnail-center space computeState uses, so it rides the
-    // thumbnails smoothly during the drag and doesn't snap when the finger lifts.
-    const cur = g.buttons[i].top + g.buttons[i].h / 2
-    const nxt =
-      i < g.buttons.length - 1
-        ? g.buttons[i + 1].top + g.buttons[i + 1].h / 2
-        : cur
-    setProgress((cur + f * (nxt - cur)) / g.railH)
+    setActive(i) // matches the resting active item for this scroll position
+    setProgress(my / railH) // marker = cursor = portfolio position → no settle
     // `force` lets the jump land even though Lenis is paused for the drag.
     if (lenis) lenis.scrollTo(target, { immediate: true, force: true })
     else window.scrollTo(0, target)
@@ -390,6 +437,101 @@ export default function ContentStack({
     }
   }, [total, computeState])
 
+  // TOUCH (iPad) layout: the rail is lifted out of the in-flow column and floated,
+  // fixed, into the right black gutter — horizontally centred between the portfolio's
+  // right edge and the screen edge, biased a touch left so it reads as centred. The
+  // in-flow column keeps its 32px reservation (wrapper + spacer below), so the
+  // portfolio media never moves. Gated to ≥960px so narrow portrait/phone touch keeps
+  // the previously-defined no-rail layout. Recomputed on resize / orientation change.
+  const [isTouch, setIsTouch] = useState(false)
+  const [railRight, setRailRight] = useState(0)
+  useEffect(() => {
+    const RAIL_W = 44 // visible touch rail width (matches the iPad reference scale)
+    const LEFT_BIAS = 8 // nudge left of dead-centre so it reads as visually centred
+    const measure = () => {
+      const on =
+        window.matchMedia('(pointer: coarse)').matches && window.innerWidth >= 960
+      setIsTouch(on)
+      const stack = mediaStackRef.current
+      if (on && stack) {
+        const gutter = window.innerWidth - stack.getBoundingClientRect().right
+        setRailRight(Math.max(8, gutter / 2 - RAIL_W / 2 + LEFT_BIAS))
+      }
+    }
+    measure()
+    const raf = requestAnimationFrame(measure) // re-measure once layout settles
+    window.addEventListener('resize', measure)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('resize', measure)
+    }
+  }, [total])
+
+  // Resolve the rail width. Thumbnails are NEVER cropped or squashed — each keeps its
+  // slide's native aspect, so its height is just width / aspect. The only lever we
+  // have to make a long column fit the safe vertical area is the shared width: if the
+  // natural column (Σ width/aspect + gaps) overflows, we reduce the width uniformly,
+  // which scales every thumbnail down proportionally and preserves all aspects. When
+  // it already fits, we use the full responsive base width — no shrinking.
+  useEffect(() => {
+    if (total <= 1) return
+    const GAP = 3 // matches the rail's gap-[3px]; kept constant so spacing is uniform
+    const MIN_W = 20
+    const compute = () => {
+      const sumInv = aspectsRef.current.reduce(
+        (s, a) => s + 1 / (a || FALLBACK_ASPECT),
+        0,
+      )
+      const gaps = (total - 1) * GAP
+      const coarse =
+        window.matchMedia('(pointer: coarse)').matches &&
+        window.innerWidth >= 960
+      // Base (max) width + the safe vertical area, per layout.
+      const base = coarse
+        ? 44 // fixed iPad reference scale
+        : Math.min(72, Math.max(44, 0.032 * window.innerWidth)) // clamp(44,3.2vw,72)
+      const avail = coarse
+        ? window.innerHeight - 160 // 5rem top + 5rem bottom safe band
+        : window.innerHeight - 168 // 120px header offset + 48px safe bottom
+      const naturalH = base * sumInv + gaps
+      const w =
+        naturalH > avail && sumInv > 0
+          ? Math.max(MIN_W, (avail - gaps) / sumInv)
+          : base
+      setRailW(w)
+      // Desktop only: derive the sticky `top` that pins the rail vertically centred.
+      // Height at the resolved width is Σ(w/aspect) + gaps; centring top = (vh − h)/2.
+      // Floored at 84px so it always clears the 5rem header. (Touch is fixed-band, so
+      // the sticky top is irrelevant there — leave it null.)
+      if (coarse) {
+        setRailTop(null)
+        setRailShiftX(0)
+      } else {
+        const navH = w * sumInv + gaps
+        setRailTop(Math.max(84, Math.round((window.innerHeight - navH) / 2)))
+        // Centre the rail in the gutter (portfolio right edge → screen edge) once the
+        // window is narrow enough that its natural position would crowd the edge. The
+        // natural left gap is the flex column-gap; the natural right gap is whatever is
+        // left to the screen edge. Shift left by half their difference so they match —
+        // clamped at 0 so wide screens keep the rail at its natural spot.
+        const stack = mediaStackRef.current
+        const row = stack?.parentElement
+        if (stack && row) {
+          const flexGap = parseFloat(getComputedStyle(row).columnGap) || 0
+          const gutter = window.innerWidth - stack.getBoundingClientRect().right
+          setRailShiftX(Math.min(0, Math.round((gutter - w) / 2 - flexGap)))
+        }
+      }
+    }
+    compute()
+    const raf = requestAnimationFrame(compute) // re-run once aspects/layout settle
+    window.addEventListener('resize', compute)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('resize', compute)
+    }
+  }, [total])
+
   // Jump to a thumbnail's media, CENTERED in the viewport (same alignment as the
   // snaps/scrub). A native `scrollIntoView` here fights Lenis's own smooth-scroll
   // and settles a little short, so clicking a far thumbnail used to land on the
@@ -415,7 +557,11 @@ export default function ContentStack({
       {/* Invisible left spacer mirroring the navigator so the media stays centred.
           Matches the rail width per device (narrower on touch). */}
       {total > 1 && (
-        <div aria-hidden className="hidden w-[42px] shrink-0 min-[960px]:block pointer-coarse:w-[32px]" />
+        <div
+          aria-hidden
+          className="hidden w-[clamp(44px,3.2vw,72px)] shrink-0 min-[960px]:block pointer-coarse:w-[32px]"
+          style={!isTouch && railW != null ? { width: `${railW}px` } : undefined}
+        />
       )}
       {/* Media stack — centred (capped width), the navigator sits to its right */}
       <div ref={mediaStackRef} className="flex w-full min-w-0 max-w-[1200px] flex-col">
@@ -440,7 +586,25 @@ export default function ContentStack({
           biggest project (21 slides) stays fully visible on smaller screens —
           adaptive, not edge-to-edge. */}
       {total > 1 && (
-        <div className="sticky top-0 hidden h-[100dvh] shrink-0 flex-col justify-start self-start pt-[120px] min-[960px]:flex pointer-coarse:justify-center pointer-coarse:pt-0">
+        <div
+          className="sticky top-[120px] hidden shrink-0 flex-col justify-start self-start min-[960px]:flex pointer-coarse:w-[32px]"
+          style={railTop != null ? { top: `${railTop}px` } : undefined}
+        >
+        {/* TOUCH: a fixed centring layer floats the rail into the right gutter and
+            constrains it to a symmetric safe band — 5rem clear of the top menu pill
+            and 5rem off the bottom edge. `justify-center` centres the rail in that
+            band; if a long list wouldn't fit, the width effect narrows the rail so it
+            does (aspects preserved — no squashing). On desktop `display:contents`
+            makes this layer transparent so the rail keeps its original in-flow sticky
+            placement, untouched. */}
+        <div
+          className={
+            isTouch
+              ? 'fixed bottom-[5rem] top-[5rem] z-30 flex flex-col justify-center'
+              : 'contents'
+          }
+          style={isTouch ? ({ right: `${railRight}px` } as CSSProperties) : undefined}
+        >
         <nav
           ref={railRef}
           aria-label="Project media"
@@ -450,7 +614,11 @@ export default function ContentStack({
           onPointerCancel={endRailGesture}
           onClickCapture={onRailClickCapture}
           onDragStart={(e) => e.preventDefault()}
-          className="relative flex max-h-[calc(100dvh-9rem)] w-[42px] shrink-0 cursor-grab touch-pan-y select-none flex-col gap-[3px] active:cursor-grabbing pointer-coarse:max-h-[calc(100dvh-4rem)] pointer-coarse:w-[32px] [&_img]:pointer-events-none [&_img]:select-none"
+          style={{
+            width: railW != null ? `${railW}px` : undefined,
+            transform: railShiftX ? `translateX(${railShiftX}px)` : undefined,
+          }}
+          className="relative flex w-[clamp(44px,3.2vw,72px)] shrink-0 cursor-grab touch-pan-y select-none flex-col gap-[3px] active:cursor-grabbing pointer-coarse:w-[44px] [&_img]:pointer-events-none [&_img]:select-none"
         >
           {/* Position-indicator line — DESKTOP only. It's the "rail bar that gives
               position"; on touch we navigate by tapping slides, so it's removed. */}
@@ -471,7 +639,8 @@ export default function ContentStack({
                 onClick={() => scrollToItem(i)}
                 aria-label={`Go to media ${i + 1}`}
                 aria-current={isActive}
-                className="group relative block aspect-[4/3] w-full min-h-0 overflow-hidden rounded-[3px]"
+                style={{ aspectRatio: String(item.aspect) }}
+                className="group relative block w-full overflow-hidden rounded-[3px]"
               >
                 <span
                   className={`absolute inset-0 transition-opacity duration-300 ${
@@ -481,11 +650,11 @@ export default function ContentStack({
                   {item.thumbSource ? (
                     <Image
                       loader={sanityImageLoader}
-                      src={urlFor(item.thumbSource).width(150).height(112).quality(70).url()}
+                      src={urlFor(item.thumbSource).width(220).quality(70).url()}
                       alt=""
                       fill
                       draggable={false}
-                      sizes="32px"
+                      sizes="(pointer: coarse) 44px, 72px"
                       className="object-cover"
                     />
                   ) : (
@@ -500,6 +669,7 @@ export default function ContentStack({
             )
           })}
         </nav>
+        </div>
         </div>
       )}
     </div>
