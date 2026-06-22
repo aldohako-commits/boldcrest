@@ -202,7 +202,11 @@ function PhotoMarquee() {
               src={`/People - Photos/${n}.jpg`}
               alt={`BoldCrest team ${n}`}
               fill
-              sizes="(max-width: 768px) 70vw, 34vw"
+              // The band is height-driven, so its real width is ~21–26vw on
+              // typical screens; 34vw over-fetched on wide monitors. Cap the
+              // wide-screen branch to ~560px (still ≥ the real display) so the
+              // 28 looping copies don't pile up decoded memory on iOS Safari.
+              sizes="(max-width: 768px) 70vw, (min-width: 1600px) 560px, 34vw"
               draggable={false}
               priority={i < 5}
               className="pointer-events-none object-cover grayscale transition-[filter] duration-500 group-hover:grayscale-0"
@@ -347,13 +351,17 @@ function FacesGallery({ team }: { team: FaceItem[] }) {
             {member.image?.asset ? (
               <Image
                 loader={sanityImageLoader}
-                src={urlFor(member.image).width(600).url()}
+                src={urlFor(member.image).width(450).url()}
                 alt={member.name}
                 fill
                 draggable={false}
                 loading="lazy"
                 className="pointer-events-none object-cover"
-                sizes="(max-width: 768px) 30vw, 16vw"
+                // Bound the fetched/decoded size to the real card width (≤150px
+                // mobile, ≤220px desktop). The old 16vw + width(600) over-fetched
+                // 3–4× on large screens; across 4 looping copies that decoded
+                // memory is what tips iOS Safari into blanking scroll tiles.
+                sizes="(max-width: 768px) 150px, 220px"
               />
             ) : member.localSrc ? (
               <Image
@@ -363,7 +371,7 @@ function FacesGallery({ team }: { team: FaceItem[] }) {
                 draggable={false}
                 loading="lazy"
                 className="pointer-events-none object-cover"
-                sizes="(max-width: 768px) 30vw, 16vw"
+                sizes="(max-width: 768px) 150px, 220px"
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center">

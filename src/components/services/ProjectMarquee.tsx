@@ -232,7 +232,11 @@ export default function ProjectMarquee({
                     alt={project.name}
                     fill
                     draggable={false}
-                    sizes="(max-width: 768px) 80vw, 32vw"
+                    // Cards are width-capped at 580px (clamp), but 32vw kept
+                    // over-fetching on wide monitors; pin the wide-screen branch
+                    // to 580px so the 4 looping copies don't balloon decoded
+                    // memory (the load that tips iOS Safari into blanking tiles).
+                    sizes="(max-width: 768px) 80vw, (max-width: 1812px) 32vw, 580px"
                     className="pointer-events-none object-cover md:transition-transform md:duration-[250ms] md:ease-[cubic-bezier(0.4,0,0.2,1)] md:will-change-transform md:group-hover:-translate-y-12"
                   />
                 ) : (
