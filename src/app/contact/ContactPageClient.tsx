@@ -174,6 +174,7 @@ export default function ContactPageClient({
                 required
                 disabled={submitted}
                 placeholder="Full Name*"
+                aria-label="Full name"
                 className={FIELD}
               />
               <input
@@ -182,6 +183,7 @@ export default function ContactPageClient({
                 required
                 disabled={submitted}
                 placeholder="Email*"
+                aria-label="Email address"
                 className={FIELD}
               />
               <input
@@ -189,6 +191,7 @@ export default function ContactPageClient({
                 type="text"
                 disabled={submitted}
                 placeholder="Company"
+                aria-label="Company"
                 className={FIELD}
               />
               <textarea
@@ -197,6 +200,7 @@ export default function ContactPageClient({
                 disabled={submitted}
                 rows={4}
                 placeholder="Message*"
+                aria-label="Message"
                 className={`${FIELD} resize-none`}
               />
               {/* Send / Sent pill on the left; once sent, a refresh control sits
