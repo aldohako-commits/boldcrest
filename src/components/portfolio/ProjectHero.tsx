@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { withSmallMarks } from '@/lib/marks'
+import ViewContentTracker from '@/components/analytics/ViewContentTracker'
 
 interface ProjectHeroProps {
   name: string
@@ -20,6 +21,8 @@ export default function ProjectHero({
 
   return (
     <section className="px-[var(--gutter)] pt-40">
+      {/* Portfolio view → ViewContent (Meta) / view_item (GA4) */}
+      <ViewContentTracker name={name} category={industry} />
       <div className="w-full">
         {/* Breadcrumb */}
         <nav className="mb-[var(--space-md)] flex items-center gap-2 text-[0.75rem] font-medium uppercase tracking-[0.15em] text-text-tertiary">

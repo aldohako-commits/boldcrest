@@ -15,9 +15,39 @@ export function trackEvent(name: string, params?: Record<string, unknown>) {
   if (typeof gtag === 'function') gtag('event', name, params ?? {})
 }
 
+// ── Meta (Facebook) Pixel ───────────────────────────────────────────────────
+// fbq is only present once the visitor accepts cookies (MetaPixel.tsx loads it
+// post-consent), so this is a no-op until then — same gating as gtag above.
+type Fbq = (...args: unknown[]) => void
+
+export function metaTrack(
+  event: string,
+  params?: Record<string, unknown>,
+  custom = false,
+) {
+  if (typeof window === 'undefined') return
+  const fbq = (window as unknown as { fbq?: Fbq }).fbq
+  if (typeof fbq === 'function') fbq(custom ? 'trackCustom' : 'track', event, params ?? {})
+}
+
 /** A form submission turned into a lead. `form` distinguishes the two forms. */
 export function trackLead(form: 'contact' | 'start_project', params?: Record<string, unknown>) {
   // 'generate_lead' is GA4's recommended event for this; mark it a Key Event in
   // GA4 → Admin → Events to count it as a conversion.
   trackEvent('generate_lead', { form, ...params })
+  // Meta standard 'Lead' — usable as a conversion / custom-conversion in Ads.
+  metaTrack('Lead', { form, ...params })
+}
+
+/** Visitor opened the "Start a Project" chat (clicked any Start-a-Project CTA). */
+export function trackStartProject() {
+  trackEvent('start_project_open')
+  // Custom Meta event — soft intent signal before the Lead (form submit).
+  metaTrack('StartProject', undefined, true)
+}
+
+/** A portfolio / case-study page was viewed. */
+export function trackViewContent(params?: Record<string, unknown>) {
+  trackEvent('view_item', params)
+  metaTrack('ViewContent', params)
 }

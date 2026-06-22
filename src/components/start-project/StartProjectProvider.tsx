@@ -12,6 +12,7 @@ import {
 import { AnimatePresence, motion } from 'framer-motion'
 import StartProjectChat from './StartProjectChat'
 import { useLenis } from '@/components/LenisProvider'
+import { trackStartProject } from '@/lib/analytics'
 
 type StartProjectContextValue = {
   isOpen: boolean
@@ -32,7 +33,10 @@ export function useStartProject() {
 export default function StartProjectProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
   const [chatKey, setChatKey] = useState(0)
-  const open = useCallback(() => setIsOpen(true), [])
+  const open = useCallback(() => {
+    setIsOpen(true)
+    trackStartProject() // GA4 start_project_open + Meta custom 'StartProject'
+  }, [])
   const close = useCallback(() => setIsOpen(false), [])
   // Remounting the chat with a fresh key resets it to the first question.
   const restartChat = useCallback(() => setChatKey((k) => k + 1), [])
