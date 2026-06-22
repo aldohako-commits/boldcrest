@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 
 /* Desktop lines (md+) */
 const DESKTOP_LINES = [
@@ -45,27 +45,31 @@ const MOBILE_LINES = [
   ],
 ]
 
-const lines = DESKTOP_LINES
-
-function getWordDelay(lineSet: typeof DESKTOP_LINES, lineIndex: number, wordIndex: number): number {
-  let total = 0
-  for (let i = 0; i < lineIndex; i++) {
-    total += lineSet[i].length
-  }
-  total += wordIndex
-  return 0.1 + total * 0.1
-}
+/* Entrance reveals LINE BY LINE (Apple "take a closer look." style), not word by
+   word. The catch: the logical line arrays above are only a starting point — at
+   narrow widths a line like "and shape perceptions." wraps into TWO visual lines,
+   and those must still stagger, not reveal together. So we don't key the delay to
+   the array index; we MEASURE each word's real rendered row (offsetTop) after
+   layout and group by that. Works on any device / any wrap. Desktop type is
+   bigger so it can breathe a little more; mobile gets a tighter stagger. */
+const BASE_DELAY = 0.1
+const LINE_STAGGER_DESKTOP = 0.14
+const LINE_STAGGER_MOBILE = 0.11
 
 function Word({
   text,
   effect,
   delay,
   isLastInLine,
+  reduce,
+  li,
 }: {
   text: string
   effect: string | null
-  delay: number
+  delay: number | null
   isLastInLine: boolean
+  reduce: boolean
+  li: number
 }) {
   const dotAfter =
     (effect === 'perceptions' || effect === 'unseen') && isLastInLine
@@ -109,15 +113,26 @@ function Word({
   // width so resting layout / letter-spacing is pixel-identical.
   const boxPad = effect === 'unseen' ? 'px-[0.5em] -mx-[0.5em]' : ''
 
+  // `delay` is null until the heading has measured its real line layout. Until
+  // then the word stays parked at its hidden start (no entrance), so the reveal
+  // only fires once we know which visual row this word landed on.
+  const show = delay !== null
+  const hiddenState = reduce ? { opacity: 0 } : { opacity: 0, y: '100%' }
+  const shownState = reduce ? { opacity: 1 } : { opacity: 1, y: 0 }
+
   return (
     <motion.span
+      data-word=""
+      data-li={li}
       className={`relative inline-block cursor-default select-none [-webkit-tap-highlight-color:transparent] ${boxPad} ${hoverReady ? hoverClasses : ''}`}
-      initial={{ opacity: 0, y: '100%' }}
-      animate={{ opacity: 1, y: 0 }}
-      onAnimationComplete={() => setHoverReady(true)}
+      initial={hiddenState}
+      animate={show ? shownState : hiddenState}
+      onAnimationComplete={() => {
+        if (show) setHoverReady(true)
+      }}
       transition={{
-        duration: 0.9,
-        delay,
+        duration: reduce ? 0.5 : 0.9,
+        delay: show && !reduce ? (delay as number) : 0,
         ease: [0.16, 1, 0.3, 1],
       }}
       style={
@@ -158,46 +173,127 @@ function Word({
   )
 }
 
+type Line = { text: string; effect: string | null }[]
+
+/* One heading (desktop or mobile). Renders the words hidden, then after layout
+   measures each word's real rendered row and assigns the entrance delay per
+   VISUAL line — so a logical line that wraps still staggers row by row. */
+function AnimatedHeading({
+  lines,
+  stagger,
+  reduce,
+  className,
+}: {
+  lines: Line[]
+  stagger: number
+  reduce: boolean
+  className: string
+}) {
+  const headingRef = useRef<HTMLHeadingElement>(null)
+  // delays: per-word entrance delay, in DOM order (null until measured).
+  const [delays, setDelays] = useState<number[] | null>(null)
+  // maskRows: how many visual rows each logical line occupies (≥1). A line that
+  // wraps (>1) drops its slide-up mask so the wrapped row isn't half-clipped.
+  const [maskRows, setMaskRows] = useState<number[] | null>(null)
+
+  useEffect(() => {
+    const measure = () => {
+      const h = headingRef.current
+      // offsetParent is null when this heading is display:none (the inactive
+      // breakpoint) — skip; it'll be measured if/when it becomes visible.
+      if (!h || h.offsetParent === null) return
+      const words = Array.from(h.querySelectorAll<HTMLElement>('[data-word]'))
+      if (!words.length) return
+
+      const tops = words.map((w) => w.offsetTop)
+      // Group consecutive words into visual rows by offsetTop (1px tolerance);
+      // each new row bumps the stagger index.
+      const nextDelays: number[] = []
+      let rowIdx = -1
+      let prevTop = Number.NaN
+      tops.forEach((t) => {
+        if (Number.isNaN(prevTop) || Math.abs(t - prevTop) > 1) {
+          rowIdx++
+          prevTop = t
+        }
+        nextDelays.push(BASE_DELAY + rowIdx * stagger)
+      })
+
+      // Distinct rows per logical line, from each word's data-li.
+      const rowsPerLine = new Array(lines.length).fill(0)
+      const seen: Array<Set<number>> = lines.map(() => new Set<number>())
+      words.forEach((w, i) => {
+        const li = Number(w.dataset.li)
+        if (seen[li]) seen[li].add(Math.round(tops[i]))
+      })
+      for (let li = 0; li < lines.length; li++) rowsPerLine[li] = seen[li].size || 1
+
+      setDelays(nextDelays)
+      setMaskRows(rowsPerLine)
+    }
+
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [lines, stagger])
+
+  let flat = -1
+  return (
+    <h1 ref={headingRef} className={className}>
+      {lines.map((line, lineIndex) => {
+        const isLastLine = lineIndex === lines.length - 1
+        // Mask (slide-up reveal) only on non-last lines that occupy a single
+        // visual row. Wrapped lines render unmasked so they don't half-clip;
+        // the last line is unmasked anyway (its blur halo must not be clipped).
+        const singleRow = maskRows ? maskRows[lineIndex] === 1 : true
+        const masked = !isLastLine && singleRow
+        return (
+          <span key={lineIndex} className={`block ${masked ? 'overflow-hidden' : ''}`}>
+            {line.map((word, wordIndex) => {
+              flat++
+              return (
+                <span key={wordIndex}>
+                  {wordIndex > 0 && ' '}
+                  <Word
+                    text={word.text}
+                    effect={word.effect}
+                    delay={delays ? delays[flat] : null}
+                    isLastInLine={wordIndex === line.length - 1}
+                    reduce={reduce}
+                    li={lineIndex}
+                  />
+                </span>
+              )
+            })}
+          </span>
+        )
+      })}
+    </h1>
+  )
+}
+
 export default function Hero() {
+  // Honor the OS "reduce motion" setting: the line slide becomes a gentle fade,
+  // no transform. framer reads the same media query, so this stays in sync.
+  const reduce = useReducedMotion() ?? false
+
   return (
     <section className="px-[var(--gutter)] pt-[clamp(8rem,17vh,14rem)] pb-[var(--space-2xl)]">
       {/* Desktop lines */}
-      <h1 className="hidden cursor-default select-none [-webkit-tap-highlight-color:transparent] font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[1.05] tracking-[-0.03em] md:block">
-        {DESKTOP_LINES.map((line, lineIndex) => (
-          <span key={lineIndex} className={`block ${lineIndex < DESKTOP_LINES.length - 1 ? 'overflow-hidden' : ''}`}>
-            {line.map((word, wordIndex) => (
-              <span key={wordIndex}>
-                {wordIndex > 0 && ' '}
-                <Word
-                  text={word.text}
-                  effect={word.effect}
-                  delay={getWordDelay(DESKTOP_LINES, lineIndex, wordIndex)}
-                  isLastInLine={wordIndex === line.length - 1}
-                />
-              </span>
-            ))}
-          </span>
-        ))}
-      </h1>
+      <AnimatedHeading
+        lines={DESKTOP_LINES}
+        stagger={LINE_STAGGER_DESKTOP}
+        reduce={reduce}
+        className="hidden cursor-default select-none [-webkit-tap-highlight-color:transparent] font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[1.05] tracking-[-0.03em] md:block"
+      />
 
       {/* Mobile lines */}
-      <h1 className="cursor-default select-none [-webkit-tap-highlight-color:transparent] font-display text-[clamp(3rem,12vw,5rem)] font-bold leading-[1.05] tracking-[-0.03em] md:hidden">
-        {MOBILE_LINES.map((line, lineIndex) => (
-          <span key={lineIndex} className={`block ${lineIndex < MOBILE_LINES.length - 1 ? 'overflow-hidden' : ''}`}>
-            {line.map((word, wordIndex) => (
-              <span key={wordIndex}>
-                {wordIndex > 0 && ' '}
-                <Word
-                  text={word.text}
-                  effect={word.effect}
-                  delay={getWordDelay(MOBILE_LINES, lineIndex, wordIndex)}
-                  isLastInLine={wordIndex === line.length - 1}
-                />
-              </span>
-            ))}
-          </span>
-        ))}
-      </h1>
+      <AnimatedHeading
+        lines={MOBILE_LINES}
+        stagger={LINE_STAGGER_MOBILE}
+        reduce={reduce}
+        className="cursor-default select-none [-webkit-tap-highlight-color:transparent] font-display text-[clamp(3rem,12vw,5rem)] font-bold leading-[1.05] tracking-[-0.03em] md:hidden"
+      />
     </section>
   )
 }
