@@ -109,6 +109,7 @@ export default function Header() {
                 (and resets slide-deck pages) instead of doing nothing. */}
             <Link
               href={`${linkBase}/`}
+              aria-label="BoldCrest — home"
               className="z-10 flex items-center"
               onClick={(e) => {
                 if (!embed && pathname === '/') {
@@ -120,6 +121,7 @@ export default function Header() {
             >
               <svg
                 viewBox="0 0 384.09 384"
+                aria-hidden="true"
                 className="h-[1.6rem] w-[1.6rem]"
                 xmlns="http://www.w3.org/2000/svg"
               >
@@ -132,7 +134,7 @@ export default function Header() {
 
             {/* Desktop Nav — absolutely centered so the logo/CTA widths can't
                 pull it off-center */}
-            <nav className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-6 md:flex">
+            <nav className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 md:flex">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -146,7 +148,11 @@ export default function Header() {
                       window.scrollTo({ top: 0, behavior: 'smooth' })
                     }
                   }}
-                  className={`group relative text-[0.8rem] font-medium uppercase tracking-[0.12em] transition-colors duration-[0.5s] ${
+                  // px/py enlarge the hit target (and absorb the inter-item gap) so
+                  // the whole strip is clickable — the bare text box was a ~15px-tall
+                  // target that was easy to miss. Padding is purely a hit area; the
+                  // roll-up animation lives on the inner spans and is unaffected.
+                  className={`group relative px-3 py-3 text-[0.8rem] font-medium uppercase tracking-[0.12em] transition-colors duration-[0.5s] ${
                     pathname === link.href
                       ? 'text-white'
                       : 'text-text-secondary hover:text-text-primary'
