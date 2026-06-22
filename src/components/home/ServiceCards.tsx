@@ -116,9 +116,22 @@ export default function ServiceCards() {
         setHoldPoint(1)
       }
     }
+    let lastW = window.innerWidth
     measure()
-    window.addEventListener('resize', measure, { passive: true })
-    return () => window.removeEventListener('resize', measure)
+    // Ignore HEIGHT-ONLY resizes. Mobile browsers fire `resize` every time the
+    // URL bar shows/hides on scroll (same width, different height). Recomputing
+    // the mobile section height on each of those toggles re-lays-out this pinned
+    // section mid-scroll, which shifts everything below it — felt as a small jump
+    // near the staff section when you reverse scroll direction (the URL bar
+    // toggles on direction change). Only remeasure on a real width/orientation
+    // change; the height stays stable (the end HOLD absorbs URL-bar height drift).
+    const onResize = () => {
+      if (window.innerWidth === lastW) return
+      lastW = window.innerWidth
+      measure()
+    }
+    window.addEventListener('resize', onResize, { passive: true })
+    return () => window.removeEventListener('resize', onResize)
   }, [])
 
   const { scrollYProgress } = useScroll({
