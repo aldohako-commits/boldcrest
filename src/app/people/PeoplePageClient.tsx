@@ -80,8 +80,9 @@ const LOCAL_TEAM: { name: string; localSrc: string }[] = []
 const FOUNDERS_PHOTO: string = '/People - Photos/Old 2.png'
 
 /* ── Auto-scrolling + draggable team-photo strip (b&w → color on hover) ── */
+const PHOTOS = [1, 2, 3, 4, 5, 6, 7]
 function PhotoMarquee() {
-  const photos = [1, 2, 3, 4, 5, 6, 7]
+  const photos = PHOTOS
   const repeated = [...photos, ...photos, ...photos, ...photos]
   const scrollerRef = useRef<HTMLDivElement>(null)
   const drag = useRef({ active: false, startX: 0, startScroll: 0 })
@@ -99,7 +100,16 @@ function PhotoMarquee() {
   const wrap = useCallback(() => {
     const el = scrollerRef.current
     if (!el) return
-    const oneSet = el.scrollWidth / 4
+    // Exact width of ONE copy, measured as the offset of the 2nd copy's first
+    // item. scrollWidth/4 rounds sub-pixel item widths, so it drifted a few px
+    // and showed a small jump once per loop. Measuring the real stride from the
+    // laid-out positions keeps the wrap seamless (mirrors FacesGallery).
+    const kids = (el.firstElementChild as HTMLElement | null)?.children
+    const n = PHOTOS.length
+    const oneSet =
+      kids && kids.length > n
+        ? (kids[n] as HTMLElement).offsetLeft - (kids[0] as HTMLElement).offsetLeft
+        : el.scrollWidth / 4
     if (oneSet <= 0) return
     if (el.scrollLeft < oneSet) el.scrollLeft += oneSet
     else if (el.scrollLeft >= oneSet * 2) el.scrollLeft -= oneSet
@@ -112,7 +122,12 @@ function PhotoMarquee() {
     let last = 0
     // Start one set in so there's a full copy to the LEFT to scroll back into.
     const recenter = () => {
-      const oneSet = el.scrollWidth / 4
+      const kids = (el.firstElementChild as HTMLElement | null)?.children
+      const n = PHOTOS.length
+      const oneSet =
+        kids && kids.length > n
+          ? (kids[n] as HTMLElement).offsetLeft - (kids[0] as HTMLElement).offsetLeft
+          : el.scrollWidth / 4
       if (oneSet > 0 && el.scrollLeft < 1) el.scrollLeft = oneSet
     }
     recenter()
