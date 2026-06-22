@@ -388,6 +388,10 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
   const [current, setCurrent] = useState(0)
   const [isLocked, setIsLocked] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  // Custom pull-to-refresh (mobile, first slide only) — see the PTR effect below.
+  const [pull, setPull] = useState(0)
+  const [refreshing, setRefreshing] = useState(false)
+  const pullAmt = useRef(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const touchStartY = useRef(0)
@@ -561,6 +565,75 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
     }
   }, [current, isLocked, goTo, isMobile])
 
+  // ── Custom pull-to-refresh (mobile, first slide only) ──────────────────────
+  // Native PTR can't fire on this page: the deck locks document scroll
+  // (overflow:hidden) and unlocking would let the page scroll to the footer and
+  // break the deck. So we mimic it — a downward drag from the top of slide 0
+  // reveals a spinner and reloads past a threshold. A downward swipe on slide 0
+  // otherwise does nothing (no previous slide), so this reuses an idle gesture.
+  useEffect(() => {
+    if (!isMobile || current !== 0) return
+    const el = containerRef.current
+    if (!el) return
+    const THRESHOLD = 56
+    let startY = 0
+    let startX = 0
+    let mode: 'idle' | 'pull' | 'reject' = 'idle'
+
+    const atTop = () => {
+      const slide = wrapperRef.current?.children[0] as HTMLElement | undefined
+      return !slide || slide.scrollTop <= 2
+    }
+    const onStart = (e: TouchEvent) => {
+      mode = atTop() ? 'idle' : 'reject'
+      startY = e.touches[0].clientY
+      startX = e.touches[0].clientX
+    }
+    const onMove = (e: TouchEvent) => {
+      if (mode === 'reject') return
+      const dy = e.touches[0].clientY - startY
+      const dx = e.touches[0].clientX - startX
+      if (mode === 'idle') {
+        // Decide intent on the first real movement: horizontal → let the face
+        // carousels scroll; upward → let the deck advance; only a downward drag
+        // from the top becomes a pull-to-refresh.
+        if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) { mode = 'reject'; return }
+        if (dy > 8) mode = 'pull'
+        else if (dy < -8) { mode = 'reject'; return }
+        else return
+      }
+      if (!atTop()) { mode = 'reject'; setPull(0); return }
+      if (dy <= 0) { setPull(0); return }
+      e.preventDefault() // take over from the slide's native rubber-band
+      const p = dy * 0.5 // resistance
+      pullAmt.current = p
+      setPull(p)
+    }
+    const onEnd = () => {
+      if (mode === 'pull') {
+        if (pullAmt.current >= THRESHOLD) {
+          setRefreshing(true)
+          setPull(THRESHOLD)
+          window.setTimeout(() => window.location.reload(), 500)
+        } else {
+          setPull(0)
+        }
+      }
+      pullAmt.current = 0
+      mode = 'idle'
+    }
+    el.addEventListener('touchstart', onStart, { passive: true })
+    el.addEventListener('touchmove', onMove, { passive: false })
+    el.addEventListener('touchend', onEnd, { passive: true })
+    el.addEventListener('touchcancel', onEnd, { passive: true })
+    return () => {
+      el.removeEventListener('touchstart', onStart)
+      el.removeEventListener('touchmove', onMove)
+      el.removeEventListener('touchend', onEnd)
+      el.removeEventListener('touchcancel', onEnd)
+    }
+  }, [isMobile, current])
+
   // Keyboard handler
   useEffect(() => {
     if (isMobile) return
@@ -636,6 +709,33 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
       ref={containerRef}
       className={isMobile ? 'relative h-[100svh] overflow-hidden bg-bg' : 'relative h-[100dvh] overflow-hidden bg-bg'}
     >
+      {/* Pull-to-refresh spinner — sibling of the translated wrapper so it stays
+          fixed to the viewport top while the deck slides. Hidden above the top
+          edge at rest; follows the finger down, then spins + reloads. */}
+      {isMobile && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-3 z-[55] flex h-9 w-9 items-center justify-center rounded-full bg-white text-black shadow-md"
+          style={{
+            transform: `translate(-50%, ${Math.min(pull, 90) - 52}px)`,
+            opacity: refreshing ? 1 : Math.min(1, pull / 56),
+            transition: pull === 0 ? 'transform 0.3s ease, opacity 0.3s ease' : 'none',
+          }}
+        >
+          <svg
+            className={refreshing ? 'animate-spin' : ''}
+            style={refreshing ? undefined : { transform: `rotate(${pull * 3}deg)` }}
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <path d="M21 12a9 9 0 1 1-2.64-6.36" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+            <path d="M21 3v6h-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      )}
+
       {/* Sliding wrapper — deck translates one slide at a time on both desktop
           and mobile (mobile uses svh + touch input; tall slides scroll
           internally before advancing). */}
