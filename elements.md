@@ -8,7 +8,7 @@ restructured. Paths are relative to the repo root
 Stack: Next.js 16 (App Router, `proxy.ts` not middleware) · Sanity CMS
 (`de0anuhy` / dataset `boldcrest`) · Tailwind v4 (CSS-first) · Framer Motion ·
 Lenis. Deploy: Vercel (BoldProjects account, project `boldcrest`,
-`boldcrest-puce.vercel.app`; canonical `www.boldcrest.com` behind a COMING_SOON gate).
+`boldcrest-puce.vercel.app`; canonical `www.boldcrest.com`, live).
 
 ---
 
@@ -31,7 +31,7 @@ Lenis. Deploy: Vercel (BoldProjects account, project `boldcrest`,
 | Header / nav / mobile menu | `src/components/Header.tsx`, `MobileMenu.tsx` |
 | Footer (socials, legal links) | `src/components/Footer.tsx` |
 | CTA "Start a Project" pill button | `CTAButton` in `src/components/MagneticButton.tsx` |
-| Redirects (subdomains, alt domains, coming-soon gate) | `src/proxy.ts` |
+| Redirects (subdomains, alt domains) | `src/proxy.ts` |
 | SEO helpers (schema, OG, canonical) | `src/lib/seo.ts`, `src/components/JsonLd.tsx`, `src/components/services/JsonLd.tsx` |
 | sitemap / robots | `src/app/sitemap.ts`, `src/app/robots.ts` |
 | Sanity queries (GROQ) | `src/sanity/lib/queries.ts` |
@@ -51,7 +51,7 @@ Lenis. Deploy: Vercel (BoldProjects account, project `boldcrest`,
 - `diary/page.tsx` + `DiaryPageClient.tsx` — blog index ("Diary"). `diary/[slug]/page.tsx` + `DiaryArticle.tsx` — post (Article JSON-LD).
 - `people/page.tsx` + `PeoplePageClient.tsx` — UNIFIED single-slide deck on desktop AND mobile (wheel on desktop, touch-swipe on mobile; wrapper translates `-current*100svh/dvh`; body locked until the last slide → footer). Tall slides scroll internally then advance from the top/bottom edge (`touchStartEdges` ref, mobile only); sections use `grid [align-content:safe_center]` on mobile / `md:flex md:items-center` on desktop.
 - `contact/page.tsx` + `ContactPageClient.tsx` — contact form.
-- `privacy-notice/`, `cookie-policy/`, `careers/`, `coming-soon/`, `start-a-new-project/`, `button-preview/`, `services-sample/` — standalone pages. `studio/[[...tool]]/` — embedded Sanity Studio. `api/seed-diary/route.ts` — one-off seeding (uses write token).
+- `privacy-notice/`, `cookie-policy/`, `careers/`, `start-a-new-project/`, `button-preview/`, `services-sample/` — standalone pages. `studio/[[...tool]]/` — embedded Sanity Studio. `api/seed-diary/route.ts` — one-off seeding (uses write token).
 - `forms/[slug]/page.tsx` + `forms.config.ts` — **embedded ClickUp forms** (iframe in site layout, same pattern as `careers/`). `forms.config.ts` maps slug→{url,title,description} for `branding`/`timeoff`/`employee`/`client`; each served on its vanity subdomain via a REWRITE in `proxy.ts` (noindex). `careers` keeps its own `/careers` route.
 
 ---
@@ -84,7 +84,7 @@ Lenis. Deploy: Vercel (BoldProjects account, project `boldcrest`,
 
 ## Infra / config
 
-- `src/proxy.ts` — Next 16 `proxy` export. `SUBDOMAIN_EMBEDS` (careers/branding/timeoff/employee/client.boldcrest.com → REWRITE to on-site `/careers` or `/forms/<slug>`, URL stays on the subdomain, form embedded in site chrome), `SUBDOMAIN_REDIRECTS` (drive/archive.boldcrest.com → Synology, 307), `DOMAIN_REDIRECTS` (boldreactor.com/boldworkshops.com → www.boldcrest.com, 308), `COMING_SOON` gate (rewrites canonical hosts to `/coming-soon`; flip to `false` to launch). Embeds run before the gate so the forms work pre-launch.
+- `src/proxy.ts` — Next 16 `proxy` export. `SUBDOMAIN_EMBEDS` (careers/branding/timeoff/employee/client.boldcrest.com → REWRITE to on-site `/careers` or `/forms/<slug>`, URL stays on the subdomain, form embedded in site chrome), `SUBDOMAIN_REDIRECTS` (drive/archive.boldcrest.com → Synology, 307), `DOMAIN_REDIRECTS` (boldreactor.com/boldworkshops.com → www.boldcrest.com, 308), and a canonical-host `/careers` → careers.boldcrest.com 308 redirect.
 - `src/lib/seo.ts` — `SITE_URL`, `DEFAULT_OG`, `absUrl`, `ogImageFrom`, `imageUrlFrom`, `websiteSchema`, `breadcrumbSchema`, `articleSchema`, `creativeWorkSchema`.
 - `src/lib/marks.tsx` (`withSmallMarks` ® handling), `src/lib/utils.ts`.
 - `src/app/globals.css` — Tailwind v4 theme + `--zone-*` defaults + keyframes (`marquee`, `marquee-reverse`, `wordReveal`). Contains the **global resets** noted in Gotchas.
@@ -102,5 +102,5 @@ Lenis. Deploy: Vercel (BoldProjects account, project `boldcrest`,
 6. **Seamless marquee** = duplicate each row exactly **2×** + keyframe `0 → -50%`; one set must be wider than the viewport. Speed via responsive `--mq` CSS var.
 7. **Framer-motion entrance animations freeze** when the tab is backgrounded (rAF-throttled), leaving content stuck invisible. Make important above-the-fold/nav content **static** (this bit the Contact hero and is why service breadcrumbs are static).
 8. **Logos serve from Sanity, not `/public`.** `public/Logo Klient/` (source SVGs) is intentionally untracked.
-9. Dev server: `npm run dev -- --port 3201` (3000 is often the Diagonal project). Production gate: localhost/preview = full site; canonical host = coming-soon until `COMING_SOON=false`.
+9. Dev server: `npm run dev -- --port 3201` (3000 is often the Diagonal project). The site is live; the old `COMING_SOON` holding-page gate has been removed.
 10. **Horizontal-scroll suppression must use `overflow-x: clip`, NEVER `hidden`, on `html`/`body`** (`globals.css`). `overflow-x: hidden` turns the element into a scroll container (computed `overflow-y` → `auto`), which silently breaks EVERY `position: sticky` pin on the page — most visibly the homepage **`ServiceCards` "What We Do"** horizontal-scroll section (sticky panel stops holding → heading scrolls off, content scatters with huge gaps on mobile). `clip` suppresses the same overflow without a scroll container, so sticky survives. Both `html` and `body` carry `overflow-x: clip` for Safari.
