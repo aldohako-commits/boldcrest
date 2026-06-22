@@ -304,7 +304,8 @@ export default function ContentStack({
           onPointerUp={onRailPointerUp}
           onPointerCancel={onRailPointerUp}
           onClickCapture={onRailClickCapture}
-          className="sticky top-[120px] hidden w-[42px] shrink-0 cursor-grab touch-none select-none flex-col gap-[3px] self-start active:cursor-grabbing min-[960px]:flex"
+          onDragStart={(e) => e.preventDefault()}
+          className="sticky top-[120px] hidden w-[42px] shrink-0 cursor-grab touch-none select-none flex-col gap-[3px] self-start active:cursor-grabbing min-[960px]:flex [&_img]:pointer-events-none [&_img]:select-none"
         >
           {/* Continuous indicator line — tracks scroll/drag position, thicker
               and sticking out slightly past the sides of the rail. */}
@@ -338,6 +339,7 @@ export default function ContentStack({
                       src={urlFor(item.thumbSource).width(150).height(112).quality(70).url()}
                       alt=""
                       fill
+                      draggable={false}
                       sizes="42px"
                       className="object-cover"
                     />
