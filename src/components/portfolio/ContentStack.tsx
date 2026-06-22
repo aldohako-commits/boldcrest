@@ -260,16 +260,11 @@ export default function ContentStack({
   }
 
   const onRailPointerDown = (e: React.PointerEvent<HTMLElement>) => {
-    // Only the MOUSE scrubs. Touch (and pen) keep the browser's native vertical
-    // scroll (the rail is `touch-pan-y`) and a tap falls through to a thumbnail's
-    // onClick. Hijacking touch here — with `touch-none`, pointer-capture, and a
-    // proportional scrub — was what made iPad scrolling glitch, dropped the wrong
-    // item on a slightly-moved tap, and (via a leaked capture on `pointercancel`)
-    // stopped later taps from registering.
-    if (e.pointerType !== 'mouse') {
-      scrub.current.active = false
-      return
-    }
+    // Mouse AND touch scrub. The rail is `touch-none`, so a finger drag on it
+    // scrubs the stack instead of scrolling the page; a tap (no movement past the
+    // threshold) still falls through to a thumbnail's onClick. Touch used to feel
+    // glitchy because the old proportional scrub jumped around — the item-space
+    // scrub + unconditional capture release fix that.
     scrub.current = { active: true, moved: false, startY: e.clientY, captured: false }
   }
   const onRailPointerMove = (e: React.PointerEvent<HTMLElement>) => {
@@ -346,7 +341,7 @@ export default function ContentStack({
     <div className="flex justify-center gap-[var(--space-2xl)]">
       {/* Invisible left spacer mirroring the navigator so the media is centred */}
       {total > 1 && (
-        <div aria-hidden className="hidden w-[42px] shrink-0 min-[960px]:block" />
+        <div aria-hidden className="hidden w-[42px] shrink-0 min-[960px]:block pointer-coarse:w-[60px]" />
       )}
       {/* Media stack — centred (capped width), the navigator sits to its right */}
       <div ref={mediaStackRef} className="flex w-full min-w-0 max-w-[1200px] flex-col">
@@ -375,7 +370,7 @@ export default function ContentStack({
           onPointerCancel={endRailGesture}
           onClickCapture={onRailClickCapture}
           onDragStart={(e) => e.preventDefault()}
-          className="sticky top-[120px] hidden w-[42px] shrink-0 cursor-grab touch-pan-y select-none flex-col gap-[3px] self-start active:cursor-grabbing min-[960px]:flex [&_img]:pointer-events-none [&_img]:select-none"
+          className="sticky top-[120px] hidden w-[42px] shrink-0 cursor-grab touch-none select-none flex-col gap-[3px] self-start active:cursor-grabbing min-[960px]:flex pointer-coarse:w-[60px] [&_img]:pointer-events-none [&_img]:select-none"
         >
           {/* Continuous indicator line — tracks scroll/drag position, thicker
               and sticking out slightly past the sides of the rail. */}
