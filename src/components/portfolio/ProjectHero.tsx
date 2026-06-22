@@ -20,7 +20,7 @@ export default function ProjectHero({
   const hasMeta = (services && services.length > 0) || !!industry || !!year
 
   return (
-    <section className="px-[var(--gutter)] pt-40">
+    <section className="px-[var(--gutter)] pt-[120px]">
       {/* Portfolio view → ViewContent (Meta) / view_item (GA4) */}
       <ViewContentTracker name={name} category={industry} />
       <div className="w-full">
