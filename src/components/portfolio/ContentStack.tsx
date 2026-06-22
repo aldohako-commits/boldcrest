@@ -412,9 +412,11 @@ export default function ContentStack({
 
   return (
     <div className="flex justify-center gap-[var(--space-2xl)]">
-      {/* Invisible left spacer mirroring the navigator so the media is centred */}
+      {/* Invisible left spacer mirroring the navigator so the media is centred.
+          Both it and the rail are desktop-only (fine pointer): on touch we use
+          slide-tapping + native scroll, so the rail is hidden. */}
       {total > 1 && (
-        <div aria-hidden className="hidden w-[42px] shrink-0 min-[960px]:block pointer-coarse:w-[60px]" />
+        <div aria-hidden className="hidden w-[32px] shrink-0 min-[960px]:block pointer-coarse:hidden" />
       )}
       {/* Media stack — centred (capped width), the navigator sits to its right */}
       <div ref={mediaStackRef} className="flex w-full min-w-0 max-w-[1200px] flex-col">
@@ -432,8 +434,13 @@ export default function ContentStack({
         ))}
       </div>
 
-      {/* Thumbnail navigator — to the right of the media, sticky, drag-to-scrub */}
+      {/* Thumbnail navigator — desktop only. Wrapper is a full-viewport-height
+          sticky box pinned to the top; `items-center` keeps the rail vertically
+          CENTERED on the page. The rail itself is capped at the viewport height
+          minus breathing room and its thumbnails shrink to fit, so even the
+          biggest project (21 slides) stays within the screen edge-to-edge. */}
       {total > 1 && (
+        <div className="sticky top-0 hidden h-[100dvh] shrink-0 items-center self-start min-[960px]:flex pointer-coarse:hidden">
         <nav
           ref={railRef}
           aria-label="Project media"
@@ -443,7 +450,7 @@ export default function ContentStack({
           onPointerCancel={endRailGesture}
           onClickCapture={onRailClickCapture}
           onDragStart={(e) => e.preventDefault()}
-          className="sticky top-[120px] hidden w-[42px] shrink-0 cursor-grab touch-pan-y select-none flex-col gap-[3px] self-start active:cursor-grabbing min-[960px]:flex pointer-coarse:w-[60px] [&_img]:pointer-events-none [&_img]:select-none"
+          className="relative flex max-h-[calc(100dvh-7rem)] w-[32px] cursor-grab touch-pan-y select-none flex-col gap-[3px] active:cursor-grabbing [&_img]:pointer-events-none [&_img]:select-none"
         >
           {/* Continuous indicator line — tracks scroll/drag position, thicker
               and sticking out slightly past the sides of the rail. */}
@@ -464,7 +471,7 @@ export default function ContentStack({
                 onClick={() => scrollToItem(i)}
                 aria-label={`Go to media ${i + 1}`}
                 aria-current={isActive}
-                className="group relative block aspect-[4/3] w-full shrink-0 overflow-hidden rounded-[3px]"
+                className="group relative block aspect-[4/3] w-full min-h-0 overflow-hidden rounded-[3px]"
               >
                 <span
                   className={`absolute inset-0 transition-opacity duration-300 ${
@@ -478,7 +485,7 @@ export default function ContentStack({
                       alt=""
                       fill
                       draggable={false}
-                      sizes="42px"
+                      sizes="32px"
                       className="object-cover"
                     />
                   ) : (
@@ -493,6 +500,7 @@ export default function ContentStack({
             )
           })}
         </nav>
+        </div>
       )}
     </div>
   )
