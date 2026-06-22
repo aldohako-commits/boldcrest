@@ -377,7 +377,7 @@ function Stats() {
   ]
 
   return (
-    <section ref={ref} className="px-[var(--gutter)] pt-2 pb-12 md:pt-6 md:pb-16">
+    <section ref={ref} className="px-[var(--gutter)] pt-4 pb-12 md:pt-6 md:pb-16">
       <div className="mx-auto max-w-[var(--max-width)]">
         <motion.div
           className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-5"
@@ -616,7 +616,7 @@ function ProcessSection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
-    <section ref={ref} className="px-[var(--gutter)] pt-12 pb-6 md:pt-16 md:pb-20">
+    <section ref={ref} className="px-[var(--gutter)] pt-12 pb-12 md:pt-16 md:pb-14">
       <div className="mx-auto max-w-[var(--max-width)]">
         <div className="mb-10 md:mb-20">
           <motion.p
