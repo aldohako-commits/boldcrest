@@ -224,6 +224,10 @@ export default function ContentStack({
   // blocked). Pressing it plays them all; the portfolio then slides up over it.
   const [videosBlocked, setVideosBlocked] = useState(false)
   const [videosDismissed, setVideosDismissed] = useState(false)
+  // `?lpm` in the URL is a TEST flag: it force-shows the banner (no real Low Power
+  // Mode needed) and loops it, so the reveal animation/sizing can be checked on a
+  // real iPad/phone. Set after mount to avoid a hydration mismatch.
+  const [forcedTest, setForcedTest] = useState(false)
   // Latest per-slide native aspects, read by the width effect on resize.
   const aspectsRef = useRef<number[]>([])
   aspectsRef.current = items.map((it) => it.aspect)
@@ -457,6 +461,19 @@ export default function ContentStack({
     return subscribe(update)
   }, [])
 
+  // Read the `?lpm` test flag once mounted.
+  useEffect(() => {
+    setForcedTest(new URLSearchParams(window.location.search).has('lpm'))
+  }, [])
+
+  // In test mode, re-arm the banner a moment after it's dismissed so the reveal
+  // animation can be replayed without reloading.
+  useEffect(() => {
+    if (!forcedTest || !videosDismissed) return
+    const t = window.setTimeout(() => setVideosDismissed(false), 1600)
+    return () => window.clearTimeout(t)
+  }, [forcedTest, videosDismissed])
+
   // ≥960px touch (iPad): the rail keeps a narrow 32px reservation in flow (so the
   // portfolio doesn't move) while its wider visual column is floated into the right
   // gutter via the SAME sticky-centre + transform path as desktop (see the width
@@ -564,7 +581,9 @@ export default function ContentStack({
   // the banner tucks behind the first slide's top.
   const LPM_GAP = 76
   const LPM_TUCK = 16
-  const bannerOpen = videosBlocked && !videosDismissed
+  // Banner is engaged when a real clip is frozen OR when the `?lpm` test flag is on.
+  const bannerActive = forcedTest || videosBlocked
+  const bannerOpen = bannerActive && !videosDismissed
 
   return (
     <div
@@ -585,7 +604,7 @@ export default function ContentStack({
         {/* Low Power Mode banner — top-right, tucked behind the first slide. Placed
             BEFORE the slides so it paints behind them; the portfolio slides up and
             covers it on press. */}
-        {videosBlocked && (
+        {bannerActive && (
           <button
             type="button"
             onClick={() => {
