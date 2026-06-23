@@ -13,8 +13,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: [
           '/studio',
           '/api/',
-          '/button-preview',
-          '/services-sample',
           '/start-a-new-project',
         ],
       },
