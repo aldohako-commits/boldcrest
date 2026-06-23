@@ -52,7 +52,7 @@ const WHY_US = [
   { title: 'Extensive Photoshoot Experience', description: "Across 15 clients. From half-day content sessions to multi-day editorial campaigns, we've handled productions of every scale." },
   { title: 'Batch Efficiency', description: "A Batch Shoot (4+ reels) costs 30-40% less per reel than solo sessions. We plan for maximum output per production day." },
   { title: "Animation Depth Others Can't Match", description: "31 clients served. Style consistency across your entire content ecosystem." },
-  { title: 'Transparent, Data-Backed Pricing', description: "Every price in our catalog is built from real project data, not industry benchmarks. You know exactly what you're paying for." },
+  { title: 'Pricing Built From Real Work', description: "Every price in our catalog is built from real project data, not industry benchmarks. You know exactly what you're paying for." },
   { title: 'Editorial-Grade When You Need It', description: "Fashion-grade, campaign-quality imagery when the brief demands the highest tier of production." },
 ]
 

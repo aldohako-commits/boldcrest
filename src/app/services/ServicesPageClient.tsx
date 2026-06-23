@@ -56,7 +56,7 @@ const capabilities = [
       'Brand Guidelines',
     ],
     description:
-      "From brand architecture to visual identity, we create systems that clarify who you are and amplify how you're seen. Whether it's a startup's first logo or a national brand's complete identity overhaul.",
+      "We take what your brand is, what it wants to become, and how people should remember it, then turn that into an identity people can recognize, trust, and return to.",
   },
   {
     category: 'Still & Motion',
@@ -75,7 +75,7 @@ const capabilities = [
       'Color Grading',
     ],
     description:
-      'Still frames that hold attention. Moving images that move people. Every shoot, every cut, every grade, deliberate. We handle the full production cycle, all in-house.',
+      'Frames that hold the eye. Films that carry the feeling. Every shot, cut, and grade shaped with a clear creative point.',
   },
   {
     category: 'Communications',
@@ -413,7 +413,7 @@ const CLIENT_NAMES = [
   'Berdica', 'Perfect Fashion', 'Alisadudaj', 'Matrix', 'Red Bull',
   'Allure Beauty', 'Primera', 'WECA', 'Plenty', 'Tierr',
   'Noble Cigars', 'Bazhur', 'Borghese', 'Albita', 'Karrige Pogradeci',
-  'Ina\'s Farm', 'EOS Mezze', 'NFMA', 'Baboon Delivery', 'Magniflex Albania',
+  'Ina\'s Farm', 'EOS Mezze', 'NFMA', 'Magniflex Albania',
 ]
 
 function ClientLogos({ partners = [] }: { partners?: Partner[] }) {

@@ -19,7 +19,6 @@ export const metadata: Metadata = {
 
 const FAQ_ITEMS = [
   { question: "What happens on a typical production day?", answer: "Our team (3-6 people depending on scope) arrives with a locked shot list, all equipment, and a creative director managing every frame. A half-day session delivers 10-15 retouched images; a full day delivers 20-30+ images plus potential reel footage." },
-  { question: "What's the difference between a Solo Shoot and Batch Shoot for reels?", answer: "Solo Shoots are dedicated sessions for 1-3 reels, highest quality but highest per-unit cost. Batch Shoots optimize for volume (4+ reels in one session), cutting cost by 30-40%. On-Set Add-ons during a photoshoot save an additional 45-55%." },
   { question: "Can I book just photography, or do I need a full retainer?", answer: "Photography is available as a one-time project or as a monthly add-on. You can also add regular photo shoots as an add-on to a social media retainer for consistent content flow." },
   { question: "What types of animation do you offer?", answer: "We offer everything from simple GIFs and animated posts through standard motion graphics and complex product showcases to full animation reels and project-level motion graphics. Pricing scales with complexity and length." },
   { question: "Do you handle TVC production?", answer: "Yes. We handle animated TVCs end-to-end: concept, storyboard, animation, sound design, and color. For live-action TVCs, we manage the full production: scripting, talent, shooting, editing, and post." },

@@ -851,13 +851,13 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
             <div className="mx-auto mt-[var(--space-xl)] flex max-w-[640px] flex-col gap-[var(--space-md)]">
               <FadeUp delay={0.1} active={active(1)}>
                 <p className="text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.85]">
-                  It means we don&apos;t hand you a deliverable and disappear. We sit in your meetings. We learn your operations. We understand your problems before we try to solve them.
+                  It means we do not stand at the bottom and point to the peak. We climb with you. We enter the work fully. The meetings, the pressure, the decisions, the parts no one sees. We learn how your business moves before we decide how your brand should move.
                 </p>
               </FadeUp>
 
               <FadeUp delay={0.15} active={active(1)}>
                 <p className="text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.85]">
-                  We push back when we think you&apos;re wrong, not to be difficult, but because that&apos;s what real partners do. And when we&apos;re wrong, we listen.
+                  We do not disappear after the delivery. We stay close, challenge what needs to be challenged, and take responsibility for the path we recommend. Because real partnership is not agreement at every step. It is trust, honesty, endurance, and the will to reach the top together.
                 </p>
               </FadeUp>
             </div>
@@ -914,19 +914,19 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
 
                 <FadeUp delay={0.1} active={active(2)}>
                   <p className="text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.85]">
-                    Xhulio is a superstar in everything visual. Aldo builds relationships that last. When the two of us became friends, the equation was simple: his eye, his instinct, his creativity, matched with the trust, the conversations, the partnerships that turn a single project into a decade-long journey.
+                    BoldCrest began where two different strengths met. Xhulio brought the visual discipline, the instinct for form, and the ability to turn ideas into images with character. Aldo brought the relationships, the conversations, and the trust needed to turn one project into a long term partnership.
                   </p>
                 </FadeUp>
 
                 <FadeUp delay={0.15} active={active(2)}>
                   <p className="text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.85]">
-                    We didn&apos;t merge dreams. We merged what we were each already best at. And that combination became BoldCrest.
+                    The equation was simple, but powerful. Creative vision on one side. Business understanding on the other. Together, they became the foundation for what BoldCrest would grow into. We built our first team from the same university halls we were still walking through. We were 22. We did not have the luxury of waiting until everything looked perfect, so we started with what we had, a clear instinct, a strong work ethic, and the belief that the market was ready for something sharper.
                   </p>
                 </FadeUp>
 
                 <FadeUp delay={0.2} active={active(2)}>
                   <p className="text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.85]">
-                    We took our first team from the same university halls we were still sitting in. We were 22. We were probably not ready. We did it anyway. And what we brought to the market, at a time when no one else was bringing it, was real creative thinking to social media. Not content. Ideas.
+                    At the time, social media was often treated as a place to post. We treated it as a place to think, build, and create. Not just content. Ideas.
                   </p>
                 </FadeUp>
               </div>

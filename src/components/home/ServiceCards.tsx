@@ -21,7 +21,7 @@ const capabilities = [
       'Brand Guidelines',
     ],
     description:
-      "From brand architecture to visual identity, we create systems that clarify who you are and amplify how you're seen.",
+      "We take what your brand is, what it wants to become, and how people should remember it, then turn that into an identity people can recognize, trust, and return to.",
     icon: (
       <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
         <path d="M20 4L4 14v12l16 10 16-10V14L20 4z" stroke="currentColor" strokeWidth="1.5" />
@@ -44,7 +44,7 @@ const capabilities = [
       'Color Grading',
     ],
     description:
-      'Still frames that hold attention. Moving images that move people. Every shoot, every cut, every grade, deliberate.',
+      'Frames that hold the eye. Films that carry the feeling. Every shot, cut, and grade shaped with a clear creative point.',
     icon: (
       <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
         <rect x="6" y="10" width="28" height="20" rx="2" stroke="currentColor" strokeWidth="1.5" />

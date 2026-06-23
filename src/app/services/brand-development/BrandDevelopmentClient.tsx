@@ -24,18 +24,18 @@ interface Project {
 }
 
 const OUTCOMES = [
-  { title: 'Instant Recognition', description: "A well-built identity makes your brand recognizable across every touchpoint, from a storefront sign to a 1-inch social avatar. We design systems that work at every scale." },
+  { title: 'Instant Recognition', description: "A well built identity makes your brand recognizable across every touchpoint, from a storefront sign to a 1 inch social avatar. We design identity frameworks that work at every scale, keeping your brand consistent, distinctive, and easy to recognize wherever it appears." },
   { title: 'Trust Before the First Conversation', description: "Professional branding signals credibility. When your visual identity is cohesive and intentional, customers trust you before they've spoken to you." },
-  { title: 'Competitive Separation', description: "In a growing market, everyone's fighting for attention. A distinctive brand gives you the edge, making competitors look like they're still figuring it out." },
+  { title: 'Competitive Separation', description: "In a crowded market, attention goes to the brands that know exactly who they are. A distinctive identity gives you the edge, helping your brand become easier to recognize, harder to replace, and impossible to mistake for the next name in line." },
 ]
 
 const SERVICES = [
-  { name: 'Visual Identity', href: '/work?service=Visual%20Identity', description: "The complete system that defines how the world sees your business. We build logo, color palette, typography hierarchy, graphic patterns, iconography, and photographic style direction into a cohesive language that works across every medium." },
-  { name: 'Logo Design', href: '/work?service=Logo%20Design', description: "Your logo is the single most visible element of your brand. We develop one strategically-grounded concept, refined through collaborative rounds until every curve and letterform feels inevitable." },
-  { name: 'Brand Guidelines', href: '/work?service=Brand%20Guidelines', description: "The rulebook that keeps your brand consistent when you're not in the room. Our brandbooks document every element with do's and don'ts and real application examples. From 30-page essentials to 80-page comprehensive manuals." },
+  { name: 'Visual Identity', href: '/work?service=Visual%20Identity', description: "We build your full visual identity to give your brand a presence people notice now and remember long after. From logo, color palette, typography hierarchy, graphic patterns, iconography, and photographic style direction, we explore every detail to define the right visual language for your brand. Every element is created to feel cohesive, distinctive, and ready to work across every medium." },
+  { name: 'Logo Design', href: '/work?service=Logo%20Design', description: "Your logo is the single most visible element of your brand. We develop a strategically grounded concept that feels distinctive, balanced, and built to stand the test of time. Through collaborative refinement, every curve, letterform, and detail is shaped until the logo feels not just designed, but meant to exist." },
+  { name: 'Brand Guidelines', href: '/work?service=Brand%20Guidelines', description: "The rulebook that keeps your brand consistent when you're not in the room. Our brand books document every element with do's and don'ts and real application examples. From 30-page essentials to 80-page comprehensive manuals." },
   { name: 'Brand Strategy', href: '/work?service=Brand%20Strategy', description: "Before any visual work begins, we define who you are, who you're for, and where you stand in the market. Audience mapping, competitive analysis, positioning territory, and brand architecture." },
-  { name: 'Packaging Design', href: '/work?service=Packaging%20Design', description: "The shelf is your stage. We design packaging that tells your story at the point of decision, from single products to full line systems with variant logic, 3D mockups, and print-ready dielines." },
-  { name: 'Creative Advertising', href: '/work?service=Creative%20Advertising', description: "Key visuals, campaign concepts, and advertising creative that anchors your messaging across channels. From event materials to ATL campaign rollouts, print, digital, outdoor, and beyond." },
+  { name: 'Packaging Design', href: '/work?service=Packaging%20Design', description: "The shelf is your stage. We design packaging that tells your story at the point of decision, from single products to full line systems with variant logic, 3D mockups, and print-ready die lines." },
+  { name: 'Creative Advertising', href: '/work?service=Creative%20Advertising', description: "From key visuals and campaign concepts to event materials, ATL rollouts, print, digital, outdoor, and beyond, we create advertising systems built to travel across channels. Our work is shaped to be visually distinctive and strategically written, so every campaign has both the look to capture attention and the message to stay with people." },
 ]
 
 const PROCESS = [
@@ -48,12 +48,12 @@ const PROCESS = [
 ]
 
 const WHY_US = [
-  { title: 'Strategy Before Style', description: "We never open Illustrator before the brief is locked. Every design decision is rooted in business reality, not trends that age in six months." },
-  { title: 'Designed to Scale', description: "Whether you're a single-location cafe or a national FMCG brand, we build systems that work from business cards to billboards to packaging lines." },
-  { title: 'Full Creative Team', description: "Senior designers, copywriters, and creative directors collaborate on every project. You're not getting one freelancer's perspective, you're getting a team." },
-  { title: 'Proven Track Record', description: "300+ projects across 11 industries. Data-backed pricing, proven processes, and the depth of experience to navigate complex brand challenges." },
-  { title: 'Packaging Expertise Built In', description: "Unlike agencies that outsource packaging, we have deep specialized packaging craft in-house. Identity and packaging designed by the same team means total coherence." },
-  { title: 'Clear Revision Policy', description: "3 rounds included on brand development. If we made the error, the fix is free. If you change direction after sign-off, additional rounds at transparent rates." },
+  { title: 'Strategy Before Style', description: "We never open Illustrator before the brief is locked. Every design choice has to answer to the brand, the market, and the brief, not to whatever is trending this quarter." },
+  { title: 'Designed to Scale', description: "Whether you are a neighborhood cafe or a national FMCG brand, your identity needs to look just as strong on a coffee cup as it does across a full packaging line, campaign rollout, or city billboard." },
+  { title: 'Full Creative Team', description: "Senior designers, copywriters, and creative directors collaborate on every project. You are not getting one person's point of view. You are getting a room full of people who know how to make brands look sharper, sound clearer, and land exactly where they should." },
+  { title: 'Proven Track Record', description: "300+ projects across 11 industries means we do not walk into brand challenges guessing. We bring tested processes, project data, and the kind of experience that helps brands move from creative ideas to creative decisions that actually hold up." },
+  { title: 'Packaging Expertise Built In', description: "Unlike agencies that outsource packaging, we have specialized packaging craft in house. Identity and packaging are shaped by the same team, so the brand feels consistent from the first logo application to the final shelf presence." },
+  { title: 'Clear Revision Policy', description: "2 rounds included on brand development. If the error is on our side, we correct it at no additional cost. If the direction changes after sign off, additional rounds are available at transparent rates." },
 ]
 
 const OTHER_SERVICES = [
