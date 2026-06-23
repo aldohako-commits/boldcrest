@@ -225,8 +225,9 @@ export default function ContentStack({
   const [videosBlocked, setVideosBlocked] = useState(false)
   const [videosDismissed, setVideosDismissed] = useState(false)
   // `?lpm` in the URL is a TEST flag: it force-shows the banner (no real Low Power
-  // Mode needed) and loops it, so the reveal animation/sizing can be checked on a
-  // real iPad/phone. Set after mount to avoid a hydration mismatch.
+  // Mode needed) so the reveal animation/sizing can be checked on a real iPad/phone.
+  // Pressing dismisses it for good — reload to replay. Set after mount to avoid a
+  // hydration mismatch.
   const [forcedTest, setForcedTest] = useState(false)
   // Latest per-slide native aspects, read by the width effect on resize.
   const aspectsRef = useRef<number[]>([])
@@ -465,14 +466,6 @@ export default function ContentStack({
   useEffect(() => {
     setForcedTest(new URLSearchParams(window.location.search).has('lpm'))
   }, [])
-
-  // In test mode, re-arm the banner a moment after it's dismissed so the reveal
-  // animation can be replayed without reloading.
-  useEffect(() => {
-    if (!forcedTest || !videosDismissed) return
-    const t = window.setTimeout(() => setVideosDismissed(false), 1600)
-    return () => window.clearTimeout(t)
-  }, [forcedTest, videosDismissed])
 
   // ≥960px touch (iPad): the rail keeps a narrow 32px reservation in flow (so the
   // portfolio doesn't move) while its wider visual column is floated into the right
