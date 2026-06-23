@@ -274,7 +274,15 @@ export default function ContentStack({
       const span = snaps[a + 1] - snaps[a]
       f = span > 0 ? Math.min(1, Math.max(0, (y - snaps[a]) / span)) : 0
     }
-    setActive(a)
+    // Highlight the thumbnail the indicator line is NEAREST to (round of the
+    // continuous position a+f), not "the last hard threshold crossed". The walk's
+    // `y+1 >= snaps[i]` boundary is 1px thin, so when a snap shifts a little — lazy
+    // images resolving, or the mobile toolbar changing innerHeight mid-scroll, which
+    // moves every snap — the LAST boundary flip-flops and the highlight drops back to
+    // the previous slide while the line sits on the last one. Rounding ties the bright
+    // slide to the visible line (its decision boundary is the wide midpoint between
+    // snaps), so the last slide lights up and holds.
+    setActive(Math.min(total - 1, Math.round(a + f)))
     // Line center = active thumbnail center, interpolated toward the next by f, so
     // the marker rides exactly through the thumbnails.
     const cur = thumbCenter(a)
@@ -348,7 +356,7 @@ export default function ContentStack({
     const s0 = g.snaps[i]
     const s1 = i < g.snaps.length - 1 ? g.snaps[i + 1] : s0
     const target = s0 + f * (s1 - s0)
-    setActive(i) // matches the resting active item for this scroll position
+    setActive(Math.min(last, Math.round(i + f))) // nearest thumb to the marker (matches scroll-rest)
     setProgress(my / railH) // marker = cursor = portfolio position → no settle
     // `force` lets the jump land even though Lenis is paused for the drag.
     if (lenis) lenis.scrollTo(target, { immediate: true, force: true })
