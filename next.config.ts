@@ -27,6 +27,27 @@ const nextConfig: NextConfig = {
         destination: "/work/ak-invest-fast-secure-transfers",
         permanent: true,
       },
+      // Anmetal lived under the old WordPress /services/ path; it's now a
+      // project page. 301 to the live slug so the indexed URL consolidates.
+      {
+        source: "/services/anmetal-your-safety-comes-first-2",
+        destination: "/work/anmetal-forged-through-design",
+        permanent: true,
+      },
+      // Javy Coffee wasn't migrated as its own project — send the old indexed
+      // URL to the portfolio index rather than letting it 404.
+      {
+        source: "/work/javy-coffee-brewing-online-success-through-seo-and-ppc",
+        destination: "/work",
+        permanent: true,
+      },
+      // Leftover WordPress staging URL (hashed temp domain prefix) that Google
+      // still has indexed as a 404. The "team" page is now /people.
+      {
+        source: "/.website_875c5d33/team",
+        destination: "/people",
+        permanent: true,
+      },
     ];
   },
 };
