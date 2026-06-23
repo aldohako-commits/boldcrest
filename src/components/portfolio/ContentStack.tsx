@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { urlFor } from '@/sanity/lib/image'
 import { sanityImageLoader } from '@/sanity/lib/loader'
 import VimeoEmbed from '@/components/VimeoEmbed'
+import VideoPlayAllButton from '@/components/VideoPlayAllButton'
 import { useLenis } from '@/components/LenisProvider'
 
 interface VideoMedia {
@@ -649,6 +650,10 @@ export default function ContentStack({
         </nav>
         </div>
       )}
+
+      {/* One floating control that plays every frozen video at once (shown only when
+          autoplay was blocked — e.g. iOS Low Power Mode). */}
+      <VideoPlayAllButton />
     </div>
   )
 }
