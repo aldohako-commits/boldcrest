@@ -575,12 +575,13 @@ export default function ContentStack({
   if (total === 0) return null
 
   // Banner is open while videos are frozen and the user hasn't pressed play yet.
-  // While open, the row gets a top gap the banner lives in; pressing play closes
-  // the gap (portfolio slides up) and fades the banner — it ends hidden behind the
-  // rising media. LPM_GAP is how far the portfolio travels; LPM_TUCK is how much of
-  // the banner tucks behind the first slide's top.
-  const LPM_GAP = 76
-  const LPM_TUCK = 16
+  // While open, the row gets a small top gap; pressing play closes it (portfolio
+  // slides up) and fades the banner. LPM_GAP is how far the portfolio travels (kept
+  // small so the media stays close to the text above); LPM_SAFE is the clear space
+  // left between the banner's bottom and the media top, so the banner sits fully
+  // above the media and is never cropped by it.
+  const LPM_GAP = 40
+  const LPM_SAFE = 12
   // Banner is engaged when a real clip is frozen OR when the `?lpm` test flag is on.
   const bannerActive = forcedTest || videosBlocked
   const bannerOpen = bannerActive && !videosDismissed
@@ -601,9 +602,9 @@ export default function ContentStack({
       )}
       {/* Media stack — centred (capped width), the navigator sits to its right */}
       <div ref={mediaStackRef} className="relative flex w-full min-w-0 max-w-[1200px] flex-col">
-        {/* Low Power Mode banner — top-right, tucked behind the first slide. Placed
-            BEFORE the slides so it paints behind them; the portfolio slides up and
-            covers it on press. */}
+        {/* Low Power Mode banner — sits fully ABOVE the media at the top-right, the
+            play button's right edge flush with the media's right edge. Pressing it
+            plays every clip and the portfolio slides up as the banner fades. */}
         {bannerActive && (
           <button
             type="button"
@@ -614,12 +615,12 @@ export default function ContentStack({
             aria-label="Play all videos for the full experience"
             style={{
               top: 0,
-              // Lift the banner by its own height so its bottom tucks LPM_TUCK px
-              // behind the first slide's top — height-independent (text may wrap).
-              transform: `translateY(calc(-100% + ${LPM_TUCK}px))`,
+              // Lift the banner fully above the media top, leaving LPM_SAFE px of
+              // clear space below it (height-independent — the text may wrap).
+              transform: `translateY(calc(-100% - ${LPM_SAFE}px))`,
               opacity: videosDismissed ? 0 : 1,
             }}
-            className={`group absolute right-0 z-0 flex items-center gap-4 rounded-2xl border border-white/15 bg-black/60 py-2.5 pl-5 pr-2.5 backdrop-blur-md transition-[opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            className={`group absolute right-0 flex items-center gap-4 transition-[opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
               videosDismissed ? 'pointer-events-none' : ''
             }`}
           >
@@ -631,8 +632,10 @@ export default function ContentStack({
                 Press play for full experience
               </span>
             </span>
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/45 text-white transition-colors group-hover:bg-white/10">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+            {/* Circle matches the header's minimised "Start a Project" + button:
+                #1d1d1d fill (not pure black), subtle white border. */}
+            <span className="grid h-[2.2rem] w-[2.2rem] shrink-0 place-items-center rounded-full border border-white/35 bg-[#1d1d1d] text-white/85 transition-colors group-hover:text-white">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden className="translate-x-[1px]">
                 <path d="M5 3.5v9l7-4.5-7-4.5z" />
               </svg>
             </span>

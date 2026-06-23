@@ -178,7 +178,9 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
 
   // The player frame finished loading. Subscribe (harmless if already unsolicited)
   // and start the "did it autoplay?" countdown. Tied to load (not mount) so slides
-  // still off-screen — which haven't loaded — never flag.
+  // still off-screen — which haven't loaded — never flag. An allowed clip emits a
+  // play signal within a few hundred ms, so a short wait surfaces the banner fast;
+  // a slow-but-working clip that starts late still clears it via the play event.
   const onIframeLoad = () => {
     if (forced) return
     post('addEventListener', 'play')
@@ -186,7 +188,7 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
     window.clearTimeout(timerRef.current)
     timerRef.current = window.setTimeout(() => {
       if (!playingRef.current) setBlocked(true)
-    }, 3500)
+    }, 1500)
   }
 
   if (!videoId) {
