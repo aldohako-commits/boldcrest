@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useEffect, useCallback } from 'react'
+import { useRef, useState, useEffect, useCallback, memo } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { urlFor } from '@/sanity/lib/image'
@@ -81,49 +81,51 @@ const FOUNDERS_PHOTO: string = '/People - Photos/Old 2.png'
 
 /* ── Auto-scrolling + draggable team-photo strip (b&w → color on hover) ── */
 const PHOTOS = [1, 2, 3, 4, 5, 6, 7]
-function PhotoMarquee() {
+const PhotoMarquee = memo(function PhotoMarquee() {
   const photos = PHOTOS
-  // 4 identical copies so the modulo wrap always has content on both sides.
+  // 4 copies = a long-enough ring; items are RECYCLED (head → tail) so the loop is
+  // seamless regardless of the count.
   const repeated = [...photos, ...photos, ...photos, ...photos]
   const scrollerRef = useRef<HTMLDivElement>(null)
   const trackRef = useRef<HTMLDivElement>(null)
-  // `offset` = how far the track is shifted left, in px (kept within [0, oneSet)).
-  // Driven by a CSS transform — sub-pixel and GPU-smooth — instead of scrollLeft,
-  // which Safari rounds to integers; that rounding caused the once-per-loop jump.
-  const offset = useRef(0)
-  const oneSet = useRef(0) // exact width of ONE copy (sub-pixel)
-  const drag = useRef({ active: false, pending: false, startX: 0, startY: 0, startOffset: 0 })
+  // `pos` = sub-pixel shift of the track, kept TINY (< one item's width) by recycling
+  // the head item to the tail as it scrolls off. A tiny transform that never makes a
+  // big jump means no once-per-loop repaint flash and no measurement to drift — the
+  // earlier scrollLeft and big-modulo-jump versions both showed a hitch at the wrap.
+  const pos = useRef(0)
+  const drag = useRef({ active: false, pending: false, startX: 0, startY: 0, lastX: 0 })
   // Pause auto-advance briefly after a drag so it doesn't fight the gesture.
   const pauseUntil = useRef(0)
   const SPEED = 70 // px per second
 
-  // Exact period = distance between copy 1's first item and copy 2's first item,
-  // measured sub-pixel from laid-out rects so the loop is perfectly seamless.
-  const measure = useCallback(() => {
-    const track = trackRef.current
-    if (!track) return
-    const kids = track.children
-    const n = PHOTOS.length
-    if (kids.length > n) {
-      const a = (kids[0] as HTMLElement).getBoundingClientRect().left
-      const b = (kids[n] as HTMLElement).getBoundingClientRect().left
-      if (b - a > 0) oneSet.current = b - a
-    }
-  }, [])
-
+  // Apply the transform, recycling items so `pos` stays within [0, headWidth).
+  // Forward (pos grows): head scrolled fully off the left → move it to the tail.
+  // Backward (pos < 0, from a right-drag): bring the tail back to the head.
   const apply = useCallback(() => {
     const track = trackRef.current
     if (!track) return
-    const one = oneSet.current
-    if (one > 0) offset.current = ((offset.current % one) + one) % one
-    track.style.transform = `translate3d(${-offset.current}px, 0, 0)`
+    let p = pos.current
+    let guard = 0
+    while (guard++ < 64) {
+      const first = track.firstElementChild as HTMLElement | null
+      if (!first) break
+      const w = first.getBoundingClientRect().width
+      if (w > 0 && p >= w) {
+        p -= w
+        track.appendChild(first)
+      } else break
+    }
+    while (guard++ < 64 && p < 0) {
+      const last = track.lastElementChild as HTMLElement | null
+      if (!last) break
+      track.insertBefore(last, track.firstElementChild)
+      p += last.getBoundingClientRect().width
+    }
+    pos.current = p
+    track.style.transform = `translate3d(${-p}px, 0, 0)`
   }, [])
 
   useEffect(() => {
-    measure()
-    const t = setTimeout(measure, 200) // re-measure once images/layout settle
-    const onResize = () => measure()
-    window.addEventListener('resize', onResize)
     let raf = 0
     let last = 0
     const tick = (now: number) => {
@@ -131,60 +133,90 @@ function PhotoMarquee() {
       const dt = (now - last) / 1000
       last = now
       if (!drag.current.active && now >= pauseUntil.current) {
-        offset.current += SPEED * dt
+        pos.current += SPEED * dt
         apply()
       }
       raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
-    return () => {
-      cancelAnimationFrame(raf)
-      clearTimeout(t)
-      window.removeEventListener('resize', onResize)
-    }
-  }, [measure, apply])
+    return () => cancelAnimationFrame(raf)
+  }, [apply])
 
-  // Pointer drag for ALL input types (mouse, touch, pen). Intent is decided on the
-  // first move: a mostly-horizontal move starts the drag (and captures the pointer);
-  // a mostly-vertical move is abandoned so the vertical slide-deck nav still works.
-  // touch-action: pan-y reserves vertical for the browser/deck and routes horizontal
-  // gestures to us — so iPad touch drives the strip (native overflow scroll here was
-  // being swallowed by the deck and never moved it).
+  // Mouse drag via pointer events (mouse only). Incremental so it composes with the
+  // recycling in apply().
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    drag.current = {
-      active: false,
-      pending: true,
-      startX: e.clientX,
-      startY: e.clientY,
-      startOffset: offset.current,
-    }
+    if (e.pointerType !== 'mouse') return
+    drag.current = { active: true, pending: false, startX: e.clientX, startY: e.clientY, lastX: e.clientX }
+    scrollerRef.current?.setPointerCapture?.(e.pointerId)
   }
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    const d = drag.current
-    if (d.active) {
-      offset.current = d.startOffset - (e.clientX - d.startX)
-      apply()
-      pauseUntil.current = performance.now() + 600
-      return
-    }
-    if (!d.pending) return
-    const dx = e.clientX - d.startX
-    const dy = e.clientY - d.startY
-    if (Math.abs(dx) > 6 && Math.abs(dx) >= Math.abs(dy)) {
-      d.active = true
-      scrollerRef.current?.setPointerCapture?.(e.pointerId)
-    } else if (Math.abs(dy) > 6) {
-      d.pending = false // vertical intent → let the deck / page handle it
-    }
+    if (e.pointerType !== 'mouse' || !drag.current.active) return
+    pos.current += drag.current.lastX - e.clientX
+    drag.current.lastX = e.clientX
+    apply()
+    pauseUntil.current = performance.now() + 600
   }
   const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== 'mouse') return
     if (drag.current.active) {
       scrollerRef.current?.releasePointerCapture?.(e.pointerId)
       pauseUntil.current = performance.now() + 600
     }
     drag.current.active = false
-    drag.current.pending = false
   }
+
+  // Touch drag via NATIVE listeners so touchmove can be non-passive (preventDefault) —
+  // the reliable way to drive a horizontal drag inside a vertical scroller on iOS
+  // (React pointer events alone didn't move the strip on iPad). Horizontal → drag
+  // (preventDefault); vertical → bail so the slide deck / page still scroll. Mobile is
+  // safe: we only ever preventDefault once a clearly-horizontal drag has started.
+  useEffect(() => {
+    const el = scrollerRef.current
+    if (!el) return
+    const onStart = (e: TouchEvent) => {
+      const t = e.touches[0]
+      if (!t) return
+      drag.current = { active: false, pending: true, startX: t.clientX, startY: t.clientY, lastX: t.clientX }
+    }
+    const onMove = (e: TouchEvent) => {
+      const d = drag.current
+      const t = e.touches[0]
+      if (!t) return
+      if (d.active) {
+        e.preventDefault()
+        pos.current += d.lastX - t.clientX
+        d.lastX = t.clientX
+        apply()
+        pauseUntil.current = performance.now() + 600
+        return
+      }
+      if (!d.pending) return
+      const dx = t.clientX - d.startX
+      const dy = t.clientY - d.startY
+      if (Math.abs(dx) > 6 && Math.abs(dx) >= Math.abs(dy)) {
+        d.active = true
+        d.lastX = t.clientX
+        e.preventDefault()
+      } else if (Math.abs(dy) > 6) {
+        d.pending = false
+      }
+    }
+    const onEnd = () => {
+      drag.current.active = false
+      drag.current.pending = false
+      pauseUntil.current = performance.now() + 600
+    }
+    el.addEventListener('touchstart', onStart, { passive: true })
+    el.addEventListener('touchmove', onMove, { passive: false })
+    el.addEventListener('touchend', onEnd, { passive: true })
+    el.addEventListener('touchcancel', onEnd, { passive: true })
+    return () => {
+      el.removeEventListener('touchstart', onStart)
+      el.removeEventListener('touchmove', onMove)
+      el.removeEventListener('touchend', onEnd)
+      el.removeEventListener('touchcancel', onEnd)
+    }
+  }, [apply])
 
   if (photos.length === 0) return null
 
@@ -219,7 +251,7 @@ function PhotoMarquee() {
       </div>
     </div>
   )
-}
+})
 
 type FaceItem = {
   id: string
