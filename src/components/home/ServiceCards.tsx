@@ -237,7 +237,7 @@ export default function ServiceCards() {
           {/* CTA Panel — on mobile it fills the screen and its left padding is
               the page gutter, so "Start a Project" starts at the same x as the
               diary/other sections once the pan lands it flush at the left. */}
-          <div className="relative flex h-full w-screen shrink-0 flex-col justify-between bg-[#0a0a0a] py-10 pl-[var(--gutter)] pr-[var(--gutter)] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] md:w-[33.333vw] md:min-w-[400px] md:px-10 lg:px-16">
+          <div className="relative flex h-full w-screen shrink-0 flex-col justify-between bg-[#0a0a0a] py-10 pl-[var(--gutter)] pr-[var(--gutter)] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] md:w-[33.333vw] md:min-w-[400px] md:px-[clamp(1.5rem,2vw,2.5rem)]">
             <div>
               <h2 className="mb-8 font-display text-[clamp(2.5rem,5vw,5.5rem)] font-bold leading-[0.95] tracking-[-0.03em] text-white">
                 Start a<br />Project
