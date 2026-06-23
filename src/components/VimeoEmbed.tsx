@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import {
+  blockedCount,
   registerPlayer,
   setBlocked as setBlockedInStore,
+  subscribe,
   unregisterPlayer,
 } from './vimeoPlayAll'
 
@@ -81,8 +83,16 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
   const id = useId()
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
   const playerRef = useRef<VimeoPlayer | null>(null)
+  const attachedToRef = useRef<HTMLIFrameElement | null>(null)
   const playingRef = useRef(false)
+  const wantPlayRef = useRef(false)
   const timerRef = useRef(0)
+  // True once ANY clip on the page is frozen (Low Power Mode). When that happens we
+  // eager-load THIS clip's iframe and attach its player up front — even if it's far
+  // below the fold — so the single "play all" tap can reach every clip, not just the
+  // ones already on screen. Starts false (matches SSR) and flips on after mount, so
+  // the eager `loading` attribute actually takes effect (no hydration mismatch).
+  const [anyBlocked, setAnyBlocked] = useState(false)
   // Overlay = the clip loaded but never started (autoplay blocked — typically iOS
   // Low Power Mode). After the player frame loads we wait briefly: a background clip
   // that's allowed to play emits a play signal almost immediately, so if none
@@ -130,23 +140,49 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
     }
   }, [videoId, forced])
 
-  // As soon as a clip is frozen (or in ?lpm test mode), load the SDK AND attach a
-  // Player up front. Creating it lazily on the first tap defers play() until the
-  // player's async handshake finishes — past the gesture window — so iOS blocks it.
-  // Pre-attached, the tap's play() fires immediately, inside the user gesture.
+  // Mirror the page-wide "any clip frozen?" flag so this clip can eager-load and
+  // pre-attach itself even when it's far below the fold. (Initial state already
+  // covers `forced`; blocking only happens via timers well after mount, so the
+  // subscription catches it.)
   useEffect(() => {
-    if (!blocked && !forced) return
+    if (forced) {
+      // Defer a frame so it's not a synchronous setState inside the effect.
+      const raf = requestAnimationFrame(() => setAnyBlocked(true))
+      return () => cancelAnimationFrame(raf)
+    }
+    return subscribe(() => setAnyBlocked(blockedCount() > 0))
+  }, [forced])
+
+  // Once anything is frozen (this clip, or any other on the page in Low Power Mode,
+  // or ?lpm test mode), load the SDK AND attach this clip's Player up front. Creating
+  // it lazily on the first tap defers play() until the player's async handshake
+  // finishes — past the gesture window — so iOS blocks it. Pre-attached, the tap's
+  // play() fires immediately, inside the user gesture, for EVERY clip at once.
+  useEffect(() => {
+    if (!blocked && !forced && !anyBlocked) return
     let cancelled = false
     loadVimeoSDK()
       .then((Player) => {
-        if (cancelled || playerRef.current || !iframeRef.current) return
-        playerRef.current = new Player(iframeRef.current)
+        const el = iframeRef.current
+        if (cancelled || !el) return
+        // (Re)attach if we haven't, or if the iframe was remounted for eager-loading.
+        if (attachedToRef.current !== el) {
+          playerRef.current = new Player(el)
+          attachedToRef.current = el
+        }
+        // If "play all" was tapped before this (far) clip's player was ready, honour
+        // it now — best-effort; lands if the attach completes within the gesture.
+        if (wantPlayRef.current && playerRef.current) {
+          wantPlayRef.current = false
+          playerRef.current.setMuted(true).catch(() => {})
+          playerRef.current.play().then(clearOverlay).catch(() => post('play'))
+        }
       })
       .catch(() => {})
     return () => {
       cancelled = true
     }
-  }, [blocked, forced])
+  }, [blocked, forced, anyBlocked])
 
   // Start THIS clip. Driven by the shared "play all" button: one tap fires every
   // registered clip's play() synchronously, so the single user gesture carries to
@@ -169,13 +205,16 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
       run(playerRef.current)
       return
     }
-    // Fallback: not attached yet — create then play (may miss the gesture window).
+    // Not attached yet (a far clip still loading): mark intent so it plays the moment
+    // its player attaches, and also try to create it right now.
+    wantPlayRef.current = true
     const Player = (
       window as unknown as { Vimeo?: { Player?: VimeoPlayerCtor } }
     ).Vimeo?.Player
     const start = (P: VimeoPlayerCtor) => {
       try {
-        playerRef.current = new P(iframe)
+        if (!playerRef.current) playerRef.current = new P(iframe)
+        wantPlayRef.current = false
         run(playerRef.current)
       } catch {
         post('play')
@@ -209,7 +248,7 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
     window.clearTimeout(timerRef.current)
     timerRef.current = window.setTimeout(() => {
       if (!playingRef.current) setBlocked(true)
-    }, 1500)
+    }, 1000)
   }
 
   if (!videoId) {
@@ -228,6 +267,10 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
   return (
     <div className={`relative overflow-hidden ${className}`} style={{ aspectRatio }}>
       <iframe
+        // Lazy by default. Once Low Power Mode is detected we remount with a fresh
+        // eager iframe (the `key` change) so even below-the-fold clips load — a bare
+        // loading-attribute flip is ignored by browsers once the iframe is inserted.
+        key={anyBlocked ? 'eager' : 'lazy'}
         ref={iframeRef}
         src={embedUrl}
         onLoad={onIframeLoad}
@@ -237,7 +280,7 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
         className="pointer-events-none absolute inset-0 h-full w-full border-none"
         allow="autoplay; fullscreen; picture-in-picture"
         allowFullScreen
-        loading="lazy"
+        loading={anyBlocked ? 'eager' : 'lazy'}
         title="Vimeo video"
       />
     </div>
