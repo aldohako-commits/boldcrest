@@ -6,9 +6,9 @@ import { urlFor } from '@/sanity/lib/image'
 import { sanityImageLoader } from '@/sanity/lib/loader'
 import VimeoEmbed from '@/components/VimeoEmbed'
 import {
-  allClipsReady,
-  anyPlayed,
+  allBlockedReady,
   blockedCount,
+  debugState,
   playAll,
   subscribe,
 } from '@/components/vimeoPlayAll'
@@ -239,6 +239,10 @@ export default function ContentStack({
   // Pressing dismisses it for good — reload to replay. Set after mount to avoid a
   // hydration mismatch.
   const [forcedTest, setForcedTest] = useState(false)
+  // `?lpmdebug` shows a tiny on-screen panel of the live Low Power Mode state
+  // (clip/blocked/ready counts) so real-device behavior can be diagnosed.
+  const [lpmDebug, setLpmDebug] = useState(false)
+  const [dbg, setDbg] = useState({ players: 0, blocked: 0, ready: 0 })
   // Latest per-slide native aspects, read by the width effect on resize.
   const aspectsRef = useRef<number[]>([])
   aspectsRef.current = items.map((it) => it.aspect)
@@ -465,32 +469,26 @@ export default function ContentStack({
     }
   }, [total, computeState])
 
-  // Track whether any video is frozen (drives the banner) and whether ALL clips are
-  // ready to play (drives the spinner → play swap). If any clip ever autoplays we know
-  // it's not Low Power Mode and suppress the banner for good. The "ready" safety net
-  // is a STALL timeout that resets on every loading event, so a long portfolio whose
-  // clips trickle in keeps spinning until they're all primed, yet a clip that never
-  // initialises can't hang the spinner forever (fires once progress goes quiet).
+  // Track whether any ON-SCREEN video is frozen (drives the banner) and whether those
+  // frozen clips are ready to play (drives the spinner → play swap). Detection is
+  // viewport-gated in VimeoEmbed, so `blockedCount` is just the frozen clips the user
+  // can see; the banner shows whenever that's > 0 and never relies on a page-wide
+  // "did anything play" guess. The "ready" safety net is a STALL timeout that resets
+  // on every loading event, so a slow clip keeps the spinner up but can't hang it
+  // forever (fires once loading goes quiet).
   useEffect(() => {
     let stallTimer = 0
     const update = () => {
-      if (anyPlayed()) {
-        setVideosBlocked(false)
-        window.clearTimeout(stallTimer)
-        stallTimer = 0
-        return
-      }
+      setDbg(debugState())
       const blocked = blockedCount() > 0
       setVideosBlocked(blocked)
-      if (allClipsReady()) {
+      if (allBlockedReady()) {
         setVideosReady(true)
         window.clearTimeout(stallTimer)
         stallTimer = 0
         return
       }
       if (blocked) {
-        // Progress is still arriving (this ran from a store notify) — push the
-        // deadline out. It only fires after ~6s of no loading activity at all.
         window.clearTimeout(stallTimer)
         stallTimer = window.setTimeout(() => setVideosReady(true), 6000)
       }
@@ -503,9 +501,11 @@ export default function ContentStack({
     }
   }, [])
 
-  // Read the `?lpm` test flag once mounted.
+  // Read the `?lpm` test and `?lpmdebug` flags once mounted.
   useEffect(() => {
-    setForcedTest(new URLSearchParams(window.location.search).has('lpm'))
+    const q = new URLSearchParams(window.location.search)
+    setForcedTest(q.has('lpm'))
+    setLpmDebug(q.has('lpmdebug'))
   }, [])
 
   // ≥960px touch (iPad): the rail keeps a narrow 32px reservation in flow (so the
@@ -625,6 +625,18 @@ export default function ContentStack({
       className="relative flex justify-center gap-[var(--space-2xl)] transition-[padding-top] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
       style={{ paddingTop: bannerOpen ? LPM_GAP : 0 }}
     >
+      {/* ?lpmdebug — live Low Power Mode state, fixed to the screen corner. */}
+      {lpmDebug && (
+        <div
+          className="fixed bottom-2 left-2 z-[9999] rounded-md bg-black/85 px-3 py-2 font-mono text-[11px] leading-[1.5] text-white"
+          style={{ pointerEvents: 'none' }}
+        >
+          clips:{dbg.players} blocked:{dbg.blocked} ready:{dbg.ready}
+          <br />
+          banner:{bannerActive ? 'YES' : 'no'} ready:{videosReady ? 'YES' : 'no'}{' '}
+          dismissed:{videosDismissed ? 'YES' : 'no'}
+        </div>
+      )}
       {/* Invisible left spacer mirroring the navigator so the media stays centred.
           Matches the rail width per device (narrower on touch). */}
       {total > 1 && (

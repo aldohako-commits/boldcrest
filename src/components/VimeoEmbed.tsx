@@ -4,7 +4,6 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import {
   registerPlayer,
   setBlocked as setBlockedInStore,
-  setPlayed as setPlayedInStore,
   setReady as setReadyInStore,
   unregisterPlayer,
 } from './vimeoPlayAll'
@@ -109,13 +108,10 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
 
   const clearOverlay = () => {
     window.clearTimeout(timerRef.current)
+    timerRef.current = 0
     playingRef.current = true
     setPlaying(true)
     setBlocked(false)
-    // Page-wide proof autoplay works here → it's not Low Power Mode → the banner
-    // must never show (kills the brief desktop flash where a clip's "frozen?" timer
-    // fires a hair before its play event arrives).
-    setPlayedInStore(id)
   }
 
   // Watch the real player's messages; any play signal clears the overlay.
@@ -281,11 +277,20 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
       (entries) => {
         const e = entries[entries.length - 1]
         if (!e) return
-        intersectingRef.current = e.isIntersecting
-        if (e.isIntersecting) armDetection()
+        // "On screen enough that a normal device would be autoplaying it": either a
+        // quarter of the clip is visible, OR (for clips taller than the viewport,
+        // which can never reach a 0.25 ratio) at least 40% of the viewport is filled
+        // by it. Without the height fallback, tall portrait clips never armed → the
+        // banner never appeared even in real Low Power Mode.
+        const visible =
+          e.isIntersecting &&
+          (e.intersectionRatio >= 0.25 ||
+            e.intersectionRect.height >= window.innerHeight * 0.4)
+        intersectingRef.current = visible
+        if (visible) armDetection()
         else disarmDetection()
       },
-      { threshold: 0.25 },
+      { threshold: [0, 0.25, 0.5, 1] },
     )
     io.observe(el)
     return () => {
