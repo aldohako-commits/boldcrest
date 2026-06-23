@@ -6,7 +6,8 @@ import { urlFor } from '@/sanity/lib/image'
 import { sanityImageLoader } from '@/sanity/lib/loader'
 import VimeoEmbed from '@/components/VimeoEmbed'
 import {
-  allBlockedReady,
+  allClipsReady,
+  anyPlayed,
   blockedCount,
   playAll,
   subscribe,
@@ -464,24 +465,41 @@ export default function ContentStack({
     }
   }, [total, computeState])
 
-  // Track whether any video is frozen (drives the banner) and whether all frozen
-  // clips are ready to play (drives the spinner → play swap). A safety timeout flips
-  // ready after a while so a clip that never initialises can't spin forever.
+  // Track whether any video is frozen (drives the banner) and whether ALL clips are
+  // ready to play (drives the spinner → play swap). If any clip ever autoplays we know
+  // it's not Low Power Mode and suppress the banner for good. The "ready" safety net
+  // is a STALL timeout that resets on every loading event, so a long portfolio whose
+  // clips trickle in keeps spinning until they're all primed, yet a clip that never
+  // initialises can't hang the spinner forever (fires once progress goes quiet).
   useEffect(() => {
-    let readyTimer = 0
+    let stallTimer = 0
     const update = () => {
-      const anyBlocked = blockedCount() > 0
-      setVideosBlocked(anyBlocked)
-      if (allBlockedReady()) setVideosReady(true)
-      if (anyBlocked && !readyTimer) {
-        readyTimer = window.setTimeout(() => setVideosReady(true), 8000)
+      if (anyPlayed()) {
+        setVideosBlocked(false)
+        window.clearTimeout(stallTimer)
+        stallTimer = 0
+        return
+      }
+      const blocked = blockedCount() > 0
+      setVideosBlocked(blocked)
+      if (allClipsReady()) {
+        setVideosReady(true)
+        window.clearTimeout(stallTimer)
+        stallTimer = 0
+        return
+      }
+      if (blocked) {
+        // Progress is still arriving (this ran from a store notify) — push the
+        // deadline out. It only fires after ~6s of no loading activity at all.
+        window.clearTimeout(stallTimer)
+        stallTimer = window.setTimeout(() => setVideosReady(true), 6000)
       }
     }
     update()
     const unsub = subscribe(update)
     return () => {
       unsub()
-      window.clearTimeout(readyTimer)
+      window.clearTimeout(stallTimer)
     }
   }, [])
 

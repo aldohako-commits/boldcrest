@@ -2,11 +2,10 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import {
-  blockedCount,
   registerPlayer,
   setBlocked as setBlockedInStore,
+  setPlayed as setPlayedInStore,
   setReady as setReadyInStore,
-  subscribe,
   unregisterPlayer,
 } from './vimeoPlayAll'
 
@@ -36,6 +35,7 @@ const PLAY_EVENTS = new Set([
 type VimeoPlayer = {
   play: () => Promise<void>
   setMuted: (m: boolean) => Promise<boolean>
+  setQuality: (q: string) => Promise<string>
   ready: () => Promise<void>
 }
 type VimeoPlayerCtor = new (el: HTMLIFrameElement) => VimeoPlayer
@@ -95,10 +95,6 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
   // standard devices are untouched.
   const [blocked, setBlocked] = useState(forced)
   const [playing, setPlaying] = useState(false)
-  // True once ANY clip on the page is frozen. Lets every clip pre-attach its player
-  // the moment Low Power Mode is detected (not only when its own timer fires), so a
-  // tap right when the banner appears reaches all clips. Starts false (matches SSR).
-  const [anyBlocked, setAnyBlocked] = useState(false)
 
   const post = (method: string, value?: unknown) => {
     iframeRef.current?.contentWindow?.postMessage(
@@ -112,6 +108,10 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
     playingRef.current = true
     setPlaying(true)
     setBlocked(false)
+    // Page-wide proof autoplay works here → it's not Low Power Mode → the banner
+    // must never show (kills the brief desktop flash where a clip's "frozen?" timer
+    // fires a hair before its play event arrives).
+    setPlayedInStore(id)
   }
 
   // Watch the real player's messages; any play signal clears the overlay.
@@ -138,34 +138,35 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
     }
   }, [videoId, forced])
 
-  // Mirror the page-wide "any clip frozen?" flag.
+  // Attach the Vimeo SDK player to EVERY clip up front (the SDK is already warmed on
+  // iframe load, so this adds no extra network cost). Two wins at once:
+  //   1. Quality — background players honor neither the `quality` URL param nor the
+  //      device pixel ratio, so on a 2× screen a ~600px box was served ~720p and
+  //      looked soft. We pin a retina-aware rendition via the SDK instead.
+  //   2. Low Power Mode tap — the player is pre-attached, so one press plays every
+  //      clip with no cold-load race (lazily creating it on tap defers play() past
+  //      the iOS gesture window → blocked).
   useEffect(() => {
-    if (forced) {
-      const raf = requestAnimationFrame(() => setAnyBlocked(true))
-      return () => cancelAnimationFrame(raf)
-    }
-    return subscribe(() => setAnyBlocked(blockedCount() > 0))
-  }, [forced])
-
-  // As soon as ANY clip is frozen (this one, any other in Low Power Mode, or ?lpm
-  // test mode), load the SDK AND attach this clip's Player up front. Creating it
-  // lazily on the first tap defers play() until the player's async handshake
-  // finishes — past the gesture window — so iOS blocks it. Pre-attached, the tap's
-  // play() fires immediately, inside the user gesture, for EVERY clip at once.
-  useEffect(() => {
-    if (!blocked && !forced && !anyBlocked) return
     let cancelled = false
     loadVimeoSDK()
       .then((Player) => {
         if (cancelled || playerRef.current || !iframeRef.current) return
         const player = new Player(iframeRef.current)
         playerRef.current = player
-        // Mark this clip ready once its player has initialised — the banner waits
-        // for ALL clips before it stops spinning and becomes pressable.
         player
           .ready()
           .then(() => {
-            if (!cancelled) setReadyInStore(id, true)
+            if (cancelled) return
+            // Smallest rendition that covers the box at the device's pixel density,
+            // capped at 1080p so we never pull 2K/4K for a small looping clip.
+            const el = iframeRef.current
+            const side = el ? Math.max(el.clientWidth, el.clientHeight) : 0
+            const need = side * (window.devicePixelRatio || 1)
+            const q = need <= 0 ? '1080p' : need <= 540 ? '540p' : need <= 720 ? '720p' : '1080p'
+            player.setQuality(q).catch(() => {})
+            // Mark ready: the banner waits for ALL clips before the spinner becomes
+            // a pressable play button.
+            setReadyInStore(id, true)
           })
           .catch(() => {})
       })
@@ -173,7 +174,7 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
     return () => {
       cancelled = true
     }
-  }, [blocked, forced, anyBlocked, id])
+  }, [id])
 
   // Start THIS clip. Driven by the shared "play all" button: one tap fires every
   // registered clip's play() synchronously, so the single user gesture carries to
@@ -253,6 +254,9 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
     )
   }
 
+  // No `quality` URL param: background players ignore it and stay on `auto` (verified
+  // — getQuality reports "auto" with it set). The rendition is pinned via the SDK's
+  // setQuality() once the player attaches (see the attach effect above).
   const embedUrl = `https://player.vimeo.com/video/${videoId}?autoplay=1&muted=1&loop=1&background=1&playsinline=1`
 
   return (
