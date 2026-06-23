@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useEffect, useCallback, memo } from 'react'
+import { useRef, useState, useEffect, useCallback, useMemo, memo } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { urlFor } from '@/sanity/lib/image'
@@ -261,102 +261,147 @@ type FaceItem = {
   localSrc?: string
 }
 
-/* ── Faces gallery — two rows, looping auto-scroll + drag ── */
-function FacesGallery({ team }: { team: FaceItem[] }) {
+/* ── Faces gallery — two rows, looping auto-scroll + drag (item-recycling) ── */
+const FacesGallery = memo(function FacesGallery({ team }: { team: FaceItem[] }) {
   const scrollerRef = useRef<HTMLDivElement>(null)
-  const drag = useRef({ active: false, startX: 0, startScroll: 0 })
-  const frac = useRef(0)
-  // Timestamp of the last touch interaction — pause the auto-advance for a beat
-  // after any touch so the native swipe + its momentum aren't fought by it.
-  const lastTouch = useRef(0)
+  const trackRef = useRef<HTMLDivElement>(null)
+  // `pos` = tiny sub-pixel shift; columns are RECYCLED (head → tail) so it never makes
+  // a big jump. Driven by a CSS transform, not scrollLeft (which Safari rounds to ints
+  // → the once-per-loop hitch). Recycling a WHOLE column (rows items) at a time keeps
+  // the column-major 2-row grid aligned through the loop — moving single items would
+  // swap rows and "switch the starting position".
+  const pos = useRef(0)
+  const drag = useRef({ active: false, pending: false, startX: 0, startY: 0, lastX: 0 })
+  const pauseUntil = useRef(0)
   const SPEED = 40 // px per second
   const repeated = team.length ? [...team, ...team, ...team, ...team] : []
 
-  // Keep scrollLeft inside the 2nd copy's window [oneSet, 2·oneSet). The 4 copies
-  // are identical so snapping by ±oneSet is seamless and gives an infinite loop in
-  // BOTH directions — native touch scroll clamps at 0 and would otherwise hit a
-  // hard wall at the start. Shared by mouse-drag, auto-scroll, and the scroll event.
-  const wrap = useCallback(() => {
-    const el = scrollerRef.current
-    if (!el) return
-    // Exact width of ONE copy, measured as the offset of the 2nd copy's first
-    // item. scrollWidth/4 is ~0.25 of a gap short — the 4 copies share 4N-1 gaps,
-    // not 4N — so snapping by it drifted a few px and showed a small jump once
-    // per loop. Measuring the real stride keeps the wrap seamless.
-    const kids = (el.firstElementChild as HTMLElement | null)?.children
-    const n = team.length
-    const oneSet =
-      kids && n > 0 && kids.length > n
-        ? (kids[n] as HTMLElement).offsetLeft - (kids[0] as HTMLElement).offsetLeft
-        : el.scrollWidth / 4
-    if (oneSet <= 0) return
-    if (el.scrollLeft < oneSet) el.scrollLeft += oneSet
-    else if (el.scrollLeft >= oneSet * 2) el.scrollLeft -= oneSet
-  }, [team.length])
+  const rowsNow = () =>
+    typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches ? 2 : 1
+
+  // Recycle so `pos` stays within [0, columnStride): head column off the left → move
+  // its `rows` items to the tail; backward (right-drag) → bring the tail column up.
+  const apply = useCallback(() => {
+    const track = trackRef.current
+    if (!track) return
+    const rows = rowsNow()
+    const stride = () => {
+      const kids = track.children
+      if (kids.length <= rows) return 0
+      return (
+        (kids[rows] as HTMLElement).getBoundingClientRect().left -
+        (kids[0] as HTMLElement).getBoundingClientRect().left
+      )
+    }
+    let p = pos.current
+    let guard = 0
+    while (guard++ < 200) {
+      const s = stride()
+      if (s > 0 && p >= s) {
+        p -= s
+        for (let k = 0; k < rows; k++) track.appendChild(track.firstElementChild as HTMLElement)
+      } else break
+    }
+    while (guard++ < 200 && p < 0) {
+      const s = stride()
+      if (s <= 0) break
+      for (let k = 0; k < rows; k++) track.insertBefore(track.lastElementChild as HTMLElement, track.firstElementChild)
+      p += s
+    }
+    pos.current = p
+    track.style.transform = `translate3d(${-p}px, 0, 0)`
+  }, [])
 
   useEffect(() => {
-    const el = scrollerRef.current
-    if (!el || !team.length) return
+    if (!team.length) return
     let raf = 0
     let last = 0
-    // Start one set in so there's a full copy to the LEFT to scroll back into.
-    const recenter = () => {
-      const kids = (el.firstElementChild as HTMLElement | null)?.children
-      const n = team.length
-      const oneSet =
-        kids && n > 0 && kids.length > n
-          ? (kids[n] as HTMLElement).offsetLeft - (kids[0] as HTMLElement).offsetLeft
-          : el.scrollWidth / 4
-      if (oneSet > 0 && el.scrollLeft < 1) el.scrollLeft = oneSet
-    }
-    recenter()
-    const t = setTimeout(recenter, 150) // retry once images have measured
-    el.addEventListener('scroll', wrap, { passive: true })
     const tick = (now: number) => {
       if (!last) last = now
       const dt = (now - last) / 1000
       last = now
-      if (!drag.current.active && now - lastTouch.current > 1000) {
-        // Accumulate fractional pixels and only add whole-pixel steps — Safari/
-        // Firefox round scrollLeft to integers, so sub-pixel increments are lost.
-        frac.current += SPEED * dt
-        const step = Math.floor(frac.current)
-        if (step > 0) {
-          frac.current -= step
-          el.scrollLeft += step
-          wrap()
-        }
+      if (!drag.current.active && now >= pauseUntil.current) {
+        pos.current += SPEED * dt
+        apply()
       }
       raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
-    return () => {
-      cancelAnimationFrame(raf)
-      clearTimeout(t)
-      el.removeEventListener('scroll', wrap)
-    }
-  }, [team.length, wrap])
+    return () => cancelAnimationFrame(raf)
+  }, [apply, team.length])
 
+  // Mouse drag via pointer events (mouse only).
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.pointerType !== 'mouse') return
-    const el = scrollerRef.current
-    if (!el) return
-    drag.current = { active: true, startX: e.clientX, startScroll: el.scrollLeft }
-    el.setPointerCapture(e.pointerId)
+    drag.current = { active: true, pending: false, startX: e.clientX, startY: e.clientY, lastX: e.clientX }
+    scrollerRef.current?.setPointerCapture?.(e.pointerId)
   }
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!drag.current.active) return
-    const el = scrollerRef.current
-    if (!el) return
-    el.scrollLeft = drag.current.startScroll - (e.clientX - drag.current.startX)
-    wrap()
+    if (e.pointerType !== 'mouse' || !drag.current.active) return
+    pos.current += drag.current.lastX - e.clientX
+    drag.current.lastX = e.clientX
+    apply()
+    pauseUntil.current = performance.now() + 600
   }
   const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!drag.current.active) return
+    if (e.pointerType !== 'mouse') return
+    if (drag.current.active) {
+      scrollerRef.current?.releasePointerCapture?.(e.pointerId)
+      pauseUntil.current = performance.now() + 600
+    }
     drag.current.active = false
-    scrollerRef.current?.releasePointerCapture?.(e.pointerId)
   }
-  const onTouch = () => { lastTouch.current = performance.now() }
+
+  // Touch drag via NATIVE listeners (non-passive touchmove) — reliable on iOS, where
+  // React pointer events didn't move the strip. Horizontal → drag (preventDefault);
+  // vertical → bail so the slide deck / page still scroll (mobile safe).
+  useEffect(() => {
+    const el = scrollerRef.current
+    if (!el || !team.length) return
+    const onStart = (e: TouchEvent) => {
+      const t = e.touches[0]
+      if (!t) return
+      drag.current = { active: false, pending: true, startX: t.clientX, startY: t.clientY, lastX: t.clientX }
+    }
+    const onMove = (e: TouchEvent) => {
+      const d = drag.current
+      const t = e.touches[0]
+      if (!t) return
+      if (d.active) {
+        e.preventDefault()
+        pos.current += d.lastX - t.clientX
+        d.lastX = t.clientX
+        apply()
+        pauseUntil.current = performance.now() + 600
+        return
+      }
+      if (!d.pending) return
+      const dx = t.clientX - d.startX
+      const dy = t.clientY - d.startY
+      if (Math.abs(dx) > 6 && Math.abs(dx) >= Math.abs(dy)) {
+        d.active = true
+        d.lastX = t.clientX
+        e.preventDefault()
+      } else if (Math.abs(dy) > 6) {
+        d.pending = false
+      }
+    }
+    const onEnd = () => {
+      drag.current.active = false
+      drag.current.pending = false
+      pauseUntil.current = performance.now() + 600
+    }
+    el.addEventListener('touchstart', onStart, { passive: true })
+    el.addEventListener('touchmove', onMove, { passive: false })
+    el.addEventListener('touchend', onEnd, { passive: true })
+    el.addEventListener('touchcancel', onEnd, { passive: true })
+    return () => {
+      el.removeEventListener('touchstart', onStart)
+      el.removeEventListener('touchmove', onMove)
+      el.removeEventListener('touchend', onEnd)
+      el.removeEventListener('touchcancel', onEnd)
+    }
+  }, [apply, team.length])
 
   if (!team.length) {
     return <p className="py-20 text-center text-text-tertiary">Team members coming soon.</p>
@@ -369,15 +414,11 @@ function FacesGallery({ team }: { team: FaceItem[] }) {
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
-      onPointerLeave={endDrag}
       onDragStart={(e) => e.preventDefault()}
-      onTouchStart={onTouch}
-      onTouchMove={onTouch}
-      onTouchEnd={onTouch}
-      className="w-full cursor-grab touch-pan-x select-none overflow-x-auto [scrollbar-width:none] active:cursor-grabbing [&::-webkit-scrollbar]:hidden"
+      className="w-full cursor-grab touch-pan-y select-none overflow-hidden active:cursor-grabbing"
     >
       {/* Single row on mobile (larger images, no nested vertical scroll); two rows on desktop */}
-      <div className="grid w-max grid-flow-col grid-rows-1 gap-[0.625rem] md:grid-rows-2 md:gap-3">
+      <div ref={trackRef} className="grid w-max grid-flow-col grid-rows-1 gap-[0.625rem] will-change-transform md:grid-rows-2 md:gap-3">
         {repeated.map((member, i) => (
           <div
             key={i}
@@ -440,7 +481,7 @@ function FacesGallery({ team }: { team: FaceItem[] }) {
       </div>
     </div>
   )
-}
+})
 
 export default function PeoplePageClient({ members }: PeoplePageClientProps) {
   const [current, setCurrent] = useState(0)
@@ -750,22 +791,27 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
 
   // Faces grid — local preview photos for now; Sanity members take over
   // once optimized images are uploaded (empty LOCAL_TEAM to switch back).
-  const team =
-    LOCAL_TEAM.length > 0
-      ? LOCAL_TEAM.map((m) => ({
-          id: m.name,
-          name: m.name,
-          role: undefined as string | undefined,
-          image: undefined as TeamMember['image'],
-          localSrc: m.localSrc,
-        }))
-      : members.map((m) => ({
-          id: m._id,
-          name: m.name,
-          role: m.role as string | undefined,
-          image: m.image,
-          localSrc: undefined as string | undefined,
-        }))
+  // Memoised so the array reference is stable across the deck's re-renders — the
+  // memoised FacesGallery recycles its DOM nodes, which a fresh `team` ref would undo.
+  const team = useMemo(
+    () =>
+      LOCAL_TEAM.length > 0
+        ? LOCAL_TEAM.map((m) => ({
+            id: m.name,
+            name: m.name,
+            role: undefined as string | undefined,
+            image: undefined as TeamMember['image'],
+            localSrc: m.localSrc,
+          }))
+        : members.map((m) => ({
+            id: m._id,
+            name: m.name,
+            role: m.role as string | undefined,
+            image: m.image,
+            localSrc: undefined as string | undefined,
+          })),
+    [members],
+  )
 
   return (
     <>
