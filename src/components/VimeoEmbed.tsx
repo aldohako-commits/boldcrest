@@ -87,6 +87,10 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
   const playerRef = useRef<VimeoPlayer | null>(null)
   const playingRef = useRef(false)
   const timerRef = useRef(0)
+  // Detection only runs once the clip has BOTH loaded and scrolled into view — see
+  // the IntersectionObserver effect for why (mobile defers off-screen autoplay).
+  const loadedRef = useRef(false)
+  const intersectingRef = useRef(false)
   // Overlay = the clip loaded but never started (autoplay blocked — typically iOS
   // Low Power Mode). After the player frame loads we wait briefly: a background clip
   // that's allowed to play emits a play signal almost immediately, so if none
@@ -225,10 +229,34 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
     setBlockedInStore(id, blocked && !playing)
   }, [id, blocked, playing])
 
-  // The player frame finished loading. Subscribe (harmless if already unsolicited)
-  // and start the "did it autoplay?" countdown. An allowed clip emits a play signal
-  // within a few hundred ms, so a short wait surfaces the banner fast; a slow-but-
-  // working clip that starts late still clears it via the play event.
+  // Arm the "did it autoplay?" countdown — but ONLY when the clip has loaded AND is
+  // in view AND hasn't already played. An allowed clip emits a play signal within a
+  // few hundred ms; if none arrives within the grace window the clip is frozen and we
+  // surface the tap-to-play banner. Gating on visibility is essential: mobile browsers
+  // don't autoplay OFF-screen clips even when Low Power Mode is OFF, so an on-load-only
+  // timer flagged them as frozen and showed the banner with no Low Power Mode at all.
+  const armDetection = useCallback(() => {
+    if (
+      forced ||
+      timerRef.current ||
+      !loadedRef.current ||
+      !intersectingRef.current ||
+      playingRef.current
+    )
+      return
+    timerRef.current = window.setTimeout(() => {
+      timerRef.current = 0
+      if (!playingRef.current) setBlocked(true)
+    }, 1500)
+  }, [forced])
+
+  const disarmDetection = useCallback(() => {
+    window.clearTimeout(timerRef.current)
+    timerRef.current = 0
+  }, [])
+
+  // The player frame finished loading. Subscribe (harmless if already unsolicited),
+  // warm the SDK, and arm detection (fires only if the clip is also in view).
   const onIframeLoad = () => {
     // Warm the SDK now (memoised, shared) so it's ready long before the banner shows
     // and the user can press — avoids the cold-load race where play() fires after the
@@ -237,11 +265,34 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
     if (forced) return
     post('addEventListener', 'play')
     post('addEventListener', 'playProgress')
-    window.clearTimeout(timerRef.current)
-    timerRef.current = window.setTimeout(() => {
-      if (!playingRef.current) setBlocked(true)
-    }, 1000)
+    loadedRef.current = true
+    armDetection()
   }
+
+  // Detection is viewport-gated: a clip only counts as "frozen" if it's actually
+  // on-screen (where a normal device WOULD autoplay) yet hasn't started. Off-screen
+  // clips are left alone — mobile legitimately defers their autoplay. Re-arms on enter,
+  // cancels on exit so a clip scrolled past before the grace elapses isn't misjudged.
+  useEffect(() => {
+    if (forced || !videoId) return
+    const el = iframeRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(
+      (entries) => {
+        const e = entries[entries.length - 1]
+        if (!e) return
+        intersectingRef.current = e.isIntersecting
+        if (e.isIntersecting) armDetection()
+        else disarmDetection()
+      },
+      { threshold: 0.25 },
+    )
+    io.observe(el)
+    return () => {
+      io.disconnect()
+      disarmDetection()
+    }
+  }, [forced, videoId, armDetection, disarmDetection])
 
   if (!videoId) {
     return (
