@@ -83,70 +83,56 @@ const FOUNDERS_PHOTO: string = '/People - Photos/Old 2.png'
 const PHOTOS = [1, 2, 3, 4, 5, 6, 7]
 function PhotoMarquee() {
   const photos = PHOTOS
+  // 4 identical copies so the modulo wrap always has content on both sides.
   const repeated = [...photos, ...photos, ...photos, ...photos]
   const scrollerRef = useRef<HTMLDivElement>(null)
-  const drag = useRef({ active: false, startX: 0, startScroll: 0 })
-  const frac = useRef(0)
-  // Timestamp of the last touch interaction — pause the auto-advance for a beat
-  // after any touch so the native swipe + its momentum aren't fought by it.
-  const lastTouch = useRef(0)
+  const trackRef = useRef<HTMLDivElement>(null)
+  // `offset` = how far the track is shifted left, in px (kept within [0, oneSet)).
+  // Driven by a CSS transform — sub-pixel and GPU-smooth — instead of scrollLeft,
+  // which Safari rounds to integers; that rounding caused the once-per-loop jump.
+  const offset = useRef(0)
+  const oneSet = useRef(0) // exact width of ONE copy (sub-pixel)
+  const drag = useRef({ active: false, pending: false, startX: 0, startY: 0, startOffset: 0 })
+  // Pause auto-advance briefly after a drag so it doesn't fight the gesture.
+  const pauseUntil = useRef(0)
   const SPEED = 70 // px per second
 
-  // Keep scrollLeft inside the 2nd copy's window [oneSet, 2·oneSet). Because the
-  // 4 copies are identical, snapping by ±oneSet is visually seamless and gives an
-  // infinite loop in BOTH directions — crucially for native touch scroll, which
-  // clamps at 0 and otherwise hits a hard wall at the start (can't swipe back to
-  // the last photos). Shared by mouse-drag, auto-scroll, and the scroll event.
-  const wrap = useCallback(() => {
-    const el = scrollerRef.current
-    if (!el) return
-    // Exact width of ONE copy, measured as the offset of the 2nd copy's first
-    // item. scrollWidth/4 rounds sub-pixel item widths, so it drifted a few px
-    // and showed a small jump once per loop. Measuring the real stride from the
-    // laid-out positions keeps the wrap seamless (mirrors FacesGallery).
-    const kids = (el.firstElementChild as HTMLElement | null)?.children
+  // Exact period = distance between copy 1's first item and copy 2's first item,
+  // measured sub-pixel from laid-out rects so the loop is perfectly seamless.
+  const measure = useCallback(() => {
+    const track = trackRef.current
+    if (!track) return
+    const kids = track.children
     const n = PHOTOS.length
-    const oneSet =
-      kids && kids.length > n
-        ? (kids[n] as HTMLElement).offsetLeft - (kids[0] as HTMLElement).offsetLeft
-        : el.scrollWidth / 4
-    if (oneSet <= 0) return
-    if (el.scrollLeft < oneSet) el.scrollLeft += oneSet
-    else if (el.scrollLeft >= oneSet * 2) el.scrollLeft -= oneSet
+    if (kids.length > n) {
+      const a = (kids[0] as HTMLElement).getBoundingClientRect().left
+      const b = (kids[n] as HTMLElement).getBoundingClientRect().left
+      if (b - a > 0) oneSet.current = b - a
+    }
+  }, [])
+
+  const apply = useCallback(() => {
+    const track = trackRef.current
+    if (!track) return
+    const one = oneSet.current
+    if (one > 0) offset.current = ((offset.current % one) + one) % one
+    track.style.transform = `translate3d(${-offset.current}px, 0, 0)`
   }, [])
 
   useEffect(() => {
-    const el = scrollerRef.current
-    if (!el) return
+    measure()
+    const t = setTimeout(measure, 200) // re-measure once images/layout settle
+    const onResize = () => measure()
+    window.addEventListener('resize', onResize)
     let raf = 0
     let last = 0
-    // Start one set in so there's a full copy to the LEFT to scroll back into.
-    const recenter = () => {
-      const kids = (el.firstElementChild as HTMLElement | null)?.children
-      const n = PHOTOS.length
-      const oneSet =
-        kids && kids.length > n
-          ? (kids[n] as HTMLElement).offsetLeft - (kids[0] as HTMLElement).offsetLeft
-          : el.scrollWidth / 4
-      if (oneSet > 0 && el.scrollLeft < 1) el.scrollLeft = oneSet
-    }
-    recenter()
-    const t = setTimeout(recenter, 150) // retry once images have measured
-    el.addEventListener('scroll', wrap, { passive: true })
     const tick = (now: number) => {
       if (!last) last = now
       const dt = (now - last) / 1000
       last = now
-      if (!drag.current.active && now - lastTouch.current > 1000) {
-        // Accumulate fractional pixels and only add whole-pixel steps — Safari/
-        // Firefox round scrollLeft to integers, so sub-pixel increments are lost.
-        frac.current += SPEED * dt
-        const step = Math.floor(frac.current)
-        if (step > 0) {
-          frac.current -= step
-          el.scrollLeft += step
-          wrap()
-        }
+      if (!drag.current.active && now >= pauseUntil.current) {
+        offset.current += SPEED * dt
+        apply()
       }
       raf = requestAnimationFrame(tick)
     }
@@ -154,30 +140,51 @@ function PhotoMarquee() {
     return () => {
       cancelAnimationFrame(raf)
       clearTimeout(t)
-      el.removeEventListener('scroll', wrap)
+      window.removeEventListener('resize', onResize)
     }
-  }, [wrap])
+  }, [measure, apply])
 
+  // Pointer drag for ALL input types (mouse, touch, pen). Intent is decided on the
+  // first move: a mostly-horizontal move starts the drag (and captures the pointer);
+  // a mostly-vertical move is abandoned so the vertical slide-deck nav still works.
+  // touch-action: pan-y reserves vertical for the browser/deck and routes horizontal
+  // gestures to us — so iPad touch drives the strip (native overflow scroll here was
+  // being swallowed by the deck and never moved it).
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.pointerType !== 'mouse') return
-    const el = scrollerRef.current
-    if (!el) return
-    drag.current = { active: true, startX: e.clientX, startScroll: el.scrollLeft }
-    el.setPointerCapture(e.pointerId)
+    drag.current = {
+      active: false,
+      pending: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      startOffset: offset.current,
+    }
   }
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!drag.current.active) return
-    const el = scrollerRef.current
-    if (!el) return
-    el.scrollLeft = drag.current.startScroll - (e.clientX - drag.current.startX)
-    wrap()
+    const d = drag.current
+    if (d.active) {
+      offset.current = d.startOffset - (e.clientX - d.startX)
+      apply()
+      pauseUntil.current = performance.now() + 600
+      return
+    }
+    if (!d.pending) return
+    const dx = e.clientX - d.startX
+    const dy = e.clientY - d.startY
+    if (Math.abs(dx) > 6 && Math.abs(dx) >= Math.abs(dy)) {
+      d.active = true
+      scrollerRef.current?.setPointerCapture?.(e.pointerId)
+    } else if (Math.abs(dy) > 6) {
+      d.pending = false // vertical intent → let the deck / page handle it
+    }
   }
   const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!drag.current.active) return
+    if (drag.current.active) {
+      scrollerRef.current?.releasePointerCapture?.(e.pointerId)
+      pauseUntil.current = performance.now() + 600
+    }
     drag.current.active = false
-    scrollerRef.current?.releasePointerCapture?.(e.pointerId)
+    drag.current.pending = false
   }
-  const onTouch = () => { lastTouch.current = performance.now() }
 
   if (photos.length === 0) return null
 
@@ -188,14 +195,10 @@ function PhotoMarquee() {
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
-      onPointerLeave={endDrag}
       onDragStart={(e) => e.preventDefault()}
-      onTouchStart={onTouch}
-      onTouchMove={onTouch}
-      onTouchEnd={onTouch}
-      className="flex h-[44dvh] w-full shrink-0 cursor-grab touch-pan-x select-none overflow-x-auto [scrollbar-width:none] [@media(max-height:820px)]:h-[38dvh] active:cursor-grabbing [&::-webkit-scrollbar]:hidden"
+      className="relative h-[44dvh] w-full shrink-0 cursor-grab touch-pan-y select-none overflow-hidden [@media(max-height:820px)]:h-[38dvh] active:cursor-grabbing"
     >
-      <div className="flex h-full w-max">
+      <div ref={trackRef} className="flex h-full w-max will-change-transform">
         {repeated.map((n, i) => (
           <div key={i} className="group relative h-full aspect-[1286/1500] shrink-0">
             <Image
