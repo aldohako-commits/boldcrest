@@ -5,13 +5,6 @@ import Image from 'next/image'
 import { urlFor } from '@/sanity/lib/image'
 import { sanityImageLoader } from '@/sanity/lib/loader'
 import VimeoEmbed from '@/components/VimeoEmbed'
-import {
-  allBlockedReady,
-  blockedCount,
-  debugState,
-  playAll,
-  subscribe,
-} from '@/components/vimeoPlayAll'
 import { useLenis } from '@/components/LenisProvider'
 
 interface VideoMedia {
@@ -226,23 +219,6 @@ export default function ContentStack({
   // between the portfolio's right edge and the screen edge (equal black bars either
   // side). Never shifts right, so wide layouts are untouched.
   const [railShiftX, setRailShiftX] = useState(0)
-  // Low Power Mode banner: shown while ≥1 video on the page is frozen (autoplay
-  // blocked). Pressing it plays them all; the portfolio then slides up over it.
-  const [videosBlocked, setVideosBlocked] = useState(false)
-  // True once every frozen clip's player is ready: the button stops spinning and
-  // becomes pressable, so one tap reaches them all instantly (works for long
-  // portfolios with many iframes — the spinner just lasts until they're all loaded).
-  const [videosReady, setVideosReady] = useState(false)
-  const [videosDismissed, setVideosDismissed] = useState(false)
-  // `?lpm` in the URL is a TEST flag: it force-shows the banner (no real Low Power
-  // Mode needed) so the reveal animation/sizing can be checked on a real iPad/phone.
-  // Pressing dismisses it for good — reload to replay. Set after mount to avoid a
-  // hydration mismatch.
-  const [forcedTest, setForcedTest] = useState(false)
-  // `?lpmdebug` shows a tiny on-screen panel of the live Low Power Mode state
-  // (clip/blocked/ready counts) so real-device behavior can be diagnosed.
-  const [lpmDebug, setLpmDebug] = useState(false)
-  const [dbg, setDbg] = useState({ players: 0, blocked: 0, ready: 0 })
   // Latest per-slide native aspects, read by the width effect on resize.
   const aspectsRef = useRef<number[]>([])
   aspectsRef.current = items.map((it) => it.aspect)
@@ -469,45 +445,6 @@ export default function ContentStack({
     }
   }, [total, computeState])
 
-  // Track whether any ON-SCREEN video is frozen (drives the banner) and whether those
-  // frozen clips are ready to play (drives the spinner → play swap). Detection is
-  // viewport-gated in VimeoEmbed, so `blockedCount` is just the frozen clips the user
-  // can see; the banner shows whenever that's > 0 and never relies on a page-wide
-  // "did anything play" guess. The "ready" safety net is a STALL timeout that resets
-  // on every loading event, so a slow clip keeps the spinner up but can't hang it
-  // forever (fires once loading goes quiet).
-  useEffect(() => {
-    let stallTimer = 0
-    const update = () => {
-      setDbg(debugState())
-      const blocked = blockedCount() > 0
-      setVideosBlocked(blocked)
-      if (allBlockedReady()) {
-        setVideosReady(true)
-        window.clearTimeout(stallTimer)
-        stallTimer = 0
-        return
-      }
-      if (blocked) {
-        window.clearTimeout(stallTimer)
-        stallTimer = window.setTimeout(() => setVideosReady(true), 6000)
-      }
-    }
-    update()
-    const unsub = subscribe(update)
-    return () => {
-      unsub()
-      window.clearTimeout(stallTimer)
-    }
-  }, [])
-
-  // Read the `?lpm` test and `?lpmdebug` flags once mounted.
-  useEffect(() => {
-    const q = new URLSearchParams(window.location.search)
-    setForcedTest(q.has('lpm'))
-    setLpmDebug(q.has('lpmdebug'))
-  }, [])
-
   // ≥960px touch (iPad): the rail keeps a narrow 32px reservation in flow (so the
   // portfolio doesn't move) while its wider visual column is floated into the right
   // gutter via the SAME sticky-centre + transform path as desktop (see the width
@@ -608,35 +545,8 @@ export default function ContentStack({
 
   if (total === 0) return null
 
-  // Banner is open while videos are frozen and the user hasn't pressed play yet.
-  // While open, the row gets a small top gap; pressing play closes it (portfolio
-  // slides up) and fades the banner. LPM_GAP is how far the portfolio travels (kept
-  // small so the media stays close to the text above); LPM_SAFE is the clear space
-  // left between the banner's bottom and the media top, so the banner sits fully
-  // above the media and is never cropped by it.
-  const LPM_GAP = 40
-  const LPM_SAFE = 12
-  // Banner is engaged when a real clip is frozen OR when the `?lpm` test flag is on.
-  const bannerActive = forcedTest || videosBlocked
-  const bannerOpen = bannerActive && !videosDismissed
-
   return (
-    <div
-      className="relative flex justify-center gap-[var(--space-2xl)] transition-[padding-top] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
-      style={{ paddingTop: bannerOpen ? LPM_GAP : 0 }}
-    >
-      {/* ?lpmdebug — live Low Power Mode state, fixed to the screen corner. */}
-      {lpmDebug && (
-        <div
-          className="fixed bottom-2 left-2 z-[9999] rounded-md bg-black/85 px-3 py-2 font-mono text-[11px] leading-[1.5] text-white"
-          style={{ pointerEvents: 'none' }}
-        >
-          clips:{dbg.players} blocked:{dbg.blocked} ready:{dbg.ready}
-          <br />
-          banner:{bannerActive ? 'YES' : 'no'} ready:{videosReady ? 'YES' : 'no'}{' '}
-          dismissed:{videosDismissed ? 'YES' : 'no'}
-        </div>
-      )}
+    <div className="relative flex justify-center gap-[var(--space-2xl)]">
       {/* Invisible left spacer mirroring the navigator so the media stays centred.
           Matches the rail width per device (narrower on touch). */}
       {total > 1 && (
@@ -648,55 +558,6 @@ export default function ContentStack({
       )}
       {/* Media stack — centred (capped width), the navigator sits to its right */}
       <div ref={mediaStackRef} className="relative flex w-full min-w-0 max-w-[1200px] flex-col">
-        {/* Low Power Mode banner — sits fully ABOVE the media at the top-right, the
-            play button's right edge flush with the media's right edge. Pressing it
-            plays every clip and the portfolio slides up as the banner fades. */}
-        {bannerActive && (
-          <button
-            type="button"
-            onClick={() => {
-              if (!videosReady) return // still loading — not pressable yet
-              playAll()
-              setVideosDismissed(true)
-            }}
-            aria-label="Play all videos for the full experience"
-            aria-busy={!videosReady}
-            style={{
-              top: 0,
-              // Lift the banner fully above the media top, leaving LPM_SAFE px of
-              // clear space below it (height-independent — the text may wrap).
-              transform: `translateY(calc(-100% - ${LPM_SAFE}px))`,
-              opacity: videosDismissed ? 0 : 1,
-            }}
-            className={`group absolute right-0 flex items-center gap-4 transition-[opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-              videosDismissed || !videosReady ? 'pointer-events-none' : ''
-            }`}
-          >
-            <span className="flex flex-col items-end gap-1 text-right leading-none">
-              <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-white/45">
-                Low Power Mode detected
-              </span>
-              <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-white/90">
-                {videosReady ? 'Press play for full experience' : 'Preparing videos…'}
-              </span>
-            </span>
-            {/* Circle matches the header's minimised "Start a Project" + button:
-                #1d1d1d fill (not pure black), subtle white border. Shows a spinner
-                until every clip's player is ready, then becomes a pressable play. */}
-            <span className="grid h-[2.2rem] w-[2.2rem] shrink-0 place-items-center rounded-full border border-white/35 bg-[#1d1d1d] text-white/85 transition-colors group-hover:text-white">
-              {videosReady ? (
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden className="translate-x-[1px]">
-                  <path d="M5 3.5v9l7-4.5-7-4.5z" />
-                </svg>
-              ) : (
-                <span
-                  aria-hidden
-                  className="h-[15px] w-[15px] animate-spin rounded-full border-2 border-white/25 border-t-white/90"
-                />
-              )}
-            </span>
-          </button>
-        )}
         {items.map((item, i) => (
           <div
             key={item.key}
