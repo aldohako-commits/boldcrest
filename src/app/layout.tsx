@@ -128,6 +128,12 @@ export default function RootLayout({
               '@id': 'https://www.boldcrest.com/#organization',
               name: 'BoldCrest',
               url: 'https://www.boldcrest.com',
+              // Square brand mark (white shield on solid black) — the image
+              // Google uses for the Knowledge Graph entity logo shown in the
+              // knowledge panel and address-bar autocomplete. Must be square
+              // with a solid background, which android-chrome-512 already is.
+              logo: 'https://www.boldcrest.com/android-chrome-512x512.png',
+              image: 'https://www.boldcrest.com/android-chrome-512x512.png',
               email: 'info@boldcrest.com',
               description: 'Creative agency offering brand development, photography, video, animation, and communication. 300+ projects, 30+ brands, 7+ years.',
               address: { '@type': 'PostalAddress', addressLocality: 'Tirana', addressCountry: 'AL' },
