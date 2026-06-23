@@ -5,6 +5,7 @@ import {
   blockedCount,
   registerPlayer,
   setBlocked as setBlockedInStore,
+  setReady as setReadyInStore,
   subscribe,
   unregisterPlayer,
 } from './vimeoPlayAll'
@@ -35,6 +36,7 @@ const PLAY_EVENTS = new Set([
 type VimeoPlayer = {
   play: () => Promise<void>
   setMuted: (m: boolean) => Promise<boolean>
+  ready: () => Promise<void>
 }
 type VimeoPlayerCtor = new (el: HTMLIFrameElement) => VimeoPlayer
 let sdkPromise: Promise<VimeoPlayerCtor> | null = null
@@ -156,13 +158,22 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
     loadVimeoSDK()
       .then((Player) => {
         if (cancelled || playerRef.current || !iframeRef.current) return
-        playerRef.current = new Player(iframeRef.current)
+        const player = new Player(iframeRef.current)
+        playerRef.current = player
+        // Mark this clip ready once its player has initialised — the banner waits
+        // for ALL clips before it stops spinning and becomes pressable.
+        player
+          .ready()
+          .then(() => {
+            if (!cancelled) setReadyInStore(id, true)
+          })
+          .catch(() => {})
       })
       .catch(() => {})
     return () => {
       cancelled = true
     }
-  }, [blocked, forced, anyBlocked])
+  }, [blocked, forced, anyBlocked, id])
 
   // Start THIS clip. Driven by the shared "play all" button: one tap fires every
   // registered clip's play() synchronously, so the single user gesture carries to

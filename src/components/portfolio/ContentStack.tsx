@@ -5,7 +5,12 @@ import Image from 'next/image'
 import { urlFor } from '@/sanity/lib/image'
 import { sanityImageLoader } from '@/sanity/lib/loader'
 import VimeoEmbed from '@/components/VimeoEmbed'
-import { blockedCount, playAll, subscribe } from '@/components/vimeoPlayAll'
+import {
+  allBlockedReady,
+  blockedCount,
+  playAll,
+  subscribe,
+} from '@/components/vimeoPlayAll'
 import { useLenis } from '@/components/LenisProvider'
 
 interface VideoMedia {
@@ -223,6 +228,10 @@ export default function ContentStack({
   // Low Power Mode banner: shown while ≥1 video on the page is frozen (autoplay
   // blocked). Pressing it plays them all; the portfolio then slides up over it.
   const [videosBlocked, setVideosBlocked] = useState(false)
+  // True once every frozen clip's player is ready: the button stops spinning and
+  // becomes pressable, so one tap reaches them all instantly (works for long
+  // portfolios with many iframes — the spinner just lasts until they're all loaded).
+  const [videosReady, setVideosReady] = useState(false)
   const [videosDismissed, setVideosDismissed] = useState(false)
   // `?lpm` in the URL is a TEST flag: it force-shows the banner (no real Low Power
   // Mode needed) so the reveal animation/sizing can be checked on a real iPad/phone.
@@ -455,11 +464,25 @@ export default function ContentStack({
     }
   }, [total, computeState])
 
-  // Track whether any video on the page is frozen (drives the Low Power banner).
+  // Track whether any video is frozen (drives the banner) and whether all frozen
+  // clips are ready to play (drives the spinner → play swap). A safety timeout flips
+  // ready after a while so a clip that never initialises can't spin forever.
   useEffect(() => {
-    const update = () => setVideosBlocked(blockedCount() > 0)
+    let readyTimer = 0
+    const update = () => {
+      const anyBlocked = blockedCount() > 0
+      setVideosBlocked(anyBlocked)
+      if (allBlockedReady()) setVideosReady(true)
+      if (anyBlocked && !readyTimer) {
+        readyTimer = window.setTimeout(() => setVideosReady(true), 8000)
+      }
+    }
     update()
-    return subscribe(update)
+    const unsub = subscribe(update)
+    return () => {
+      unsub()
+      window.clearTimeout(readyTimer)
+    }
   }, [])
 
   // Read the `?lpm` test flag once mounted.
@@ -602,10 +625,12 @@ export default function ContentStack({
           <button
             type="button"
             onClick={() => {
+              if (!videosReady) return // still loading — not pressable yet
               playAll()
               setVideosDismissed(true)
             }}
             aria-label="Play all videos for the full experience"
+            aria-busy={!videosReady}
             style={{
               top: 0,
               // Lift the banner fully above the media top, leaving LPM_SAFE px of
@@ -614,7 +639,7 @@ export default function ContentStack({
               opacity: videosDismissed ? 0 : 1,
             }}
             className={`group absolute right-0 flex items-center gap-4 transition-[opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-              videosDismissed ? 'pointer-events-none' : ''
+              videosDismissed || !videosReady ? 'pointer-events-none' : ''
             }`}
           >
             <span className="flex flex-col items-end gap-1 text-right leading-none">
@@ -622,15 +647,23 @@ export default function ContentStack({
                 Low Power Mode detected
               </span>
               <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-white/90">
-                Press play for full experience
+                {videosReady ? 'Press play for full experience' : 'Preparing videos…'}
               </span>
             </span>
             {/* Circle matches the header's minimised "Start a Project" + button:
-                #1d1d1d fill (not pure black), subtle white border. */}
+                #1d1d1d fill (not pure black), subtle white border. Shows a spinner
+                until every clip's player is ready, then becomes a pressable play. */}
             <span className="grid h-[2.2rem] w-[2.2rem] shrink-0 place-items-center rounded-full border border-white/35 bg-[#1d1d1d] text-white/85 transition-colors group-hover:text-white">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden className="translate-x-[1px]">
-                <path d="M5 3.5v9l7-4.5-7-4.5z" />
-              </svg>
+              {videosReady ? (
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden className="translate-x-[1px]">
+                  <path d="M5 3.5v9l7-4.5-7-4.5z" />
+                </svg>
+              ) : (
+                <span
+                  aria-hidden
+                  className="h-[15px] w-[15px] animate-spin rounded-full border-2 border-white/25 border-t-white/90"
+                />
+              )}
             </span>
           </button>
         )}

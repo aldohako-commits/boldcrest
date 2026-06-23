@@ -8,6 +8,7 @@ type PlayFn = () => void
 
 const players = new Map<string, PlayFn>()
 const blocked = new Set<string>()
+const ready = new Set<string>() // clips whose player is attached + initialised
 const subscribers = new Set<() => void>()
 
 function notify() {
@@ -20,7 +21,9 @@ export function registerPlayer(id: string, play: PlayFn) {
 
 export function unregisterPlayer(id: string) {
   players.delete(id)
-  if (blocked.delete(id)) notify()
+  let changed = blocked.delete(id)
+  changed = ready.delete(id) || changed
+  if (changed) notify()
 }
 
 export function setBlocked(id: string, isBlocked: boolean) {
@@ -30,8 +33,23 @@ export function setBlocked(id: string, isBlocked: boolean) {
   if (blocked.has(id) !== had) notify()
 }
 
+export function setReady(id: string, isReady: boolean) {
+  const had = ready.has(id)
+  if (isReady) ready.add(id)
+  else ready.delete(id)
+  if (ready.has(id) !== had) notify()
+}
+
 export function blockedCount(): number {
   return blocked.size
+}
+
+// True once EVERY frozen clip has its player ready to play — so the button can
+// stop spinning and become pressable (one tap then reaches them all instantly).
+export function allBlockedReady(): boolean {
+  if (blocked.size === 0) return false
+  for (const id of blocked) if (!ready.has(id)) return false
+  return true
 }
 
 export function playAll() {
