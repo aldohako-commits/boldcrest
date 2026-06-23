@@ -931,13 +931,13 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
 
             <div className="mx-auto mt-[var(--space-xl)] flex max-w-[640px] flex-col gap-[var(--space-md)]">
               <FadeUp delay={0.1} active={active(1)}>
-                <p className="text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.85]">
+                <p className="text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.6]">
                   It means we do not stand at the bottom and point to the peak. We climb with you. We enter the work fully. The meetings, the pressure, the decisions, the parts no one sees. We learn how your business moves before we decide how your brand should move.
                 </p>
               </FadeUp>
 
               <FadeUp delay={0.15} active={active(1)}>
-                <p className="text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.85]">
+                <p className="text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.6]">
                   We do not disappear after the delivery. We stay close, challenge what needs to be challenged, and take responsibility for the path we recommend. Because real partnership is not agreement at every step. It is trust, honesty, endurance, and the will to reach the top together.
                 </p>
               </FadeUp>
@@ -994,19 +994,19 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
                 </FadeUp>
 
                 <FadeUp delay={0.1} active={active(2)}>
-                  <p className="text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.85]">
+                  <p className="text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.6]">
                     BoldCrest began where two different strengths met. Xhulio brought the visual discipline, the instinct for form, and the ability to turn ideas into images with character. Aldo brought the relationships, the conversations, and the trust needed to turn one project into a long term partnership.
                   </p>
                 </FadeUp>
 
                 <FadeUp delay={0.15} active={active(2)}>
-                  <p className="text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.85]">
+                  <p className="text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.6]">
                     The equation was simple, but powerful. Creative vision on one side. Business understanding on the other. Together, they became the foundation for what BoldCrest would grow into. We built our first team from the same university halls we were still walking through. We were 22. We did not have the luxury of waiting until everything looked perfect, so we started with what we had, a clear instinct, a strong work ethic, and the belief that the market was ready for something sharper.
                   </p>
                 </FadeUp>
 
                 <FadeUp delay={0.2} active={active(2)}>
-                  <p className="text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.85]">
+                  <p className="text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.6]">
                     At the time, social media was often treated as a place to post. We treated it as a place to think, build, and create. Not just content. Ideas.
                   </p>
                 </FadeUp>
@@ -1032,13 +1032,13 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
                 <BigStatement text="Every person has a glitch in their system." active={active(3)} />
 
                 <FadeUp delay={0.1} active={active(3)}>
-                  <p className="mt-[var(--space-lg)] text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.85]">
+                  <p className="mt-[var(--space-lg)] text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.6]">
                     Something slightly off, slightly unusual, slightly theirs. And that&apos;s exactly what makes them belong here. We are different people who are somehow made of the same thing.
                   </p>
                 </FadeUp>
 
                 <FadeUp delay={0.15} active={active(3)}>
-                  <p className="mt-[var(--space-md)] text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.85]">
+                  <p className="mt-[var(--space-md)] text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.6]">
                     We bully each other. We cook together. We have traditions that make no sense to anyone outside this room. And when someone is sick, we show up.
                   </p>
                 </FadeUp>
@@ -1073,7 +1073,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
               <BigStatement text="The work we're most proud of, most people will never know we made." active={active(4)} className="text-center" />
 
               <FadeUp delay={0.15} active={active(4)}>
-                <p className="mt-[var(--space-lg)] text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.85]">
+                <p className="mt-[var(--space-lg)] text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.6]">
                   That&apos;s not false modesty. That&apos;s the goal. When a brand becomes so real, so lived-in, so theirs; when people carry it, wear it, post it, and believe in it without a second thought; the agency behind it disappears. And it should.
                 </p>
               </FadeUp>
@@ -1109,7 +1109,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
               <BigStatement text="If you've read this far, we hope you felt something." active={active(5)} />
 
               <FadeUp delay={0.2} active={active(5)}>
-                <p className="mt-[var(--space-lg)] max-w-[600px] text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.85]">
+                <p className="mt-[var(--space-lg)] max-w-[600px] text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.6]">
                   A small warmth. A little confidence. Maybe a smile at the chaos of two kids building something real in a country still figuring out what &ldquo;brand&rdquo; means.
                 </p>
               </FadeUp>
