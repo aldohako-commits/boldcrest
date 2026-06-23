@@ -130,10 +130,22 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
     }
   }, [videoId, forced])
 
-  // Preload the SDK as soon as the overlay shows, so the tap handler can call
-  // play() synchronously (the load is no longer in the gesture's critical path).
+  // As soon as a clip is frozen (or in ?lpm test mode), load the SDK AND attach a
+  // Player up front. Creating it lazily on the first tap defers play() until the
+  // player's async handshake finishes — past the gesture window — so iOS blocks it.
+  // Pre-attached, the tap's play() fires immediately, inside the user gesture.
   useEffect(() => {
-    if (blocked && !forced) loadVimeoSDK().catch(() => {})
+    if (!blocked && !forced) return
+    let cancelled = false
+    loadVimeoSDK()
+      .then((Player) => {
+        if (cancelled || playerRef.current || !iframeRef.current) return
+        playerRef.current = new Player(iframeRef.current)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
   }, [blocked, forced])
 
   // Start THIS clip. Driven by the shared "play all" button: one tap fires every
@@ -144,23 +156,32 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
   const playSelf = useCallback(() => {
     const iframe = iframeRef.current
     if (!iframe) return
-    const start = (Player: VimeoPlayerCtor) => {
+    const run = (player: VimeoPlayer) => {
+      player.setMuted(true).catch(() => {})
+      player
+        .play()
+        .then(clearOverlay)
+        .catch(() => post('play')) // last-resort nudge
+    }
+    // Player was attached up front by the effect above — play immediately so the
+    // call stays inside the user gesture.
+    if (playerRef.current) {
+      run(playerRef.current)
+      return
+    }
+    // Fallback: not attached yet — create then play (may miss the gesture window).
+    const Player = (
+      window as unknown as { Vimeo?: { Player?: VimeoPlayerCtor } }
+    ).Vimeo?.Player
+    const start = (P: VimeoPlayerCtor) => {
       try {
-        if (!playerRef.current) playerRef.current = new Player(iframe)
-        const player = playerRef.current
-        player.setMuted(true).catch(() => {})
-        player
-          .play()
-          .then(clearOverlay)
-          .catch(() => post('play')) // last-resort nudge
+        playerRef.current = new P(iframe)
+        run(playerRef.current)
       } catch {
         post('play')
       }
     }
-    const Player = (
-      window as unknown as { Vimeo?: { Player?: VimeoPlayerCtor } }
-    ).Vimeo?.Player
-    if (Player) start(Player) // synchronous — best for preserving the iOS gesture
+    if (Player) start(Player)
     else loadVimeoSDK().then(start).catch(() => post('play'))
     // clearOverlay/post read only refs + stable setters, so no extra deps needed.
   }, [])
