@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { urlFor } from '@/sanity/lib/image'
 import { sanityImageLoader } from '@/sanity/lib/loader'
 import VimeoEmbed from '@/components/VimeoEmbed'
-import VideoPlayAllButton from '@/components/VideoPlayAllButton'
+import { blockedCount, playAll, subscribe } from '@/components/vimeoPlayAll'
 import { useLenis } from '@/components/LenisProvider'
 
 interface VideoMedia {
@@ -220,6 +220,10 @@ export default function ContentStack({
   // between the portfolio's right edge and the screen edge (equal black bars either
   // side). Never shifts right, so wide layouts are untouched.
   const [railShiftX, setRailShiftX] = useState(0)
+  // Low Power Mode banner: shown while ≥1 video on the page is frozen (autoplay
+  // blocked). Pressing it plays them all; the portfolio then slides up over it.
+  const [videosBlocked, setVideosBlocked] = useState(false)
+  const [videosDismissed, setVideosDismissed] = useState(false)
   // Latest per-slide native aspects, read by the width effect on resize.
   const aspectsRef = useRef<number[]>([])
   aspectsRef.current = items.map((it) => it.aspect)
@@ -446,6 +450,13 @@ export default function ContentStack({
     }
   }, [total, computeState])
 
+  // Track whether any video on the page is frozen (drives the Low Power banner).
+  useEffect(() => {
+    const update = () => setVideosBlocked(blockedCount() > 0)
+    update()
+    return subscribe(update)
+  }, [])
+
   // ≥960px touch (iPad): the rail keeps a narrow 32px reservation in flow (so the
   // portfolio doesn't move) while its wider visual column is floated into the right
   // gutter via the SAME sticky-centre + transform path as desktop (see the width
@@ -546,8 +557,20 @@ export default function ContentStack({
 
   if (total === 0) return null
 
+  // Banner is open while videos are frozen and the user hasn't pressed play yet.
+  // While open, the row gets a top gap the banner lives in; pressing play closes
+  // the gap (portfolio slides up) and fades the banner — it ends hidden behind the
+  // rising media. LPM_GAP is how far the portfolio travels; LPM_TUCK is how much of
+  // the banner tucks behind the first slide's top.
+  const LPM_GAP = 76
+  const LPM_TUCK = 16
+  const bannerOpen = videosBlocked && !videosDismissed
+
   return (
-    <div className="flex justify-center gap-[var(--space-2xl)]">
+    <div
+      className="relative flex justify-center gap-[var(--space-2xl)] transition-[padding-top] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+      style={{ paddingTop: bannerOpen ? LPM_GAP : 0 }}
+    >
       {/* Invisible left spacer mirroring the navigator so the media stays centred.
           Matches the rail width per device (narrower on touch). */}
       {total > 1 && (
@@ -558,7 +581,44 @@ export default function ContentStack({
         />
       )}
       {/* Media stack — centred (capped width), the navigator sits to its right */}
-      <div ref={mediaStackRef} className="flex w-full min-w-0 max-w-[1200px] flex-col">
+      <div ref={mediaStackRef} className="relative flex w-full min-w-0 max-w-[1200px] flex-col">
+        {/* Low Power Mode banner — top-right, tucked behind the first slide. Placed
+            BEFORE the slides so it paints behind them; the portfolio slides up and
+            covers it on press. */}
+        {videosBlocked && (
+          <button
+            type="button"
+            onClick={() => {
+              playAll()
+              setVideosDismissed(true)
+            }}
+            aria-label="Play all videos for the full experience"
+            style={{
+              top: 0,
+              // Lift the banner by its own height so its bottom tucks LPM_TUCK px
+              // behind the first slide's top — height-independent (text may wrap).
+              transform: `translateY(calc(-100% + ${LPM_TUCK}px))`,
+              opacity: videosDismissed ? 0 : 1,
+            }}
+            className={`group absolute right-0 z-0 flex items-center gap-4 rounded-2xl border border-white/15 bg-black/60 py-2.5 pl-5 pr-2.5 backdrop-blur-md transition-[opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+              videosDismissed ? 'pointer-events-none' : ''
+            }`}
+          >
+            <span className="flex flex-col items-end gap-1 text-right leading-none">
+              <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-white/45">
+                Low Power Mode detected
+              </span>
+              <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-white/90">
+                Press play for full experience
+              </span>
+            </span>
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/45 text-white transition-colors group-hover:bg-white/10">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+                <path d="M5 3.5v9l7-4.5-7-4.5z" />
+              </svg>
+            </span>
+          </button>
+        )}
         {items.map((item, i) => (
           <div
             key={item.key}
@@ -650,10 +710,6 @@ export default function ContentStack({
         </nav>
         </div>
       )}
-
-      {/* One floating control that plays every frozen video at once (shown only when
-          autoplay was blocked — e.g. iOS Low Power Mode). */}
-      <VideoPlayAllButton />
     </div>
   )
 }
