@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { urlFor } from '@/sanity/lib/image'
 import { sanityImageLoader } from '@/sanity/lib/loader'
@@ -437,35 +437,11 @@ export default function ContentStack({
     }
   }, [total, computeState])
 
-  // TOUCH (iPad) layout: the rail is lifted out of the in-flow column and floated,
-  // fixed, into the right black gutter — horizontally centred between the portfolio's
-  // right edge and the screen edge, biased a touch left so it reads as centred. The
-  // in-flow column keeps its 32px reservation (wrapper + spacer below), so the
-  // portfolio media never moves. Gated to ≥960px so narrow portrait/phone touch keeps
-  // the previously-defined no-rail layout. Recomputed on resize / orientation change.
+  // ≥960px touch (iPad): the rail keeps a narrow 32px reservation in flow (so the
+  // portfolio doesn't move) while its wider visual column is floated into the right
+  // gutter via the SAME sticky-centre + transform path as desktop (see the width
+  // effect below). `isTouch` only gates that 32px reservation; it's set there.
   const [isTouch, setIsTouch] = useState(false)
-  const [railRight, setRailRight] = useState(0)
-  useEffect(() => {
-    const RAIL_W = 44 // visible touch rail width (matches the iPad reference scale)
-    const LEFT_BIAS = 8 // nudge left of dead-centre so it reads as visually centred
-    const measure = () => {
-      const on =
-        window.matchMedia('(pointer: coarse)').matches && window.innerWidth >= 960
-      setIsTouch(on)
-      const stack = mediaStackRef.current
-      if (on && stack) {
-        const gutter = window.innerWidth - stack.getBoundingClientRect().right
-        setRailRight(Math.max(8, gutter / 2 - RAIL_W / 2 + LEFT_BIAS))
-      }
-    }
-    measure()
-    const raf = requestAnimationFrame(measure) // re-measure once layout settles
-    window.addEventListener('resize', measure)
-    return () => {
-      cancelAnimationFrame(raf)
-      window.removeEventListener('resize', measure)
-    }
-  }, [total])
 
   // Resolve the rail width. Thumbnails are NEVER cropped or squashed — each keeps its
   // slide's native aspect, so its height is just width / aspect. The only lever we
@@ -473,62 +449,71 @@ export default function ContentStack({
   // natural column (Σ width/aspect + gaps) overflows, we reduce the width uniformly,
   // which scales every thumbnail down proportionally and preserves all aspects. When
   // it already fits, we use the full responsive base width — no shrinking.
+  const lastViewport = useRef({ w: 0, h: 0 })
   useEffect(() => {
     if (total <= 1) return
     const GAP = 3 // matches the rail's gap-[3px]; kept constant so spacing is uniform
     const MIN_W = 20
-    const compute = () => {
+    const compute = (force: boolean) => {
+      const iw = window.innerWidth
+      const ih = window.innerHeight
+      const coarse = window.matchMedia('(pointer: coarse)').matches && iw >= 960
+      // On TOUCH, ignore the small innerHeight jitter a mobile browser's toolbar emits
+      // while scrolling — it would otherwise re-scale the rail (and shift its centre)
+      // every time you change scroll direction. Width changes and big height changes
+      // (orientation / real resize) still recompute. Desktop innerHeight is stable
+      // during scroll, so it always recomputes — no width drift either way.
+      if (
+        !force &&
+        coarse &&
+        iw === lastViewport.current.w &&
+        Math.abs(ih - lastViewport.current.h) < 150
+      )
+        return
+      lastViewport.current = { w: iw, h: ih }
+      setIsTouch(coarse)
       const sumInv = aspectsRef.current.reduce(
         (s, a) => s + 1 / (a || FALLBACK_ASPECT),
         0,
       )
       const gaps = (total - 1) * GAP
-      const coarse =
-        window.matchMedia('(pointer: coarse)').matches &&
-        window.innerWidth >= 960
-      // Base (max) width + the safe vertical area, per layout.
+      // Base (max) rail width: a fixed reference scale on iPad, fluid on desktop.
       const base = coarse
         ? 44 // fixed iPad reference scale
-        : Math.min(72, Math.max(44, 0.032 * window.innerWidth)) // clamp(44,3.2vw,72)
-      const avail = coarse
-        ? window.innerHeight - 160 // 5rem top + 5rem bottom safe band
-        : window.innerHeight - 168 // 120px header offset + 48px safe bottom
+        : Math.min(72, Math.max(44, 0.032 * iw)) // clamp(44,3.2vw,72)
+      // Safe vertical band: 84px clear at top (≥ the 5rem header) + 84px at the bottom.
+      const avail = ih - 168
       const naturalH = base * sumInv + gaps
       const w =
         naturalH > avail && sumInv > 0
           ? Math.max(MIN_W, (avail - gaps) / sumInv)
           : base
       setRailW(w)
-      // Desktop only: derive the sticky `top` that pins the rail vertically centred.
-      // Height at the resolved width is Σ(w/aspect) + gaps; centring top = (vh − h)/2.
-      // Floored at 84px so it always clears the 5rem header. (Touch is fixed-band, so
-      // the sticky top is irrelevant there — leave it null.)
-      if (coarse) {
-        setRailTop(null)
-        setRailShiftX(0)
-      } else {
-        const navH = w * sumInv + gaps
-        setRailTop(Math.max(84, Math.round((window.innerHeight - navH) / 2)))
-        // Centre the rail in the gutter (portfolio right edge → screen edge) once the
-        // window is narrow enough that its natural position would crowd the edge. The
-        // natural left gap is the flex column-gap; the natural right gap is whatever is
-        // left to the screen edge. Shift left by half their difference so they match —
-        // clamped at 0 so wide screens keep the rail at its natural spot.
-        const stack = mediaStackRef.current
-        const row = stack?.parentElement
-        if (stack && row) {
-          const flexGap = parseFloat(getComputedStyle(row).columnGap) || 0
-          const gutter = window.innerWidth - stack.getBoundingClientRect().right
-          setRailShiftX(Math.min(0, Math.round((gutter - w) / 2 - flexGap)))
-        }
+      // Vertically centre the rail (floored at 84px so it clears the header). Desktop
+      // AND touch use this sticky `top`: the rail flows aligned with the portfolio top,
+      // pins centred while scrolling, then ends aligned with the portfolio bottom.
+      const navH = w * sumInv + gaps
+      setRailTop(Math.max(84, Math.round((ih - navH) / 2)))
+      // Horizontally place the rail in the right gutter (portfolio right edge → screen
+      // edge). Touch ALWAYS centres it there; desktop only slides left to centre once
+      // the window narrows (clamped at 0 so wide screens keep the natural near-media
+      // spot). The shift is a transform, so the portfolio never moves.
+      const stack = mediaStackRef.current
+      const row = stack?.parentElement
+      if (stack && row) {
+        const flexGap = parseFloat(getComputedStyle(row).columnGap) || 0
+        const gutter = iw - stack.getBoundingClientRect().right
+        const centred = Math.round((gutter - w) / 2 - flexGap)
+        setRailShiftX(coarse ? centred : Math.min(0, centred))
       }
     }
-    compute()
-    const raf = requestAnimationFrame(compute) // re-run once aspects/layout settle
-    window.addEventListener('resize', compute)
+    compute(true)
+    const raf = requestAnimationFrame(() => compute(true)) // re-measure after settle
+    const onResize = () => compute(false)
+    window.addEventListener('resize', onResize)
     return () => {
       cancelAnimationFrame(raf)
-      window.removeEventListener('resize', compute)
+      window.removeEventListener('resize', onResize)
     }
   }, [total])
 
@@ -589,21 +574,6 @@ export default function ContentStack({
         <div
           className="sticky top-[120px] hidden shrink-0 flex-col justify-start self-start min-[960px]:flex pointer-coarse:w-[32px]"
           style={railTop != null ? { top: `${railTop}px` } : undefined}
-        >
-        {/* TOUCH: a fixed centring layer floats the rail into the right gutter and
-            constrains it to a symmetric safe band — 5rem clear of the top menu pill
-            and 5rem off the bottom edge. `justify-center` centres the rail in that
-            band; if a long list wouldn't fit, the width effect narrows the rail so it
-            does (aspects preserved — no squashing). On desktop `display:contents`
-            makes this layer transparent so the rail keeps its original in-flow sticky
-            placement, untouched. */}
-        <div
-          className={
-            isTouch
-              ? 'fixed bottom-[5rem] top-[5rem] z-30 flex flex-col justify-center'
-              : 'contents'
-          }
-          style={isTouch ? ({ right: `${railRight}px` } as CSSProperties) : undefined}
         >
         <nav
           ref={railRef}
@@ -669,7 +639,6 @@ export default function ContentStack({
             )
           })}
         </nav>
-        </div>
         </div>
       )}
     </div>
