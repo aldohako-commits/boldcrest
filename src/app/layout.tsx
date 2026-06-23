@@ -71,16 +71,19 @@ export const metadata: Metadata = {
   // Tab icon: a single multi-size .ico (16/32/48), exactly like apple.com and
   // vercel.com. Deliberately NO svg favicon link — Safari's SVG-favicon support
   // is unreliable and, when it picks the svg <link> and fails to render it, it
-  // shows a blank white square instead of falling back to the .ico. The .ico is
-  // a transparent-cornered black circle so it reads as a clean badge in the tab.
-  // apple-touch (iOS), web manifest (Android/PWA) and the Safari pinned-tab mask
-  // round out the other platforms.
-  // The ?v=3 query busts Safari's notoriously sticky favicon cache: changing the
-  // icon URL makes browsers fetch the new circular icon instead of reusing the
-  // stale square one they cached from earlier. Bump this if the icon changes.
+  // shows a blank white square instead of falling back to the .ico.
+  // The .ico is a FULL-BLEED OPAQUE black square (white shield) — NOT a
+  // transparent-cornered circle. On iPad Safari tabs a transparent icon gets a
+  // white backplate drawn behind it, and the transparent corners reveal it as an
+  // ugly white box around the mark. Opaque corners = no backplate; on the dark tab
+  // the black blends and only the white shield shows (clean, like other brands).
+  // apple-touch (iOS home screen), manifest (Android/PWA) and the pinned-tab mask
+  // are unchanged.
+  // ?v busts Safari's notoriously sticky favicon cache — bump it whenever the icon
+  // bytes change so browsers refetch instead of reusing the stale cached one.
   icons: {
-    icon: { url: '/favicon.ico?v=3', sizes: '16x16 32x32 48x48' },
-    shortcut: '/favicon.ico?v=3',
+    icon: { url: '/favicon.ico?v=4', sizes: '16x16 32x32 48x48' },
+    shortcut: '/favicon.ico?v=4',
     apple: [{ url: '/apple-touch-icon.png?v=5', sizes: '180x180', type: 'image/png' }],
     other: [{ rel: 'mask-icon', url: '/safari-pinned-tab.svg?v=3', color: '#0a0a0a' }],
   },
