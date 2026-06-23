@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import {
+  blockedCount,
   registerPlayer,
   setBlocked as setBlockedInStore,
+  subscribe,
   unregisterPlayer,
 } from './vimeoPlayAll'
 
@@ -91,6 +93,10 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
   // standard devices are untouched.
   const [blocked, setBlocked] = useState(forced)
   const [playing, setPlaying] = useState(false)
+  // True once ANY clip on the page is frozen. Lets every clip pre-attach its player
+  // the moment Low Power Mode is detected (not only when its own timer fires), so a
+  // tap right when the banner appears reaches all clips. Starts false (matches SSR).
+  const [anyBlocked, setAnyBlocked] = useState(false)
 
   const post = (method: string, value?: unknown) => {
     iframeRef.current?.contentWindow?.postMessage(
@@ -130,12 +136,22 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
     }
   }, [videoId, forced])
 
-  // As soon as a clip is frozen (or in ?lpm test mode), load the SDK AND attach a
-  // Player up front. Creating it lazily on the first tap defers play() until the
-  // player's async handshake finishes — past the gesture window — so iOS blocks it.
-  // Pre-attached, the tap's play() fires immediately, inside the user gesture.
+  // Mirror the page-wide "any clip frozen?" flag.
   useEffect(() => {
-    if (!blocked && !forced) return
+    if (forced) {
+      const raf = requestAnimationFrame(() => setAnyBlocked(true))
+      return () => cancelAnimationFrame(raf)
+    }
+    return subscribe(() => setAnyBlocked(blockedCount() > 0))
+  }, [forced])
+
+  // As soon as ANY clip is frozen (this one, any other in Low Power Mode, or ?lpm
+  // test mode), load the SDK AND attach this clip's Player up front. Creating it
+  // lazily on the first tap defers play() until the player's async handshake
+  // finishes — past the gesture window — so iOS blocks it. Pre-attached, the tap's
+  // play() fires immediately, inside the user gesture, for EVERY clip at once.
+  useEffect(() => {
+    if (!blocked && !forced && !anyBlocked) return
     let cancelled = false
     loadVimeoSDK()
       .then((Player) => {
@@ -146,7 +162,7 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
     return () => {
       cancelled = true
     }
-  }, [blocked, forced])
+  }, [blocked, forced, anyBlocked])
 
   // Start THIS clip. Driven by the shared "play all" button: one tap fires every
   // registered clip's play() synchronously, so the single user gesture carries to
@@ -202,6 +218,10 @@ export default function VimeoEmbed({ url, className = '', aspect }: VimeoEmbedPr
   // within a few hundred ms, so a short wait surfaces the banner fast; a slow-but-
   // working clip that starts late still clears it via the play event.
   const onIframeLoad = () => {
+    // Warm the SDK now (memoised, shared) so it's ready long before the banner shows
+    // and the user can press — avoids the cold-load race where play() fires after the
+    // tap gesture has expired (which needed a refresh to work).
+    loadVimeoSDK().catch(() => {})
     if (forced) return
     post('addEventListener', 'play')
     post('addEventListener', 'playProgress')
