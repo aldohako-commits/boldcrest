@@ -912,11 +912,12 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
             </div>
           </div>
 
-          {/* Fixed, modest gap between the copy and the photo band. The band itself
-              is flex-1 (below) so it grows to fill ALL remaining height down to the
-              bottom edge — no void/black bar on tall screens. This gap just keeps the
-              band from butting straight against the copy. */}
-          <div aria-hidden className="h-[clamp(40px,4vh,80px)] shrink-0" />
+          {/* Gap between the copy and the photo band, sized to MATCH the nav-logo →
+              "People" label gap (logo bottom ≈57px, label top = the copy's pt → 63px
+              gap; pt drops to 92px on short screens → 35px gap). The band below is
+              flex-1, so it still fills ALL remaining height down to the bottom edge —
+              no void/black bar. */}
+          <div aria-hidden className="h-[63px] shrink-0 [@media(max-height:780px)]:h-[35px]" />
 
           {/* Photo band — auto-scrolling, draggable, b&w → color on hover (5 shown). */}
           <PhotoMarquee />
