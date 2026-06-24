@@ -55,6 +55,82 @@ const nextConfig: NextConfig = {
         destination: "/people",
         permanent: true,
       },
+      // Renamed /work project slugs (old WordPress slugs → current Sanity slugs).
+      // These still appear in GSC's internal-links graph from the old crawl;
+      // 301 them to preserve link equity and stop the old URLs 404-ing.
+      {
+        source: "/work/allure-beauty-elegance-in-clean-forms",
+        destination: "/work/allure-beauty-clean-forms-of-beauty",
+        permanent: true,
+      },
+      {
+        source: "/work/eos-mezze-bar-an-editorial-where-dining-sets-the-scene",
+        destination: "/work/eos-mezze-bar-a-table-for-stories",
+        permanent: true,
+      },
+      {
+        source: "/work/eos-mezze-bar-greek-tradition-meets-modern-style",
+        destination: "/work/eos-mezze-bar-the-art-of-mezze",
+        permanent: true,
+      },
+      {
+        source: "/work/alisa-dudaj-fashion-editorial-for-heritage-and-design",
+        destination: "/work/alisa-dudaj-editorial-fashion-heritage",
+        permanent: true,
+      },
+      {
+        source: "/work/alisa-dudaj-merging-tradition-with-experimental-fashion-design",
+        destination: "/work/alisa-dudaj-fashion-through-heritage",
+        permanent: true,
+      },
+      {
+        source: "/work/anmetal-forging-trust-through-innovative-design",
+        destination: "/work/anmetal-forged-through-design",
+        permanent: true,
+      },
+      {
+        source: "/work/baboon-delivery-elevating-campaign-creativity",
+        destination: "/work/baboon-delivery-campaigns-that-deliver",
+        permanent: true,
+      },
+      {
+        source: "/work/baboon-delivery-painting-the-town-red-with-new-btl-campaign",
+        destination: "/work/baboon-delivery-paint-the-town-red",
+        permanent: true,
+      },
+      {
+        source: "/work/inas-farm-dairy-branding-with-a-playful-twist",
+        destination: "/work/inas-farm-a-moo-d-for-dairy",
+        permanent: true,
+      },
+      {
+        source: "/work/albita-reviving-sweet-memories-with-a-fresh-twist",
+        destination: "/work/albita-nostalgia-rewrapped",
+        permanent: true,
+      },
+      {
+        source: "/work/ama-caffe-capturing-coffee-culture-in-vivid-frames",
+        destination: "/work/ama-caffe-coffee-culture-captured",
+        permanent: true,
+      },
+      {
+        source: "/work/borghese-milano-leather-accessories-spotlighted-with-elegance",
+        destination: "/work/borghese-milano-leather-light-and-form",
+        permanent: true,
+      },
+      {
+        source: "/work/frenkcreative-from-lights-to-events-branding",
+        destination: "/work/frenkcreative-lighting-up-events",
+        permanent: true,
+      },
+      // Old WordPress diary used nested category paths (/diary/insights/…,
+      // /diary/101-guides/…). The new diary is flat (/diary/<slug>) and those
+      // posts weren't migrated — send any two-segment /diary URL to the index.
+      {
+        source: "/diary/:category/:slug",
+        destination: "/diary",
+        permanent: true,
+      },
     ];
   },
 };
