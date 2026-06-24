@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { InlineButton } from '@/components/MagneticButton'
 import { urlFor } from '@/sanity/lib/image'
 import { sanityImageLoader } from '@/sanity/lib/loader'
+import { categoryColor } from '@/lib/diaryCategories'
 
 interface TeamMember {
   _id: string
@@ -316,47 +317,47 @@ const PLACEHOLDER_POSTS: DiaryPost[] = [
   },
 ]
 
-const CATEGORY_COLORS: Record<string, string> = {
-  Branding: '#DA291C',
-  Design: '#DA291C',
-  Motion: '#f9b311',
-  Strategy: '#004c95',
-  Culture: '#f9b311',
-}
-
-/* ── Diary card ── */
+/* ── Diary card ──
+   The card is a <div> (not one big <Link>) so the category pill can be its own
+   link to the filtered diary view without nesting <a> inside <a>. The image,
+   title and excerpt link to the post; the pill links to /diary?category=… */
 function DiaryCardImage({ post, index }: { post: DiaryPost; index: number }) {
-  const color = CATEGORY_COLORS[post.category || ''] || '#DA291C'
+  const color = categoryColor(post.category)
   const hasImage = !!post.coverImage?.asset?._ref
+  const postHref = `/diary/${post.slug.current}`
 
   return (
-    <Link href={`/diary/${post.slug.current}`} className="group block">
+    <div className="group block">
       {/* Image container */}
-      <div className="relative aspect-square overflow-hidden rounded-xl bg-[#1a1a1a] md:rounded-2xl">
-        {hasImage ? (
-          <Image
-            src={urlFor(post.coverImage!).width(800).height(800).url()}
-            alt={post.title}
-            fill
-            loader={sanityImageLoader}
-            sizes="(max-width: 768px) 50vw, 33vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        ) : (
-          /* Placeholder — shown when no cover image is set */
-          <div className="flex h-full w-full items-center justify-center">
-            <span className="text-[1.2rem] font-bold uppercase leading-[1.1] tracking-[-0.02em] text-white/10 text-center px-4 md:text-[3rem] md:px-8">
-              {post.title}
-            </span>
-          </div>
-        )}
-      </div>
+      <Link href={postHref} className="block">
+        <div className="relative aspect-square overflow-hidden rounded-xl bg-[#1a1a1a] md:rounded-2xl">
+          {hasImage ? (
+            <Image
+              src={urlFor(post.coverImage!).width(800).height(800).url()}
+              alt={post.title}
+              fill
+              loader={sanityImageLoader}
+              sizes="(max-width: 768px) 50vw, 33vw"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            /* Placeholder — shown when no cover image is set */
+            <div className="flex h-full w-full items-center justify-center">
+              <span className="text-[1.2rem] font-bold uppercase leading-[1.1] tracking-[-0.02em] text-white/10 text-center px-4 md:text-[3rem] md:px-8">
+                {post.title}
+              </span>
+            </div>
+          )}
+        </div>
+      </Link>
 
       {/* Info below image */}
       <div className="mt-3 px-0.5 md:mt-5 md:px-1">
-        {/* Category pill — neutral by default, colored on hover */}
+        {/* Category pill — neutral by default, category color on hover. Links to
+            the diary grid pre-filtered to this category. */}
         {post.category && (
-          <span
+          <Link
+            href={`/diary?category=${encodeURIComponent(post.category)}`}
             className="category-pill mb-2 inline-block rounded-[var(--radius-pill)] border px-2 py-0.5 text-[0.5rem] font-semibold uppercase tracking-[0.12em] transition-all duration-200 md:mb-3 md:px-3 md:py-1 md:text-[0.6rem]"
             style={{ borderColor: 'var(--zone-fg-faint)', color: 'var(--zone-fg-half)' }}
             onMouseEnter={(e) => {
@@ -373,22 +374,24 @@ function DiaryCardImage({ post, index }: { post: DiaryPost; index: number }) {
             }}
           >
             {post.category}
-          </span>
+          </Link>
         )}
 
-        {/* Title */}
-        <h3 className="font-display text-[0.7rem] font-bold uppercase leading-[1.3] tracking-[0.02em] transition-colors duration-200 md:text-[clamp(1rem,1.5vw,1.3rem)]" style={{ color: 'var(--zone-fg)' }}>
-          {post.title}
-        </h3>
+        {/* Title + excerpt link to the post */}
+        <Link href={postHref} className="block">
+          <h3 className="font-display text-[0.7rem] font-bold uppercase leading-[1.3] tracking-[0.02em] transition-colors duration-200 md:text-[clamp(1rem,1.5vw,1.3rem)]" style={{ color: 'var(--zone-fg)' }}>
+            {post.title}
+          </h3>
 
-        {/* Excerpt — hidden on mobile */}
-        {post.excerpt && (
-          <p className="mt-2 line-clamp-2 hidden text-[0.8rem] leading-[1.6] md:block" style={{ color: 'var(--zone-fg-muted)' }}>
-            {post.excerpt}
-          </p>
-        )}
+          {/* Excerpt — hidden on mobile */}
+          {post.excerpt && (
+            <p className="mt-2 line-clamp-2 hidden text-[0.8rem] leading-[1.6] md:block" style={{ color: 'var(--zone-fg-muted)' }}>
+              {post.excerpt}
+            </p>
+          )}
+        </Link>
       </div>
-    </Link>
+    </div>
   )
 }
 

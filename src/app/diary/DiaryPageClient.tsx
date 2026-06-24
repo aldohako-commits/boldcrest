@@ -12,6 +12,7 @@ import {
   ScrollRevealStagger,
   ScrollRevealItem,
 } from '@/components/ScrollReveal'
+import { categoryColor } from '@/lib/diaryCategories'
 
 interface DiaryPost {
   _id: string
@@ -28,44 +29,50 @@ interface DiaryPageClientProps {
   initialCategory?: string
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
-  Branding: '#DA291C',
-  Design: '#f9b311',
-  Motion: '#004c95',
-  Culture: '#DA291C',
-  Strategy: '#f9b311',
-}
-
-function DiaryCard({ post }: { post: DiaryPost }) {
-  const color = CATEGORY_COLORS[post.category || ''] || '#DA291C'
+/* The card is a <div> (not one big <Link>) so the category pill can be its own
+   interactive control — clicking it filters the grid to that category in place
+   (no <a> nested in <a>). Image, title and excerpt link to the post. */
+function DiaryCard({
+  post,
+  onSelectCategory,
+}: {
+  post: DiaryPost
+  onSelectCategory: (category: string) => void
+}) {
+  const color = categoryColor(post.category)
+  const postHref = `/diary/${post.slug?.current}`
 
   return (
-    <Link href={`/diary/${post.slug?.current}`} className="group block">
+    <div className="group block">
       {/* Image container — 4:3 to match the /work grid */}
-      <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-[#1a1a1a] md:rounded-2xl">
-        {post.coverImage?.asset ? (
-          <Image
-            loader={sanityImageLoader}
-            src={urlFor(post.coverImage).width(1400).height(1050).url()}
-            alt={post.title}
-            fill
-            loading="lazy"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            <span className="px-4 text-center text-[1.2rem] font-bold uppercase leading-[1.1] tracking-[-0.02em] text-white/10 md:px-8 md:text-[3rem]">
-              {post.title}
-            </span>
-          </div>
-        )}
-      </div>
+      <Link href={postHref} className="block">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-[#1a1a1a] md:rounded-2xl">
+          {post.coverImage?.asset ? (
+            <Image
+              loader={sanityImageLoader}
+              src={urlFor(post.coverImage).width(1400).height(1050).url()}
+              alt={post.title}
+              fill
+              loading="lazy"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <span className="px-4 text-center text-[1.2rem] font-bold uppercase leading-[1.1] tracking-[-0.02em] text-white/10 md:px-8 md:text-[3rem]">
+                {post.title}
+              </span>
+            </div>
+          )}
+        </div>
+      </Link>
 
       {/* Info below image */}
       <div className="mt-3 md:mt-5">
         {post.category && (
-          <span
+          <button
+            type="button"
+            onClick={() => onSelectCategory(post.category!)}
             className="mb-2 inline-block rounded-[var(--radius-pill)] border border-white/15 px-2 py-0.5 text-[0.5rem] font-semibold uppercase tracking-[0.12em] text-text-tertiary transition-all duration-200 md:mb-3 md:px-3 md:py-1 md:text-[0.6rem]"
             onMouseEnter={(e) => {
               const el = e.currentTarget
@@ -81,20 +88,22 @@ function DiaryCard({ post }: { post: DiaryPost }) {
             }}
           >
             {post.category}
-          </span>
+          </button>
         )}
 
-        <h3 className="font-display text-[0.85rem] font-bold uppercase leading-[1.3] tracking-[0.02em] text-white transition-colors duration-200 group-hover:text-text-tertiary md:text-[clamp(1rem,1.5vw,1.3rem)]">
-          {post.title}
-        </h3>
+        <Link href={postHref} className="block">
+          <h3 className="font-display text-[0.85rem] font-bold uppercase leading-[1.3] tracking-[0.02em] text-white transition-colors duration-200 group-hover:text-text-tertiary md:text-[clamp(1rem,1.5vw,1.3rem)]">
+            {post.title}
+          </h3>
 
-        {post.excerpt && (
-          <p className="mt-2 line-clamp-2 hidden text-[0.8rem] leading-[1.6] text-text-secondary md:block">
-            {post.excerpt}
-          </p>
-        )}
+          {post.excerpt && (
+            <p className="mt-2 line-clamp-2 hidden text-[0.8rem] leading-[1.6] text-text-secondary md:block">
+              {post.excerpt}
+            </p>
+          )}
+        </Link>
       </div>
-    </Link>
+    </div>
   )
 }
 
@@ -130,6 +139,13 @@ export default function DiaryPageClient({ posts, initialCategory }: DiaryPageCli
     if (activeFilter === 'All') return posts
     return posts.filter((p) => p.category === activeFilter)
   }, [posts, activeFilter])
+
+  // Clicking a post's category pill filters the grid in place and scrolls up so
+  // the active filter bar is in view.
+  const handleSelectCategory = (category: string) => {
+    setActiveFilter(category)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   return (
     <main className="relative">
@@ -230,7 +246,7 @@ export default function DiaryPageClient({ posts, initialCategory }: DiaryPageCli
                     ease: [0.16, 1, 0.3, 1],
                   }}
                 >
-                  <DiaryCard post={post} />
+                  <DiaryCard post={post} onSelectCategory={handleSelectCategory} />
                 </motion.div>
               ))}
             </motion.div>
