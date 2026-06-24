@@ -5,13 +5,15 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useRef } from 'react'
 import { useFormEmbed } from '@/lib/embed'
 
+// Link the footer "Services" column at the real, indexable service pages
+// (/services + the three offering pages) instead of /work?service=… filter
+// URLs that Google leaves un-indexed. This gives those pages the internal-link
+// weight they need to surface as sitelinks.
 const serviceLinks = [
-  { label: 'Branding', href: '/work?service=Branding' },
-  { label: 'Packaging', href: '/work?service=Packaging+Design' },
-  { label: 'Photography', href: '/work?service=Photography' },
-  { label: 'Videography', href: '/work?service=Videography' },
-  { label: 'Creative Advertising', href: '/work?service=Creative+Advertising' },
-  { label: 'Social Media', href: '/work?service=Social+Media+Management' },
+  { label: 'Brand Development', href: '/services/brand-development' },
+  { label: 'Still & Motion', href: '/services/still-motion' },
+  { label: 'Communication', href: '/services/communication' },
+  { label: 'All Services', href: '/services' },
 ]
 
 const companyLinks = [
