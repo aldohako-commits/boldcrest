@@ -858,11 +858,8 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
         ═══════════════════════════════════════════ */}
         <section className="relative flex h-[100svh] flex-col overflow-x-hidden overflow-y-auto bg-bg md:h-[100dvh] md:overflow-hidden">
           {/* Hero copy — full-width stretch, top-aligned to match Work/Services/Diary */}
-          <div className="flex min-h-0 flex-1 items-start px-[var(--gutter)] pt-[120px] [@media(max-height:780px)]:pt-[92px]">
-            {/* Cap the copy width on ultra-wide/4K screens so the headline (left)
-                and story (right) don't get flung to opposite edges — centers the
-                whole band as a unit. No effect below ~1800px. */}
-            <div className="mx-auto w-full max-w-[1800px]">
+          <div className="flex min-h-0 flex-1 items-start [@media(min-height:1300px)]:items-center px-[var(--gutter)] pt-[120px] [@media(max-height:780px)]:pt-[92px]">
+            <div className="w-full">
               <motion.p
                 className="mb-[var(--space-md)] text-[0.75rem] font-semibold uppercase tracking-[0.25em] text-text-tertiary"
                 initial={{ opacity: 0 }}
@@ -915,7 +912,11 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
             </div>
           </div>
 
-          {/* Photo band — auto-scrolling, draggable, b&w → color on hover (5 shown) */}
+          {/* Photo band — auto-scrolling, draggable, b&w → color on hover (5 shown).
+              Stays grounded at the bottom. On tall/4K screens the copy above
+              vertically centers (via items-center) so it sits closer to the band
+              instead of leaving a huge gap; normal screens (< 1300px tall) keep the
+              copy top-aligned and are unchanged. */}
           <PhotoMarquee />
         </section>
 
