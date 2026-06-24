@@ -228,7 +228,7 @@ const PhotoMarquee = memo(function PhotoMarquee() {
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
       onDragStart={(e) => e.preventDefault()}
-      className="relative h-[44dvh] w-full shrink-0 cursor-grab touch-pan-y select-none overflow-hidden [@media(max-height:820px)]:h-[38dvh] active:cursor-grabbing"
+      className="relative h-[44dvh] w-full shrink-0 cursor-grab touch-pan-y select-none overflow-hidden [@media(max-height:820px)]:h-[38dvh] [@media(min-height:1300px)]:h-[40dvh] active:cursor-grabbing"
     >
       <div ref={trackRef} className="flex h-full w-max will-change-transform">
         {repeated.map((n, i) => (
@@ -856,9 +856,9 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
         {/* ═══════════════════════════════════════════
             0. HERO
         ═══════════════════════════════════════════ */}
-        <section className="relative flex h-[100svh] flex-col overflow-x-hidden overflow-y-auto bg-bg md:h-[100dvh] md:overflow-hidden">
+        <section className="relative flex h-[100svh] flex-col [@media(min-height:1300px)]:justify-center overflow-x-hidden overflow-y-auto bg-bg md:h-[100dvh] md:overflow-hidden">
           {/* Hero copy — full-width stretch, top-aligned to match Work/Services/Diary */}
-          <div className="flex min-h-0 flex-1 items-start [@media(min-height:1300px)]:items-center px-[var(--gutter)] pt-[120px] [@media(max-height:780px)]:pt-[92px]">
+          <div className="flex min-h-0 flex-1 [@media(min-height:1300px)]:flex-none items-start px-[var(--gutter)] pt-[120px] [@media(max-height:780px)]:pt-[92px]">
             <div className="w-full">
               <motion.p
                 className="mb-[var(--space-md)] text-[0.75rem] font-semibold uppercase tracking-[0.25em] text-text-tertiary"
@@ -912,11 +912,19 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
             </div>
           </div>
 
+          {/* Tall/4K only: a modest gap between the copy and the band. On normal
+              screens (< 1300px tall) this is removed and the band is pushed to the
+              bottom by the flex-1 copy area above — unchanged. */}
+          <div
+            aria-hidden
+            className="hidden shrink-0 [@media(min-height:1300px)]:block [@media(min-height:1300px)]:h-[clamp(80px,8vh,180px)]"
+          />
+
           {/* Photo band — auto-scrolling, draggable, b&w → color on hover (5 shown).
-              Stays grounded at the bottom. On tall/4K screens the copy above
-              vertically centers (via items-center) so it sits closer to the band
-              instead of leaving a huge gap; normal screens (< 1300px tall) keep the
-              copy top-aligned and are unchanged. */}
+              Normal screens: grounded at the bottom (flex-1 copy pushes it down).
+              Tall/4K (≥1300px): the section centers [copy + gap + band] as a group
+              and the band is slightly shorter, so the carousel sits up close to the
+              text with balanced framing instead of a huge mid-slide void. */}
           <PhotoMarquee />
         </section>
 
