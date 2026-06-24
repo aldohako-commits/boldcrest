@@ -228,7 +228,7 @@ const PhotoMarquee = memo(function PhotoMarquee() {
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
       onDragStart={(e) => e.preventDefault()}
-      className="relative h-[44dvh] w-full shrink-0 cursor-grab touch-pan-y select-none overflow-hidden [@media(max-height:820px)]:h-[38dvh] active:cursor-grabbing"
+      className="relative min-h-0 w-full flex-1 cursor-grab touch-pan-y select-none overflow-hidden active:cursor-grabbing"
     >
       <div ref={trackRef} className="flex h-full w-max will-change-transform">
         {repeated.map((n, i) => (
@@ -912,13 +912,11 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
             </div>
           </div>
 
-          {/* Flexible gap between the copy and the photo band. It grows to push the
-              band toward the bottom, but is CAPPED (~56–120px) so the band rises to
-              sit just under the copy instead of leaving a big void on taller/wider
-              screens. On short screens the natural gap is already under the cap, so
-              nothing changes; on taller ones the band lifts and the remaining height
-              pools below it. */}
-          <div aria-hidden className="min-h-0 flex-1 [max-height:clamp(56px,6vh,120px)]" />
+          {/* Fixed, modest gap between the copy and the photo band. The band itself
+              is flex-1 (below) so it grows to fill ALL remaining height down to the
+              bottom edge — no void/black bar on tall screens. This gap just keeps the
+              band from butting straight against the copy. */}
+          <div aria-hidden className="h-[clamp(40px,4vh,80px)] shrink-0" />
 
           {/* Photo band — auto-scrolling, draggable, b&w → color on hover (5 shown). */}
           <PhotoMarquee />
