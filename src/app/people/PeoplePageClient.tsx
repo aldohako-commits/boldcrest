@@ -859,7 +859,10 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
         <section className="relative flex h-[100svh] flex-col overflow-x-hidden overflow-y-auto bg-bg md:h-[100dvh] md:overflow-hidden">
           {/* Hero copy — full-width stretch, top-aligned to match Work/Services/Diary */}
           <div className="flex min-h-0 flex-1 items-start px-[var(--gutter)] pt-[120px] [@media(max-height:780px)]:pt-[92px]">
-            <div className="w-full">
+            {/* Cap the copy width on ultra-wide/4K screens so the headline (left)
+                and story (right) don't get flung to opposite edges — centers the
+                whole band as a unit. No effect below ~1800px. */}
+            <div className="mx-auto w-full max-w-[1800px]">
               <motion.p
                 className="mb-[var(--space-md)] text-[0.75rem] font-semibold uppercase tracking-[0.25em] text-text-tertiary"
                 initial={{ opacity: 0 }}
