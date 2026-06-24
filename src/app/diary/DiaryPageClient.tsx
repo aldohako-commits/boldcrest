@@ -73,7 +73,8 @@ function DiaryCard({
           <button
             type="button"
             onClick={() => onSelectCategory(post.category!)}
-            className="mb-2 inline-block rounded-[var(--radius-pill)] border border-white/15 px-2 py-0.5 text-[0.5rem] font-semibold uppercase tracking-[0.12em] text-text-tertiary transition-all duration-200 md:mb-3 md:px-3 md:py-1 md:text-[0.6rem]"
+            className="mb-2 inline-block rounded-[var(--radius-pill)] border px-2 py-0.5 text-[0.5rem] font-semibold uppercase tracking-[0.12em] transition-all duration-200 md:mb-3 md:px-3 md:py-1 md:text-[0.6rem]"
+            style={{ borderStyle: 'solid', borderWidth: '1px', borderColor: '#a3a3a3', color: '#a3a3a3' }}
             onMouseEnter={(e) => {
               const el = e.currentTarget
               el.style.backgroundColor = color
@@ -83,8 +84,8 @@ function DiaryCard({
             onMouseLeave={(e) => {
               const el = e.currentTarget
               el.style.backgroundColor = 'transparent'
-              el.style.borderColor = ''
-              el.style.color = ''
+              el.style.borderColor = '#a3a3a3'
+              el.style.color = '#a3a3a3'
             }}
           >
             {post.category}

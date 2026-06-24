@@ -359,7 +359,7 @@ function DiaryCardImage({ post, index }: { post: DiaryPost; index: number }) {
           <Link
             href={`/diary?category=${encodeURIComponent(post.category)}`}
             className="category-pill mb-2 inline-block rounded-[var(--radius-pill)] border px-2 py-0.5 text-[0.5rem] font-semibold uppercase tracking-[0.12em] transition-all duration-200 md:mb-3 md:px-3 md:py-1 md:text-[0.6rem]"
-            style={{ borderColor: 'var(--zone-fg-faint)', color: 'var(--zone-fg-half)' }}
+            style={{ borderColor: 'var(--zone-fg-half)', color: 'var(--zone-fg-half)' }}
             onMouseEnter={(e) => {
               const el = e.currentTarget
               el.style.backgroundColor = color
@@ -369,7 +369,7 @@ function DiaryCardImage({ post, index }: { post: DiaryPost; index: number }) {
             onMouseLeave={(e) => {
               const el = e.currentTarget
               el.style.backgroundColor = 'transparent'
-              el.style.borderColor = 'var(--zone-fg-faint)'
+              el.style.borderColor = 'var(--zone-fg-half)'
               el.style.color = 'var(--zone-fg-half)'
             }}
           >
