@@ -18,6 +18,13 @@ const nextConfig: NextConfig = {
         destination: "/privacy-notice",
         permanent: true,
       },
+      // The "Start a Project" route was shortened to /start. 301 the old path
+      // so any existing/bookmarked links keep resolving.
+      {
+        source: "/start-a-new-project",
+        destination: "/start",
+        permanent: true,
+      },
       // WordPress→Next migration: a few project slugs were shortened. 301 the
       // old WordPress slug to the new one so Google consolidates the indexed
       // page (and old backlinks keep resolving) instead of hitting a 404.
