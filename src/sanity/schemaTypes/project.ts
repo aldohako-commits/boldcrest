@@ -154,15 +154,15 @@ export const project = defineType({
             }),
             defineField({
               name: 'feature',
-              title: 'Feature player',
+              title: 'Full Player',
               type: 'boolean',
               description:
-                'On = a full player with sound & controls (click to play). Off = silent looping background video.',
+                'On = full player with sound & controls (click to play). Off = silent looping background video.',
               initialValue: false,
             }),
             defineField({
               name: 'half',
-              title: 'Side by side',
+              title: 'Side by Side',
               type: 'boolean',
               description:
                 'Turn this on for two consecutive media items (videos or images) to place them side by side (no gap).',
@@ -209,7 +209,7 @@ export const project = defineType({
           preview: {
             select: { url: 'vimeoUrl', feature: 'feature', half: 'half' },
             prepare({ url, feature, half }) {
-              const tags = [feature && 'feature player', half && 'side by side'].filter(Boolean)
+              const tags = [feature && 'Full Player', half && 'Side by Side'].filter(Boolean)
               return {
                 title: tags.length ? `Video — ${tags.join(' · ')}` : 'Video',
                 subtitle: url,
@@ -239,7 +239,7 @@ export const project = defineType({
             }),
             defineField({
               name: 'half',
-              title: 'Side by side',
+              title: 'Side by Side',
               type: 'boolean',
               description:
                 'Turn this on for two consecutive images to place them side by side (no gap). Off = normal full-width slide.',
@@ -252,7 +252,7 @@ export const project = defineType({
           preview: {
             select: { media: 'image', half: 'half' },
             prepare({ media, half }) {
-              return { title: half ? 'Image — side by side' : 'Image', media }
+              return { title: half ? 'Image — Side by Side' : 'Image', media }
             },
           },
           components: { item: MediaArrayItem },

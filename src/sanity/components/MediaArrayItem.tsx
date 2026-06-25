@@ -46,9 +46,9 @@ export function MediaArrayItem(props: ObjectItemProps) {
       on,
       icon: PlayIcon,
       title: on
-        ? 'Feature player is ON — click for silent background video'
-        : 'Make this a feature player (sound & controls)',
-      label: 'Toggle feature player',
+        ? 'Full Player is ON — click for silent background video'
+        : 'Make this a Full Player (sound & controls)',
+      label: 'Toggle full player',
     })
   }
 
@@ -60,8 +60,8 @@ export function MediaArrayItem(props: ObjectItemProps) {
       on,
       icon: SplitVerticalIcon,
       title: on
-        ? 'Side by side is ON — click to make full width'
-        : 'Make this side by side (pair it with the next item)',
+        ? 'Side by Side is ON — click to make full width'
+        : 'Make this Side by Side (pair it with the next item)',
       label: 'Toggle side by side',
     })
   }
