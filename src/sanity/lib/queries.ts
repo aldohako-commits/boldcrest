@@ -20,7 +20,7 @@ export const featuredProjectsQuery = defineQuery(
 )
 
 export const allProjectsQuery = defineQuery(
-  `*[_type == "project"] | order(year desc, order asc) {
+  `*[_type == "project"] | order(order asc, year desc) {
     _id,
     _updatedAt,
     name,
