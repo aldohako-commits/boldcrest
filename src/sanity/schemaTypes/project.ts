@@ -270,10 +270,10 @@ export const project = defineType({
     }),
     defineField({
       name: 'order',
-      title: 'Order',
+      title: 'Order (manual)',
       type: 'number',
-      // Superseded by drag-and-drop ordering (orderRank); kept for data history.
-      hidden: true,
+      description:
+        'Drag-and-drop in the list is the live order. This number is a manual reference/backup only — editing it does not move the project.',
     }),
   ],
   orderings: [orderRankOrdering],

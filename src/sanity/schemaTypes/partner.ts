@@ -42,9 +42,9 @@ export const partner = defineType({
     }),
     defineField({
       name: 'order',
-      title: 'Order',
+      title: 'Order (manual)',
       type: 'number',
-      hidden: true,
+      description: 'Drag-and-drop is the live order; this number is a manual reference/backup only.',
     }),
   ],
   orderings: [orderRankOrdering],

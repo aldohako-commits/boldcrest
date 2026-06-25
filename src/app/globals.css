@@ -147,6 +147,16 @@ main > div:not([aria-hidden]) {
   z-index: 1;
 }
 
+/* Light image protection site-wide: block drag-to-save and the iOS long-press
+   "Save Image" callout. Right-click is blocked by the ImageGuard listener. The
+   <img> + alt stay in the DOM, so SEO/crawlability is untouched. The studio
+   (/studio) keeps native behaviour. */
+img {
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
 a {
   color: inherit;
   text-decoration: none;

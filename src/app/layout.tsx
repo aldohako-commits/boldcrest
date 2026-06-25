@@ -4,6 +4,7 @@ import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LenisProvider from '@/components/LenisProvider'
+import ImageGuard from '@/components/ImageGuard'
 import PageTransitionProvider from '@/components/PageTransition'
 import StartProjectProvider from '@/components/start-project/StartProjectProvider'
 import CookieBanner from '@/components/CookieBanner'
@@ -159,6 +160,7 @@ export default function RootLayout({
         />
       </head>
       <body className={metropolis.variable}>
+        <ImageGuard />
         <LenisProvider>
           <PageTransitionProvider>
             <StartProjectProvider>
