@@ -67,7 +67,7 @@ export const projectBySlugQuery = defineQuery(
         hotspot,
         crop,
         alt,
-        layout
+        half
       },
       _type == "imageMedia" => {
         "type": "image",
@@ -75,7 +75,7 @@ export const projectBySlugQuery = defineQuery(
         "hotspot": coalesce(hotspot, image.hotspot),
         "crop": coalesce(crop, image.crop),
         "alt": coalesce(alt, image.alt),
-        layout
+        half
       }
     }
   }`

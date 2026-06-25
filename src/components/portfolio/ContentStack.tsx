@@ -25,8 +25,8 @@ interface ImageMedia {
   crop?: { top: number; bottom: number; left: number; right: number }
   image?: { asset: { _ref: string } }
   alt?: string
-  /** 'half' → render side-by-side with the next 'half' image (no gap). */
-  layout?: 'half' | 'full'
+  /** true → render side-by-side with the next 'half' image (no gap). */
+  half?: boolean
 }
 
 type MediaBlock = VideoMedia | ImageMedia
@@ -59,8 +59,8 @@ interface StackItem {
   // Native aspect ratio (w/h) of the SLIDE, so the rail thumbnail keeps the slide's
   // real proportions (square→square, tall→tall) instead of a forced/cropped box.
   aspect: number
-  // 'half' → pairs with the next 'half' item into a no-gap two-column row.
-  layout?: 'half' | 'full'
+  // true → pairs with the next 'half' item into a no-gap two-column row.
+  half?: boolean
 }
 
 // Fallback when a slide's native ratio is unknown (matches the 1800×1200 default).
@@ -176,7 +176,7 @@ export default function ContentStack({
           ),
           thumbSource: source,
           aspect: refAspect(ref) || FALLBACK_ASPECT,
-          layout: img.layout,
+          half: img.half,
         })
       }
     }
@@ -583,7 +583,7 @@ export default function ContentStack({
           for (let i = 0; i < items.length; i++) {
             const item = items[i]
             const next = items[i + 1]
-            if (item.layout === 'half' && next?.layout === 'half') {
+            if (item.half && next?.half) {
               rows.push(
                 <div key={item.key} className="flex w-full items-start">
                   {renderItem(item, i, true)}
@@ -686,7 +686,7 @@ export default function ContentStack({
             for (let i = 0; i < items.length; i++) {
               const item = items[i]
               const next = items[i + 1]
-              if (item.layout === 'half' && next?.layout === 'half') {
+              if (item.half && next?.half) {
                 // Either half being active lights both; group/pair lights both on hover.
                 const pairActive = active === i || active === i + 1
                 // The 3px gap between the two halves is dead space (neither

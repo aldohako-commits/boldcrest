@@ -170,19 +170,12 @@ export const project = defineType({
               description: 'Describe the image for search engines & screen readers.',
             }),
             defineField({
-              name: 'layout',
-              title: 'Layout',
-              type: 'string',
+              name: 'half',
+              title: 'Side by side',
+              type: 'boolean',
               description:
-                'Set two consecutive images to "Half" to place them side by side (no gap).',
-              options: {
-                list: [
-                  { title: 'Full width', value: 'full' },
-                  { title: 'Half (side by side)', value: 'half' },
-                ],
-                layout: 'radio',
-              },
-              initialValue: 'full',
+                'Turn this on for two consecutive images to place them side by side (no gap). Off = normal full-width slide.',
+              initialValue: false,
             }),
           ],
         },
