@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity'
+import { MediaArrayItem } from '../components/MediaArrayItem'
 
 export const project = defineType({
   name: 'project',
@@ -196,10 +197,12 @@ export const project = defineType({
               return { title: half ? 'Image — side by side' : 'Image', media }
             },
           },
+          components: { item: MediaArrayItem },
         },
         {
           type: 'image',
           options: { hotspot: true },
+          components: { item: MediaArrayItem },
           fields: [
             defineField({
               name: 'alt',
