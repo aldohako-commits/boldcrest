@@ -66,14 +66,16 @@ export const projectBySlugQuery = defineQuery(
         asset,
         hotspot,
         crop,
-        alt
+        alt,
+        layout
       },
       _type == "imageMedia" => {
         "type": "image",
         "asset": coalesce(asset, image.asset),
         "hotspot": coalesce(hotspot, image.hotspot),
         "crop": coalesce(crop, image.crop),
-        "alt": coalesce(alt, image.alt)
+        "alt": coalesce(alt, image.alt),
+        layout
       }
     }
   }`

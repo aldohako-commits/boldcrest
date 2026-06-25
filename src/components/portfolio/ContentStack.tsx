@@ -25,6 +25,8 @@ interface ImageMedia {
   crop?: { top: number; bottom: number; left: number; right: number }
   image?: { asset: { _ref: string } }
   alt?: string
+  /** 'half' → render side-by-side with the next 'half' image (no gap). */
+  layout?: 'half' | 'full'
 }
 
 type MediaBlock = VideoMedia | ImageMedia
@@ -57,6 +59,8 @@ interface StackItem {
   // Native aspect ratio (w/h) of the SLIDE, so the rail thumbnail keeps the slide's
   // real proportions (square→square, tall→tall) instead of a forced/cropped box.
   aspect: number
+  // 'half' → pairs with the next 'half' item into a no-gap two-column row.
+  layout?: 'half' | 'full'
 }
 
 // Fallback when a slide's native ratio is unknown (matches the 1800×1200 default).
@@ -172,6 +176,7 @@ export default function ContentStack({
           ),
           thumbSource: source,
           aspect: refAspect(ref) || FALLBACK_ASPECT,
+          layout: img.layout,
         })
       }
     }
@@ -558,18 +563,40 @@ export default function ContentStack({
       )}
       {/* Media stack — centred (capped width), the navigator sits to its right */}
       <div ref={mediaStackRef} className="relative flex w-full min-w-0 max-w-[1200px] flex-col">
-        {items.map((item, i) => (
-          <div
-            key={item.key}
-            ref={(el) => {
-              itemRefs.current[i] = el
-            }}
-            data-idx={i}
-            className={`relative w-full scroll-mt-[120px] overflow-hidden bg-bg-card ${radiusClass(i, total)}`}
-          >
-            {item.content}
-          </div>
-        ))}
+        {(() => {
+          const renderItem = (item: StackItem, i: number, half: boolean) => (
+            <div
+              key={item.key}
+              ref={(el) => {
+                itemRefs.current[i] = el
+              }}
+              data-idx={i}
+              className={`relative ${half ? 'w-1/2' : 'w-full'} scroll-mt-[120px] overflow-hidden bg-bg-card ${half ? '' : radiusClass(i, total)}`}
+            >
+              {item.content}
+            </div>
+          )
+          // Two consecutive 'half' items render side by side in a no-gap row;
+          // everything else stays a full-width slide. Indices are preserved so the
+          // navigator rail and scroll-spy keep working per item.
+          const rows: React.ReactNode[] = []
+          for (let i = 0; i < items.length; i++) {
+            const item = items[i]
+            const next = items[i + 1]
+            if (item.layout === 'half' && next?.layout === 'half') {
+              rows.push(
+                <div key={item.key} className="flex w-full items-start">
+                  {renderItem(item, i, true)}
+                  {renderItem(next, i + 1, true)}
+                </div>,
+              )
+              i++
+            } else {
+              rows.push(renderItem(item, i, false))
+            }
+          }
+          return rows
+        })()}
       </div>
 
       {/* Thumbnail navigator. Wrapper is a full-viewport-height sticky box; on
