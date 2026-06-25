@@ -10,7 +10,7 @@ import {
 import ProjectHero from '@/components/portfolio/ProjectHero'
 import ProjectDetails from '@/components/portfolio/ProjectDetails'
 import ContentStack from '@/components/portfolio/ContentStack'
-import { getVimeoAspect } from '@/lib/vimeo'
+import { getVimeoAspect, parseAspectRatio } from '@/lib/vimeo'
 import RelatedProjects from '@/components/portfolio/RelatedProjects'
 import JsonLd from '@/components/JsonLd'
 import {
@@ -89,9 +89,14 @@ export default async function ProjectPage({
   const mediaWithAspect = project.media
     ? await Promise.all(
         project.media.map(
-          async (block: { _type?: string; vimeoUrl?: string }) =>
+          async (block: { _type?: string; vimeoUrl?: string; aspectRatio?: string }) =>
             block?._type === 'videoMedia' && block.vimeoUrl
-              ? { ...block, aspect: await getVimeoAspect(block.vimeoUrl) }
+              ? {
+                  ...block,
+                  // Manual override wins; "auto"/unset falls back to Vimeo's real shape.
+                  aspect:
+                    parseAspectRatio(block.aspectRatio) ?? (await getVimeoAspect(block.vimeoUrl)),
+                }
               : block,
         ),
       )

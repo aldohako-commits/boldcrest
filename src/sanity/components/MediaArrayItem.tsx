@@ -1,4 +1,3 @@
-import { useCallback } from 'react'
 import { set, unset, type ObjectItemProps } from 'sanity'
 import { Box, Button, Flex } from '@sanity/ui'
 import { PlayIcon, SplitVerticalIcon } from '@sanity/icons'
@@ -6,54 +5,86 @@ import { PlayIcon, SplitVerticalIcon } from '@sanity/icons'
 /**
  * Custom array-item renderer for media items. The default row (preview, drag
  * handle, the ⋯ menu, open-on-click) is passed straight through untouched — we
- * only add a one-click toggle button to the right of each collapsed row:
- *   • images → "Side by side" (writes `half`); two consecutive half images
- *     render as a no-gap two-column row on the site.
- *   • videos → "Feature player" (writes `feature`); a feature video renders as
- *     a real player with sound + controls instead of a silent background loop.
+ * only add one-click toggle buttons to the right of each collapsed row:
+ *   • all items → "Side by side" (writes `half`); two consecutive `half` items
+ *     (videos or images) render as a no-gap two-column row on the site.
+ *   • videos also → "Feature player" (writes `feature`); a feature video renders
+ *     as a real player with sound + controls instead of a silent background loop.
  *
  * Sanity's built-in ⋯ menu (Remove / Copy / Duplicate / Add …) is not
- * extensible via props, so the toggle lives as its own row button instead. It
- * writes the same field as the in-item toggle.
+ * extensible via props, so the toggles live as their own row buttons. They write
+ * the same fields as the in-item toggles.
  */
 export function MediaArrayItem(props: ObjectItemProps) {
   const { open, readOnly, inputProps } = props
-  const value = props.value as unknown as { _type?: string; half?: boolean; feature?: boolean }
+  const value = props.value as unknown as {
+    _type?: string
+    half?: boolean
+    feature?: boolean
+  }
   const isVideo = value?._type === 'videoMedia'
-  const field = isVideo ? 'feature' : 'half'
-  const isOn = value?.[field] === true
-
-  const toggle = useCallback(() => {
-    inputProps.onChange(isOn ? unset([field]) : set(true, [field]))
-  }, [isOn, field, inputProps])
 
   // When the item is open (full edit form) leave it completely alone.
   if (open || readOnly) return props.renderDefault(props)
 
-  const title = isVideo
-    ? isOn
-      ? 'Feature player is ON — click for silent background video'
-      : 'Make this a feature player (sound & controls)'
-    : isOn
-      ? 'Side by side is ON — click to make full width'
-      : 'Make this image side by side (pair it with the next one)'
+  const toggle = (field: 'half' | 'feature', on: boolean) =>
+    inputProps.onChange(on ? unset([field]) : set(true, [field]))
+
+  const buttons: Array<{
+    field: 'half' | 'feature'
+    on: boolean
+    icon: typeof PlayIcon
+    title: string
+    label: string
+  }> = []
+
+  // Videos: feature-player toggle (left of side-by-side).
+  if (isVideo) {
+    const on = value?.feature === true
+    buttons.push({
+      field: 'feature',
+      on,
+      icon: PlayIcon,
+      title: on
+        ? 'Feature player is ON — click for silent background video'
+        : 'Make this a feature player (sound & controls)',
+      label: 'Toggle feature player',
+    })
+  }
+
+  // All items: side-by-side toggle (always rightmost, consistent position).
+  {
+    const on = value?.half === true
+    buttons.push({
+      field: 'half',
+      on,
+      icon: SplitVerticalIcon,
+      title: on
+        ? 'Side by side is ON — click to make full width'
+        : 'Make this side by side (pair it with the next item)',
+      label: 'Toggle side by side',
+    })
+  }
 
   return (
     <Flex align="center" gap={1}>
       <Box flex={1} style={{ minWidth: 0 }}>
         {props.renderDefault(props)}
       </Box>
-      <Button
-        mode="bleed"
-        padding={3}
-        fontSize={1}
-        icon={isVideo ? PlayIcon : SplitVerticalIcon}
-        tone={isOn ? 'primary' : 'default'}
-        selected={isOn}
-        onClick={toggle}
-        title={title}
-        aria-label={isVideo ? 'Toggle feature player' : 'Toggle side by side'}
-      />
+      {buttons.map((b) => (
+        <Button
+          key={b.field}
+          mode="bleed"
+          padding={3}
+          fontSize={1}
+          icon={b.icon}
+          tone={b.on ? 'primary' : 'default'}
+          selected={b.on}
+          onClick={() => toggle(b.field, b.on)}
+          title={b.title}
+          aria-label={b.label}
+        />
+      ))}
     </Flex>
   )
 }

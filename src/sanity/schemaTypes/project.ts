@@ -160,11 +160,42 @@ export const project = defineType({
                 'On = a full player with sound & controls (click to play). Off = silent looping background video.',
               initialValue: false,
             }),
+            defineField({
+              name: 'half',
+              title: 'Side by side',
+              type: 'boolean',
+              description:
+                'Turn this on for two consecutive media items (videos or images) to place them side by side (no gap).',
+              initialValue: false,
+            }),
+            defineField({
+              name: 'aspectRatio',
+              title: 'Aspect ratio',
+              type: 'string',
+              description:
+                'Default uses the video’s real shape from Vimeo. Override only to force a specific box.',
+              options: {
+                list: [
+                  { title: 'Auto (from Vimeo)', value: 'auto' },
+                  { title: '16:9 — widescreen', value: '16:9' },
+                  { title: '9:16 — vertical', value: '9:16' },
+                  { title: '1:1 — square', value: '1:1' },
+                  { title: '4:5 — portrait', value: '4:5' },
+                  { title: '4:3', value: '4:3' },
+                  { title: '21:9 — cinematic', value: '21:9' },
+                ],
+              },
+              initialValue: 'auto',
+            }),
           ],
           preview: {
-            select: { url: 'vimeoUrl', feature: 'feature' },
-            prepare({ url, feature }) {
-              return { title: feature ? 'Video — feature player' : 'Video', subtitle: url }
+            select: { url: 'vimeoUrl', feature: 'feature', half: 'half' },
+            prepare({ url, feature, half }) {
+              const tags = [feature && 'feature player', half && 'side by side'].filter(Boolean)
+              return {
+                title: tags.length ? `Video — ${tags.join(' · ')}` : 'Video',
+                subtitle: url,
+              }
             },
           },
           components: { item: MediaArrayItem },

@@ -10,6 +10,19 @@ export function extractVimeoId(url: string): string | null {
   return m ? m[1] : null
 }
 
+/**
+ * Parse a manual aspect-ratio override (e.g. "16:9") into a width/height number.
+ * Returns null for "auto"/empty/invalid so callers fall back to the Vimeo aspect.
+ */
+export function parseAspectRatio(value?: string | null): number | null {
+  if (!value || value === 'auto') return null
+  const m = value.match(/^(\d+(?:\.\d+)?):(\d+(?:\.\d+)?)$/)
+  if (!m) return null
+  const w = Number(m[1])
+  const h = Number(m[2])
+  return w > 0 && h > 0 ? w / h : null
+}
+
 export async function getVimeoAspect(url?: string | null): Promise<number | null> {
   if (!url) return null
   const id = extractVimeoId(url)

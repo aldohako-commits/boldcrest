@@ -16,6 +16,8 @@ interface VideoMedia {
   aspect?: number | null
   /** true → Vimeo's native player (sound + controls) instead of the bg loop. */
   feature?: boolean
+  /** true → render side-by-side with the next 'half' item (no gap). */
+  half?: boolean
 }
 
 interface ImageMedia {
@@ -162,6 +164,7 @@ export default function ContentStack({
           ),
           thumbSource: null,
           aspect: video.aspect || FALLBACK_ASPECT,
+          half: video.half,
         })
       } else if (block._type === 'imageMedia' || block._type === 'image') {
         const img = block as ImageMedia

@@ -60,7 +60,9 @@ export const projectBySlugQuery = defineQuery(
       _type == "videoMedia" => {
         "type": "video",
         vimeoUrl,
-        feature
+        feature,
+        half,
+        aspectRatio
       },
       _type == "image" => {
         "type": "image",
