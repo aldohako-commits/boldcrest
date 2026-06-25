@@ -129,16 +129,23 @@ export default function ContentStack({
       type: 'image',
       key: 'thumb-image',
       content: (
-        <Image
-          loader={sanityImageLoader}
-          src={urlFor(thumbnail).width(1800).quality(85).url()}
-          alt={thumbnail.alt || baseAlt}
-          width={1800}
-          height={1200}
-          priority
-          className="h-auto w-full"
-          sizes="(max-width: 959px) 100vw, 70vw"
-        />
+        <div
+          className="relative select-none [-webkit-touch-callout:none]"
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          <Image
+            loader={sanityImageLoader}
+            src={urlFor(thumbnail).width(1800).quality(85).url()}
+            alt={thumbnail.alt || baseAlt}
+            width={1800}
+            height={1200}
+            priority
+            draggable={false}
+            className="h-auto w-full"
+            sizes="(max-width: 959px) 100vw, 70vw"
+          />
+          <span aria-hidden className="absolute inset-0" />
+        </div>
       ),
       thumbSource: thumbnail,
       aspect: refAspect(thumbnail.asset._ref) || FALLBACK_ASPECT,
@@ -175,16 +182,28 @@ export default function ContentStack({
           type: 'image',
           key: img._key,
           content: (
-            <Image
-              loader={sanityImageLoader}
-              src={urlFor(source).width(1800).quality(85).url()}
-              alt={img.alt || baseAlt}
-              width={1800}
-              height={1200}
-              loading="lazy"
-              className="h-auto w-full"
-              sizes="(max-width: 959px) 100vw, 70vw"
-            />
+            // Light image protection: blocks right-click "save/open image", drag-
+            // to-save, and iOS long-press save. The <img> + alt stay in the DOM
+            // (crawlable — no SEO impact); the transparent overlay just makes the
+            // image not the direct pointer target. Not unbeatable (devtools/network
+            // always work), but stops casual saving.
+            <div
+              className="relative select-none [-webkit-touch-callout:none]"
+              onContextMenu={(e) => e.preventDefault()}
+            >
+              <Image
+                loader={sanityImageLoader}
+                src={urlFor(source).width(1800).quality(85).url()}
+                alt={img.alt || baseAlt}
+                width={1800}
+                height={1200}
+                loading="lazy"
+                draggable={false}
+                className="h-auto w-full"
+                sizes="(max-width: 959px) 100vw, 70vw"
+              />
+              <span aria-hidden className="absolute inset-0" />
+            </div>
           ),
           thumbSource: source,
           aspect: refAspect(ref) || FALLBACK_ASPECT,
