@@ -160,6 +160,44 @@ export const project = defineType({
           },
         },
         {
+          type: 'object',
+          name: 'imageMedia',
+          title: 'Image',
+          fields: [
+            defineField({
+              name: 'image',
+              title: 'Image',
+              type: 'image',
+              options: { hotspot: true },
+              fields: [
+                defineField({
+                  name: 'alt',
+                  title: 'Alt text (SEO)',
+                  type: 'string',
+                  description: 'Describe the image for search engines & screen readers.',
+                }),
+              ],
+            }),
+            defineField({
+              name: 'half',
+              title: 'Side by side',
+              type: 'boolean',
+              description:
+                'Turn this on for two consecutive images to place them side by side (no gap). Off = normal full-width slide.',
+              initialValue: false,
+            }),
+            // Legacy fields kept so existing items stay valid; not user-editable.
+            defineField({ name: 'aspectRatio', type: 'string', hidden: true, readOnly: true }),
+            defineField({ name: 'type', type: 'string', hidden: true, readOnly: true }),
+          ],
+          preview: {
+            select: { media: 'image', half: 'half' },
+            prepare({ media, half }) {
+              return { title: half ? 'Image — side by side' : 'Image', media }
+            },
+          },
+        },
+        {
           type: 'image',
           options: { hotspot: true },
           fields: [
