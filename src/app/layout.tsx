@@ -68,34 +68,22 @@ export const metadata: Metadata = {
       'We build identities and shape perceptions. Go bold or go unseen.',
     images: ['/og-image.png'],
   },
-  // Tab icon: multi-size .ico (16/32/48), exactly like apple.com and vercel.com.
-  // Deliberately NO svg favicon link — Safari's SVG-favicon support is unreliable
-  // and, when it picks the svg <link> and fails to render it, it shows a blank
-  // white square instead of falling back to the .ico.
-  //
-  // Both .ico variants are FULL-BLEED OPAQUE squares (never transparent corners):
-  // iPad Safari draws a white backplate behind tab favicons, and transparent
-  // corners reveal it as an ugly white box around the mark. Opaque corners = no
-  // backplate. To stop the opaque square reading as a hard tile, we ship one per
-  // color scheme so the square's background matches the surface and "disappears":
-  //   • light  -> favicon.ico       (WHITE bg + black shield) — blends on light
-  //     desktop tabs and matches iPad's white backplate.
-  //   • dark   -> favicon-dark.ico  (BLACK bg + white shield) — blends on dark tabs.
-  // Safari/Chrome honor the prefers-color-scheme media attr on icon links; older
-  // builds that ignore it just take the first (light) icon — harmless fallback.
-  // favicon.ico (light) is also the bare-/favicon.ico default that Google + clients
-  // ignoring the links fetch, which reads cleanly on light surfaces.
-  // apple-touch (iOS home screen), manifest (Android/PWA) and the pinned-tab mask
-  // are unchanged.
-  // ?v busts Safari's notoriously sticky favicon cache — bump it whenever the icon
-  // bytes change so browsers refetch instead of reusing the stale cached one.
+  // Tab icon: a solid BLACK CIRCLE with the WHITE crest — same mark on every
+  // surface, no white tile/background anywhere. Outside the circle is transparent
+  // so it reads as a disc (not a square) on the tab. icon.svg (vector, crisp at
+  // any size) is preferred by Chrome/Firefox/Safari 17+; favicon.ico (16/32/48,
+  // same black-circle art) is listed first as the fallback for older Safari.
+  // apple-touch (iOS home screen + iPhone Safari favourites) stays a rounded
+  // SQUARE on purpose — iOS masks app icons to its own squircle, so a circle
+  // there would look wrong; that's the one intentional exception.
+  // ?v busts Safari's sticky favicon cache — bump it whenever the bytes change.
   icons: {
     icon: [
-      { url: '/favicon.ico?v=5', sizes: '16x16 32x32 48x48', media: '(prefers-color-scheme: light)' },
-      { url: '/favicon-dark.ico?v=5', sizes: '16x16 32x32 48x48', media: '(prefers-color-scheme: dark)' },
+      { url: '/favicon.ico?v=7', sizes: '16x16 32x32 48x48' },
+      { url: '/icon.svg?v=7', type: 'image/svg+xml' },
     ],
-    shortcut: '/favicon.ico?v=5',
-    apple: [{ url: '/apple-touch-icon.png?v=5', sizes: '180x180', type: 'image/png' }],
+    shortcut: '/favicon.ico?v=7',
+    apple: [{ url: '/apple-touch-icon.png?v=7', sizes: '180x180', type: 'image/png' }],
     other: [{ rel: 'mask-icon', url: '/safari-pinned-tab.svg?v=3', color: '#0a0a0a' }],
   },
   manifest: '/site.webmanifest',
