@@ -183,9 +183,27 @@ export const project = defineType({
                   { title: '4:5 — portrait', value: '4:5' },
                   { title: '4:3', value: '4:3' },
                   { title: '21:9 — cinematic', value: '21:9' },
+                  { title: 'Custom…', value: 'custom' },
                 ],
               },
               initialValue: 'auto',
+            }),
+            defineField({
+              name: 'aspectRatioCustom',
+              title: 'Custom aspect ratio',
+              type: 'string',
+              description:
+                'Width:height — e.g. 2.35:1, 1.85:1, 3:2 — or a single number like 2.35.',
+              hidden: ({ parent }) => parent?.aspectRatio !== 'custom',
+              validation: (rule) =>
+                rule.custom((val, ctx) => {
+                  const parent = ctx.parent as { aspectRatio?: string } | undefined
+                  if (parent?.aspectRatio !== 'custom') return true
+                  if (!val) return 'Enter a custom aspect ratio, e.g. 2.35:1'
+                  return /^\s*\d+(\.\d+)?(\s*:\s*\d+(\.\d+)?)?\s*$/.test(val)
+                    ? true
+                    : 'Use W:H (e.g. 2.35:1) or a single number (e.g. 2.35)'
+                }),
             }),
           ],
           preview: {

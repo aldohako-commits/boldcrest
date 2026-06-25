@@ -15,12 +15,17 @@ export function extractVimeoId(url: string): string | null {
  * Returns null for "auto"/empty/invalid so callers fall back to the Vimeo aspect.
  */
 export function parseAspectRatio(value?: string | null): number | null {
-  if (!value || value === 'auto') return null
-  const m = value.match(/^(\d+(?:\.\d+)?):(\d+(?:\.\d+)?)$/)
-  if (!m) return null
-  const w = Number(m[1])
-  const h = Number(m[2])
-  return w > 0 && h > 0 ? w / h : null
+  if (!value || value === 'auto' || value === 'custom') return null
+  const v = value.trim()
+  const ratio = v.match(/^(\d+(?:\.\d+)?):(\d+(?:\.\d+)?)$/)
+  if (ratio) {
+    const w = Number(ratio[1])
+    const h = Number(ratio[2])
+    return w > 0 && h > 0 ? w / h : null
+  }
+  // Also accept a single number (e.g. "2.35" → 2.35:1).
+  const num = Number(v)
+  return Number.isFinite(num) && num > 0 ? num : null
 }
 
 export async function getVimeoAspect(url?: string | null): Promise<number | null> {

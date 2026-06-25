@@ -89,13 +89,21 @@ export default async function ProjectPage({
   const mediaWithAspect = project.media
     ? await Promise.all(
         project.media.map(
-          async (block: { _type?: string; vimeoUrl?: string; aspectRatio?: string }) =>
+          async (block: {
+            _type?: string
+            vimeoUrl?: string
+            aspectRatio?: string
+            aspectRatioCustom?: string
+          }) =>
             block?._type === 'videoMedia' && block.vimeoUrl
               ? {
                   ...block,
-                  // Manual override wins; "auto"/unset falls back to Vimeo's real shape.
+                  // Manual override wins ("custom" reads the free-text value);
+                  // "auto"/unset falls back to Vimeo's real shape.
                   aspect:
-                    parseAspectRatio(block.aspectRatio) ?? (await getVimeoAspect(block.vimeoUrl)),
+                    parseAspectRatio(
+                      block.aspectRatio === 'custom' ? block.aspectRatioCustom : block.aspectRatio,
+                    ) ?? (await getVimeoAspect(block.vimeoUrl)),
                 }
               : block,
         ),

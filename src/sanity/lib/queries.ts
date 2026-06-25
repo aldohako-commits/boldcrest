@@ -62,7 +62,8 @@ export const projectBySlugQuery = defineQuery(
         vimeoUrl,
         feature,
         half,
-        aspectRatio
+        aspectRatio,
+        aspectRatioCustom
       },
       _type == "image" => {
         "type": "image",
