@@ -11,21 +11,35 @@ export function extractVimeoId(url: string): string | null {
 }
 
 export async function getVimeoAspect(url?: string | null): Promise<number | null> {
-  if (!url) return null
+  return (await getVimeoMeta(url)).aspect
+}
+
+/**
+ * Like getVimeoAspect but also returns a poster image (Vimeo thumbnail), used by
+ * the "feature player" click-to-play state. One oEmbed call, cached for a week.
+ */
+export async function getVimeoMeta(
+  url?: string | null,
+): Promise<{ aspect: number | null; poster: string | null }> {
+  if (!url) return { aspect: null, poster: null }
   const id = extractVimeoId(url)
-  if (!id) return null
+  if (!id) return { aspect: null, poster: null }
   try {
     const res = await fetch(
-      `https://vimeo.com/api/oembed.json?url=https://vimeo.com/${id}`,
+      `https://vimeo.com/api/oembed.json?url=https://vimeo.com/${id}&width=1280`,
       { next: { revalidate: 604800 } }, // 1 week
     )
-    if (!res.ok) return null
-    const data = (await res.json()) as { width?: number; height?: number }
+    if (!res.ok) return { aspect: null, poster: null }
+    const data = (await res.json()) as {
+      width?: number
+      height?: number
+      thumbnail_url?: string
+    }
     const w = Number(data.width)
     const h = Number(data.height)
-    if (w > 0 && h > 0) return w / h
-    return null
+    const aspect = w > 0 && h > 0 ? w / h : null
+    return { aspect, poster: data.thumbnail_url || null }
   } catch {
-    return null
+    return { aspect: null, poster: null }
   }
 }

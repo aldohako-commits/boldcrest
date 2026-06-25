@@ -152,13 +152,22 @@ export const project = defineType({
               type: 'url',
               validation: (rule) => rule.required(),
             }),
+            defineField({
+              name: 'feature',
+              title: 'Feature player',
+              type: 'boolean',
+              description:
+                'On = a full player with sound & controls (click to play). Off = silent looping background video.',
+              initialValue: false,
+            }),
           ],
           preview: {
-            select: { url: 'vimeoUrl' },
-            prepare({ url }) {
-              return { title: 'Video', subtitle: url }
+            select: { url: 'vimeoUrl', feature: 'feature' },
+            prepare({ url, feature }) {
+              return { title: feature ? 'Video — feature player' : 'Video', subtitle: url }
             },
           },
+          components: { item: MediaArrayItem },
         },
         {
           type: 'object',
