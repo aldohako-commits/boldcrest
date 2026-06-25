@@ -1,10 +1,12 @@
 import { defineField, defineType } from 'sanity'
+import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list'
 
 export const teamMember = defineType({
   name: 'teamMember',
   title: 'Team Member',
   type: 'document',
   fields: [
+    orderRankField({ type: 'teamMember' }),
     defineField({
       name: 'name',
       title: 'Name',
@@ -26,15 +28,10 @@ export const teamMember = defineType({
       name: 'order',
       title: 'Order',
       type: 'number',
+      hidden: true,
     }),
   ],
-  orderings: [
-    {
-      title: 'Manual Order',
-      name: 'orderAsc',
-      by: [{ field: 'order', direction: 'asc' }],
-    },
-  ],
+  orderings: [orderRankOrdering],
   preview: {
     select: { title: 'name', subtitle: 'role', media: 'image' },
   },

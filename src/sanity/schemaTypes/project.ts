@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity'
+import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list'
 import { MediaArrayItem } from '../components/MediaArrayItem'
 
 export const project = defineType({
@@ -6,6 +7,7 @@ export const project = defineType({
   title: 'Project',
   type: 'document',
   fields: [
+    orderRankField({ type: 'project' }),
     defineField({
       name: 'name',
       title: 'Name',
@@ -270,15 +272,11 @@ export const project = defineType({
       name: 'order',
       title: 'Order',
       type: 'number',
+      // Superseded by drag-and-drop ordering (orderRank); kept for data history.
+      hidden: true,
     }),
   ],
-  orderings: [
-    {
-      title: 'Manual Order',
-      name: 'orderAsc',
-      by: [{ field: 'order', direction: 'asc' }],
-    },
-  ],
+  orderings: [orderRankOrdering],
   preview: {
     select: { title: 'name', subtitle: 'client', media: 'thumbnail' },
   },

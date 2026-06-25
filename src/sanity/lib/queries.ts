@@ -20,7 +20,7 @@ export const featuredProjectsQuery = defineQuery(
 )
 
 export const allProjectsQuery = defineQuery(
-  `*[_type == "project"] | order(order asc, year desc) {
+  `*[_type == "project"] | order(orderRank) {
     _id,
     _updatedAt,
     name,
@@ -86,7 +86,7 @@ export const projectBySlugQuery = defineQuery(
 )
 
 export const nextProjectQuery = defineQuery(
-  `*[_type == "project" && order > $currentOrder] | order(order asc) [0] {
+  `*[_type == "project" && orderRank > $currentRank] | order(orderRank) [0] {
     _id,
     name,
     slug
@@ -104,7 +104,7 @@ export const allServicesByCategoryQuery = defineQuery(
 )
 
 export const allPartnersQuery = defineQuery(
-  `*[_type == "partner"] | order(order asc) {
+  `*[_type == "partner"] | order(orderRank) {
     _id,
     name,
     logo,
@@ -114,7 +114,7 @@ export const allPartnersQuery = defineQuery(
 )
 
 export const homepagePartnersQuery = defineQuery(
-  `*[_type == "partner" && "homepage" in showOn] | order(order asc) {
+  `*[_type == "partner" && "homepage" in showOn] | order(orderRank) {
     _id,
     name,
     logo,
@@ -123,7 +123,7 @@ export const homepagePartnersQuery = defineQuery(
 )
 
 export const servicesPartnersQuery = defineQuery(
-  `*[_type == "partner" && "services" in showOn] | order(order asc) {
+  `*[_type == "partner" && "services" in showOn] | order(orderRank) {
     _id,
     name,
     logo,
@@ -133,7 +133,7 @@ export const servicesPartnersQuery = defineQuery(
 
 // Projects filtered by service names (for subpages)
 export const projectsByServicesQuery = defineQuery(
-  `*[_type == "project" && count((services[])[@ in $serviceNames]) > 0] | order(order asc) [0...6] {
+  `*[_type == "project" && count((services[])[@ in $serviceNames]) > 0] | order(orderRank) [0...6] {
     _id,
     name,
     slug,
@@ -148,7 +148,7 @@ export const projectsByServicesQuery = defineQuery(
 )
 
 export const allTeamMembersQuery = defineQuery(
-  `*[_type == "teamMember"] | order(order asc) {
+  `*[_type == "teamMember"] | order(orderRank) {
     _id,
     name,
     role,
@@ -157,7 +157,7 @@ export const allTeamMembersQuery = defineQuery(
 )
 
 export const latestDiaryPostsQuery = defineQuery(
-  `*[_type == "diaryPost"] | order(publishedAt desc) [0...4] {
+  `*[_type == "diaryPost"] | order(orderRank) [0...4] {
     _id,
     title,
     slug,
@@ -169,7 +169,7 @@ export const latestDiaryPostsQuery = defineQuery(
 )
 
 export const allDiaryPostsQuery = defineQuery(
-  `*[_type == "diaryPost"] | order(publishedAt desc) {
+  `*[_type == "diaryPost"] | order(orderRank) {
     _id,
     _updatedAt,
     title,
