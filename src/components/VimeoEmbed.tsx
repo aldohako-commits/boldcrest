@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 
 interface VimeoEmbedProps {
   url: string
@@ -8,11 +8,9 @@ interface VimeoEmbedProps {
   /** Native width/height of the video (from Vimeo oEmbed). Sets the box shape so
    *  square/portrait clips aren't cropped into 16:9. Falls back to 16:9. */
   aspect?: number | null
-  /** true → a real player with sound + controls (click-to-play poster), instead
-   *  of the default silent looping background clip. */
+  /** true → Vimeo's native player (its own poster + play button, sound +
+   *  controls), instead of the default silent looping background clip. */
   feature?: boolean
-  /** Poster image (Vimeo thumbnail) shown before the feature player is started. */
-  poster?: string | null
 }
 
 // The official Vimeo Player SDK, loaded once and shared. We use it for ONE thing:
@@ -59,7 +57,6 @@ export default function VimeoEmbed({
   className = '',
   aspect,
   feature = false,
-  poster,
 }: VimeoEmbedProps) {
   const videoId = extractVimeoId(url)
   // Native aspect from oEmbed; default to 16:9 when unknown. The box is set to this
@@ -68,7 +65,6 @@ export default function VimeoEmbed({
 
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
   const playerRef = useRef<VimeoPlayer | null>(null)
-  const [playing, setPlaying] = useState(false)
 
   // Once the frame is loaded, attach the SDK player and pin a retina-aware rendition:
   // smallest quality that covers the box at the device's pixel density, capped at
@@ -103,54 +99,21 @@ export default function VimeoEmbed({
     )
   }
 
-  // Feature player: a real, click-to-play player with sound and controls, styled
-  // with a site-design play button over the poster. Vimeo's own chrome (themed to
-  // the brand accent) takes over once playing.
+  // Feature player: Vimeo's native player — its own poster + play button, with
+  // sound and controls — themed to the brand accent. Interactive (no background
+  // mode), so clicking plays the video in place.
   if (feature) {
-    const playerUrl = `https://player.vimeo.com/video/${videoId}?autoplay=1&playsinline=1&title=0&byline=0&portrait=0&dnt=1&color=a3a3a3`
+    const playerUrl = `https://player.vimeo.com/video/${videoId}?playsinline=1&title=0&byline=0&portrait=0&dnt=1&color=a3a3a3`
     return (
       <div className={`relative overflow-hidden ${className}`} style={{ aspectRatio }}>
-        {playing ? (
-          <iframe
-            src={playerUrl}
-            className="absolute inset-0 h-full w-full border-none"
-            allow="autoplay; fullscreen; picture-in-picture"
-            allowFullScreen
-            title="Vimeo video"
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={() => setPlaying(true)}
-            aria-label="Play video"
-            className="group absolute inset-0 h-full w-full cursor-pointer"
-          >
-            {poster && (
-              <span
-                aria-hidden
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url(${poster})` }}
-              />
-            )}
-            <span
-              aria-hidden
-              className="absolute inset-0 bg-black/20 transition-colors duration-300 group-hover:bg-black/30"
-            />
-            <span
-              aria-hidden
-              className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 ring-1 ring-white/40 backdrop-blur-sm transition-transform duration-300 group-hover:scale-110 sm:h-20 sm:w-20"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden
-                className="ml-1 h-6 w-6 text-white sm:h-7 sm:w-7"
-              >
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            </span>
-          </button>
-        )}
+        <iframe
+          src={playerUrl}
+          className="absolute inset-0 h-full w-full border-none"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowFullScreen
+          loading="lazy"
+          title="Vimeo video"
+        />
       </div>
     )
   }

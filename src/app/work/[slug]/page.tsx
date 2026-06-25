@@ -10,7 +10,7 @@ import {
 import ProjectHero from '@/components/portfolio/ProjectHero'
 import ProjectDetails from '@/components/portfolio/ProjectDetails'
 import ContentStack from '@/components/portfolio/ContentStack'
-import { getVimeoAspect, getVimeoMeta } from '@/lib/vimeo'
+import { getVimeoAspect } from '@/lib/vimeo'
 import RelatedProjects from '@/components/portfolio/RelatedProjects'
 import JsonLd from '@/components/JsonLd'
 import {
@@ -91,7 +91,7 @@ export default async function ProjectPage({
         project.media.map(
           async (block: { _type?: string; vimeoUrl?: string }) =>
             block?._type === 'videoMedia' && block.vimeoUrl
-              ? { ...block, ...(await getVimeoMeta(block.vimeoUrl)) }
+              ? { ...block, aspect: await getVimeoAspect(block.vimeoUrl) }
               : block,
         ),
       )

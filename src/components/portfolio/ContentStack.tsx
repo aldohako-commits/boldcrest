@@ -14,10 +14,8 @@ interface VideoMedia {
   vimeoUrl?: string
   /** Native aspect ratio (w/h) resolved server-side from Vimeo oEmbed. */
   aspect?: number | null
-  /** true → real player with sound + controls (click-to-play) instead of bg loop. */
+  /** true → Vimeo's native player (sound + controls) instead of the bg loop. */
   feature?: boolean
-  /** Poster image (Vimeo thumbnail) for the feature player, resolved server-side. */
-  poster?: string | null
 }
 
 interface ImageMedia {
@@ -159,7 +157,6 @@ export default function ContentStack({
               url={video.vimeoUrl}
               aspect={video.aspect}
               feature={video.feature}
-              poster={video.poster}
               className="bg-bg-card"
             />
           ),
