@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import { usePathname } from 'next/navigation'
 import Lenis from 'lenis'
 
 const LenisContext = createContext<Lenis | null>(null)
@@ -12,8 +13,14 @@ export function useLenis() {
 export default function LenisProvider({ children }: { children: ReactNode }) {
   const lenisRef = useRef<Lenis | null>(null)
   const [lenis, setLenis] = useState<Lenis | null>(null)
+  const pathname = usePathname()
 
   useEffect(() => {
+    // Sanity Studio (/studio) manages scrolling inside its own panes. Lenis
+    // hijacks wheel/trackpad events for smooth page-scroll, which stops the
+    // Studio document pane from scrolling — so skip it entirely under /studio.
+    if (pathname?.startsWith('/studio')) return
+
     // Disable Lenis on mobile for better native scroll performance
     const isMobile = window.innerWidth < 768
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -42,7 +49,7 @@ export default function LenisProvider({ children }: { children: ReactNode }) {
       lenisRef.current = null
       delete (window as any).__lenis
     }
-  }, [])
+  }, [pathname])
 
   return (
     <LenisContext.Provider value={lenis}>
