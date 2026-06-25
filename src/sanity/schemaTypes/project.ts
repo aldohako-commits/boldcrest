@@ -257,27 +257,6 @@ export const project = defineType({
           },
           components: { item: MediaArrayItem },
         },
-        {
-          type: 'image',
-          options: { hotspot: true },
-          components: { item: MediaArrayItem },
-          fields: [
-            defineField({
-              name: 'alt',
-              title: 'Alt text (SEO)',
-              type: 'string',
-              description: 'Describe the image for search engines & screen readers.',
-            }),
-            defineField({
-              name: 'half',
-              title: 'Side by side',
-              type: 'boolean',
-              description:
-                'Turn this on for two consecutive images to place them side by side (no gap). Off = normal full-width slide.',
-              initialValue: false,
-            }),
-          ],
-        },
       ],
     }),
     defineField({
