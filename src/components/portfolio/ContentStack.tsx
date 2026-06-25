@@ -633,8 +633,12 @@ export default function ContentStack({
             className="pointer-events-none absolute -left-[5px] -right-[5px] z-10 h-[3px] -translate-y-1/2 rounded-full bg-white/75 pointer-coarse:hidden"
           />
           {(() => {
-            const renderRailBtn = (item: StackItem, i: number, half: boolean) => {
-              const isActive = active === i
+            const renderRailBtn = (item: StackItem, i: number, half: boolean, isActive: boolean) => {
+              // Full items hover-light on their own (`group`); paired halves share a
+              // hover group on the row (`group/pair`) so hovering EITHER lights both.
+              const dim = half
+                ? 'opacity-30 group-hover/pair:opacity-70'
+                : 'opacity-30 group-hover:opacity-70'
               return (
                 <button
                   key={item.key}
@@ -646,11 +650,11 @@ export default function ContentStack({
                   aria-label={`Go to media ${i + 1}`}
                   aria-current={isActive}
                   style={{ aspectRatio: String(item.aspect) }}
-                  className={`group relative block overflow-hidden rounded-[3px] ${half ? 'min-w-0 flex-1' : 'w-full'}`}
+                  className={`relative block overflow-hidden rounded-[3px] ${half ? 'min-w-0 flex-1' : 'group w-full'}`}
                 >
                   <span
                     className={`absolute inset-0 transition-opacity duration-300 ${
-                      isActive ? 'opacity-100' : 'opacity-30 group-hover:opacity-70'
+                      isActive ? 'opacity-100' : dim
                     }`}
                   >
                     {item.thumbSource ? (
@@ -683,15 +687,17 @@ export default function ContentStack({
               const item = items[i]
               const next = items[i + 1]
               if (item.layout === 'half' && next?.layout === 'half') {
+                // Either half being active lights both; group/pair lights both on hover.
+                const pairActive = active === i || active === i + 1
                 rows.push(
-                  <div key={item.key} className="flex w-full gap-[3px]">
-                    {renderRailBtn(item, i, true)}
-                    {renderRailBtn(next, i + 1, true)}
+                  <div key={item.key} className="group/pair flex w-full gap-[3px]">
+                    {renderRailBtn(item, i, true, pairActive)}
+                    {renderRailBtn(next, i + 1, true, pairActive)}
                   </div>,
                 )
                 i++
               } else {
-                rows.push(renderRailBtn(item, i, false))
+                rows.push(renderRailBtn(item, i, false, active === i))
               }
             }
             return rows
