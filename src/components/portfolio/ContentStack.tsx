@@ -632,47 +632,70 @@ export default function ContentStack({
             style={{ top: `${progress * 100}%` }}
             className="pointer-events-none absolute -left-[5px] -right-[5px] z-10 h-[3px] -translate-y-1/2 rounded-full bg-white/75 pointer-coarse:hidden"
           />
-          {items.map((item, i) => {
-            const isActive = active === i
-            return (
-              <button
-                key={item.key}
-                ref={(el) => {
-                  railBtnRefs.current[i] = el
-                }}
-                type="button"
-                onClick={() => scrollToItem(i)}
-                aria-label={`Go to media ${i + 1}`}
-                aria-current={isActive}
-                style={{ aspectRatio: String(item.aspect) }}
-                className="group relative block w-full overflow-hidden rounded-[3px]"
-              >
-                <span
-                  className={`absolute inset-0 transition-opacity duration-300 ${
-                    isActive ? 'opacity-100' : 'opacity-30 group-hover:opacity-70'
-                  }`}
+          {(() => {
+            const renderRailBtn = (item: StackItem, i: number, half: boolean) => {
+              const isActive = active === i
+              return (
+                <button
+                  key={item.key}
+                  ref={(el) => {
+                    railBtnRefs.current[i] = el
+                  }}
+                  type="button"
+                  onClick={() => scrollToItem(i)}
+                  aria-label={`Go to media ${i + 1}`}
+                  aria-current={isActive}
+                  style={{ aspectRatio: String(item.aspect) }}
+                  className={`group relative block overflow-hidden rounded-[3px] ${half ? 'min-w-0 flex-1' : 'w-full'}`}
                 >
-                  {item.thumbSource ? (
-                    <Image
-                      loader={sanityImageLoader}
-                      src={urlFor(item.thumbSource).width(220).quality(70).url()}
-                      alt=""
-                      fill
-                      draggable={false}
-                      sizes="(pointer: coarse) 44px, 72px"
-                      className="object-cover"
-                    />
-                  ) : (
-                    <span className="flex h-full w-full items-center justify-center bg-bg-elevated">
-                      <svg width="10" height="10" viewBox="0 0 16 16" fill="none" className="text-text-tertiary">
-                        <path d="M5 3.5v9l7-4.5-7-4.5z" fill="currentColor" />
-                      </svg>
-                    </span>
-                  )}
-                </span>
-              </button>
-            )
-          })}
+                  <span
+                    className={`absolute inset-0 transition-opacity duration-300 ${
+                      isActive ? 'opacity-100' : 'opacity-30 group-hover:opacity-70'
+                    }`}
+                  >
+                    {item.thumbSource ? (
+                      <Image
+                        loader={sanityImageLoader}
+                        src={urlFor(item.thumbSource).width(220).quality(70).url()}
+                        alt=""
+                        fill
+                        draggable={false}
+                        sizes="(pointer: coarse) 44px, 72px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center bg-bg-elevated">
+                        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" className="text-text-tertiary">
+                          <path d="M5 3.5v9l7-4.5-7-4.5z" fill="currentColor" />
+                        </svg>
+                      </span>
+                    )}
+                  </span>
+                </button>
+              )
+            }
+            // Mirror the slide layout: two consecutive 'half' items become one rail
+            // row with a left + right thumbnail (each still individually clickable).
+            // Their scroll-snaps are already equal (same row in the stack), so the
+            // active/progress/scrub math is unaffected.
+            const rows: React.ReactNode[] = []
+            for (let i = 0; i < items.length; i++) {
+              const item = items[i]
+              const next = items[i + 1]
+              if (item.layout === 'half' && next?.layout === 'half') {
+                rows.push(
+                  <div key={item.key} className="flex w-full gap-[3px]">
+                    {renderRailBtn(item, i, true)}
+                    {renderRailBtn(next, i + 1, true)}
+                  </div>,
+                )
+                i++
+              } else {
+                rows.push(renderRailBtn(item, i, false))
+              }
+            }
+            return rows
+          })()}
         </nav>
         </div>
       )}
