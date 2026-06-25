@@ -689,8 +689,21 @@ export default function ContentStack({
               if (item.layout === 'half' && next?.layout === 'half') {
                 // Either half being active lights both; group/pair lights both on hover.
                 const pairActive = active === i || active === i + 1
+                // The 3px gap between the two halves is dead space (neither
+                // button covers it). Route a click that lands EXACTLY on the row
+                // (the gap) to this row's slide — both halves share one snap, so
+                // it matches either thumbnail. `e.target === e.currentTarget`
+                // fires only for the gap itself; clicks on a button bubble with
+                // target = the button, so the buttons keep owning their own clicks
+                // and the drag-scrub's onClickCapture still suppresses post-drag.
                 rows.push(
-                  <div key={item.key} className="group/pair flex w-full gap-[3px]">
+                  <div
+                    key={item.key}
+                    className="group/pair flex w-full cursor-pointer gap-[3px]"
+                    onClick={(e) => {
+                      if (e.target === e.currentTarget) scrollToItem(i)
+                    }}
+                  >
                     {renderRailBtn(item, i, true, pairActive)}
                     {renderRailBtn(next, i + 1, true, pairActive)}
                   </div>,
