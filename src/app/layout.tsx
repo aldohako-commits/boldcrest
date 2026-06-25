@@ -68,24 +68,24 @@ export const metadata: Metadata = {
       'We build identities and shape perceptions. Go bold or go unseen.',
     images: ['/og-image.png'],
   },
-  // Tab icon — black circle + white crest, with a Safari-specific split:
-  //   • icon.svg = black CIRCLE (transparent outside). Chrome/Firefox/Edge use
-  //     this and render the disc cleanly — corners show the tab color, no white.
-  //   • favicon.ico = FULL-BLEED OPAQUE black SQUARE (16/32/48). iPad/iOS Safari
-  //     ignores SVG favicons and uses the .ico; it also paints a white backplate
-  //     behind any transparent corners, so the .ico must be opaque to avoid a
-  //     white halo. On Safari's dark tab strip the square's edges blend into the
-  //     dark, so you see the crest with no white box.
+  // Tab icon — a black CIRCLE + white crest on EVERY tab (icon.svg vector +
+  // matching black-circle favicon.ico 16/32/48, both transparent outside the
+  // disc). Chrome/Firefox/Edge and inactive Safari tabs render it as a clean
+  // disc — the transparent corners show the tab's own colour, no white.
+  // Known, accepted trade-off: Safari's *active* tab has a lighter background,
+  // so on that one focused tab the circle's corners show as faint grey. There's
+  // no way to avoid this for a dark disc (a light tile like wolffolins.com's
+  // yellow hides it, but that fights the brand); the round look is worth it.
   // apple-touch (iPhone Safari favourites + iOS home screen) stays the rounded
   // square on purpose — that one is intentional and left as-is.
   // ?v busts Safari's sticky favicon cache — bump it whenever the bytes change.
   icons: {
     icon: [
-      { url: '/favicon.ico?v=8', sizes: '16x16 32x32 48x48' },
-      { url: '/icon.svg?v=8', type: 'image/svg+xml' },
+      { url: '/favicon.ico?v=9', sizes: '16x16 32x32 48x48' },
+      { url: '/icon.svg?v=9', type: 'image/svg+xml' },
     ],
-    shortcut: '/favicon.ico?v=8',
-    apple: [{ url: '/apple-touch-icon.png?v=8', sizes: '180x180', type: 'image/png' }],
+    shortcut: '/favicon.ico?v=9',
+    apple: [{ url: '/apple-touch-icon.png?v=9', sizes: '180x180', type: 'image/png' }],
     other: [{ rel: 'mask-icon', url: '/safari-pinned-tab.svg?v=3', color: '#0a0a0a' }],
   },
   manifest: '/site.webmanifest',
