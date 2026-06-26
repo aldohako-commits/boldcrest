@@ -49,6 +49,7 @@ interface ContentStackProps {
   thumbnail?: ThumbnailImage
   thumbnailVideo?: string
   thumbnailVideoAspect?: number | null
+  thumbnailVideoPoster?: string | null
   thumbnailType?: string
   /** Descriptive base for image alt text, e.g. "Client — Project Name". */
   altBase?: string
@@ -108,6 +109,7 @@ export default function ContentStack({
   thumbnail,
   thumbnailVideo,
   thumbnailVideoAspect,
+  thumbnailVideoPoster,
   thumbnailType,
   altBase,
   altSuffix,
@@ -121,8 +123,16 @@ export default function ContentStack({
     items.push({
       type: 'video',
       key: 'thumb-video',
-      content: <VimeoEmbed url={thumbnailVideo} aspect={thumbnailVideoAspect} className="bg-bg-card" />,
+      content: (
+        <VimeoEmbed
+          url={thumbnailVideo}
+          aspect={thumbnailVideoAspect}
+          poster={thumbnailVideoPoster}
+          className="bg-bg-card"
+        />
+      ),
       thumbSource: thumbnail?.asset?._ref ? thumbnail : null,
+      posterUrl: thumbnailVideoPoster,
       aspect:
         thumbnailVideoAspect ||
         refAspect(thumbnail?.asset?._ref) ||

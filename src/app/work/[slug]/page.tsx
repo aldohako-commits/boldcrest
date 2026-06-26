@@ -10,7 +10,7 @@ import {
 import ProjectHero from '@/components/portfolio/ProjectHero'
 import ProjectDetails from '@/components/portfolio/ProjectDetails'
 import ContentStack from '@/components/portfolio/ContentStack'
-import { getVimeoAspect, getVimeoMeta, parseAspectRatio } from '@/lib/vimeo'
+import { getVimeoMeta, parseAspectRatio } from '@/lib/vimeo'
 import RelatedProjects from '@/components/portfolio/RelatedProjects'
 import JsonLd from '@/components/JsonLd'
 import {
@@ -107,10 +107,12 @@ export default async function ProjectPage({
         ),
       )
     : project.media
-  const thumbnailVideoAspect =
+  const thumbnailVideoMeta =
     project.thumbnailType === 'video'
-      ? await getVimeoAspect(project.thumbnailVideo)
-      : null
+      ? await getVimeoMeta(project.thumbnailVideo)
+      : { aspect: null, poster: null }
+  const thumbnailVideoAspect = thumbnailVideoMeta.aspect
+  const thumbnailVideoPoster = thumbnailVideoMeta.poster
 
   // Four projects in the same category (service); fall back to recent work to
   // always fill the row.
@@ -184,6 +186,7 @@ export default async function ProjectPage({
             thumbnail={project.thumbnail}
             thumbnailVideo={project.thumbnailVideo}
             thumbnailVideoAspect={thumbnailVideoAspect}
+            thumbnailVideoPoster={thumbnailVideoPoster}
             thumbnailType={project.thumbnailType}
             altBase={[project.client, project.name]
               .filter(Boolean)
