@@ -289,10 +289,17 @@ export const project = defineType({
   ],
   orderings: [orderRankOrdering],
   preview: {
-    select: { title: 'name', subtitle: 'client', media: 'thumbnail', order: 'order' },
-    prepare({ title, subtitle, media, order }) {
-      // Title stays clean; `order` is passed through for the number column.
-      const value = { title, subtitle, media, order }
+    select: {
+      title: 'name',
+      subtitle: 'client',
+      media: 'thumbnail',
+      order: 'order',
+      id: '_id',
+      docType: '_type',
+    },
+    prepare({ title, subtitle, media, order, id, docType }) {
+      // Title stays clean; the rest feeds the live number column.
+      const value = { title, subtitle, media, order, id, docType }
       return value
     },
   },

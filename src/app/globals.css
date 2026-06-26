@@ -120,6 +120,14 @@ html {
   overflow-x: clip;
 }
 
+/* Normalize non-Latin fallback glyphs to the display font's metrics. Metropolis
+   has no Cyrillic, so a character like the "Є" in MORЄ falls back to a system
+   font and renders larger than the surrounding Latin caps; `from-font` scales the
+   fallback to match. No effect on Latin text (it's already Metropolis). */
+.font-display {
+  font-size-adjust: from-font;
+}
+
 body {
   font-family: var(--font-body), sans-serif;
   background: var(--bg);

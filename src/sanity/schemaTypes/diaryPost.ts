@@ -87,9 +87,9 @@ export const diaryPost = defineType({
     },
   ],
   preview: {
-    select: { title: 'title', subtitle: 'category', order: 'order' },
-    prepare({ title, subtitle, order }) {
-      const value = { title, subtitle, order }
+    select: { title: 'title', subtitle: 'category', order: 'order', id: '_id', docType: '_type' },
+    prepare({ title, subtitle, order, id, docType }) {
+      const value = { title, subtitle, order, id, docType }
       return value
     },
   },
