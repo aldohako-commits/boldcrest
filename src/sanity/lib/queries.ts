@@ -53,6 +53,7 @@ export const projectBySlugQuery = defineQuery(
     thumbnailType,
     thumbnail,
     thumbnailVideo,
+    coverAsFirstSlide,
     order,
     media[] {
       _type,

@@ -51,6 +51,10 @@ interface ContentStackProps {
   thumbnailVideoAspect?: number | null
   thumbnailVideoPoster?: string | null
   thumbnailType?: string
+  /** When false, the cover/thumbnail is NOT duplicated as the first slide — the
+   *  slide stack starts from `media` instead. Defaults to true (undefined on
+   *  existing docs) so current projects are unchanged. */
+  coverAsFirstSlide?: boolean
   /** Descriptive base for image alt text, e.g. "Client — Project Name". */
   altBase?: string
   /** Appended to alt text, e.g. "Branding · BoldCrest". */
@@ -111,6 +115,7 @@ export default function ContentStack({
   thumbnailVideoAspect,
   thumbnailVideoPoster,
   thumbnailType,
+  coverAsFirstSlide,
   altBase,
   altSuffix,
 }: ContentStackProps) {
@@ -118,8 +123,12 @@ export default function ContentStack({
     [altBase, altSuffix].filter(Boolean).join(', ') || 'BoldCrest project'
   const items: StackItem[] = []
 
-  // Thumbnail as first item
-  if (thumbnailType === 'video' && thumbnailVideo) {
+  // Thumbnail as the first slide — unless the project opts to decouple it
+  // (coverAsFirstSlide === false), in which case the cover stays a card-only
+  // thumbnail and the slide stack starts from the media list. Defaults to true
+  // (undefined on existing docs) so current projects are unchanged.
+  const showCoverSlide = coverAsFirstSlide !== false
+  if (showCoverSlide && thumbnailType === 'video' && thumbnailVideo) {
     items.push({
       type: 'video',
       key: 'thumb-video',
@@ -138,7 +147,7 @@ export default function ContentStack({
         refAspect(thumbnail?.asset?._ref) ||
         FALLBACK_ASPECT,
     })
-  } else if (thumbnail?.asset?._ref) {
+  } else if (showCoverSlide && thumbnail?.asset?._ref) {
     items.push({
       type: 'image',
       key: 'thumb-image',

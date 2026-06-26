@@ -188,6 +188,7 @@ export default async function ProjectPage({
             thumbnailVideoAspect={thumbnailVideoAspect}
             thumbnailVideoPoster={thumbnailVideoPoster}
             thumbnailType={project.thumbnailType}
+            coverAsFirstSlide={project.coverAsFirstSlide}
             altBase={[project.client, project.name]
               .filter(Boolean)
               .join(', ')}
