@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { sanityFetch } from '@/sanity/lib/live'
-import { allServicesByCategoryQuery, servicesPartnersQuery } from '@/sanity/lib/queries'
+import { allServicesByCategoryQuery, servicesPartnersQuery, servicesPageQuery } from '@/sanity/lib/queries'
 import ServicesPageClient from './ServicesPageClient'
 import { BreadcrumbJsonLd, ServiceJsonLd, FAQJsonLd } from '@/components/services/JsonLd'
 
@@ -65,9 +65,10 @@ interface Service {
 }
 
 export default async function ServicesPage() {
-  const [{ data: services }, { data: partners }] = await Promise.all([
+  const [{ data: services }, { data: partners }, { data: content }] = await Promise.all([
     sanityFetch({ query: allServicesByCategoryQuery }),
     sanityFetch({ query: servicesPartnersQuery }),
+    sanityFetch({ query: servicesPageQuery }),
   ])
 
   const categories = ['Brand Dev', 'Still & Motion', 'Communications']
@@ -77,6 +78,7 @@ export default async function ServicesPage() {
       (s) => s.category === cat
     ),
   }))
+  const faqItems = content?.faqs?.length ? content.faqs : FAQ_ITEMS
 
   return (
     <>
@@ -91,8 +93,13 @@ export default async function ServicesPage() {
         description="Brand development, still & motion production, and communication services. 300+ projects across 11 industries."
         url="/services"
       />
-      <FAQJsonLd items={FAQ_ITEMS} />
-      <ServicesPageClient categories={grouped} faqItems={FAQ_ITEMS} partners={partners ?? []} />
+      <FAQJsonLd items={faqItems} />
+      <ServicesPageClient
+        categories={grouped}
+        faqItems={faqItems}
+        partners={partners ?? []}
+        content={content ?? null}
+      />
     </>
   )
 }

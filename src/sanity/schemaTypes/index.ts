@@ -6,7 +6,18 @@ import { teamMember } from './teamMember'
 import { partner } from './partner'
 import { siteSettings } from './siteSettings'
 import { diaryPost } from './diaryPost'
+import { servicesPage } from './servicesPage'
+import { serviceDetailPage } from './serviceDetailPage'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
-  types: [project, service, teamMember, partner, siteSettings, diaryPost],
+  types: [
+    project,
+    service,
+    teamMember,
+    partner,
+    siteSettings,
+    diaryPost,
+    servicesPage,
+    serviceDetailPage,
+  ],
 }

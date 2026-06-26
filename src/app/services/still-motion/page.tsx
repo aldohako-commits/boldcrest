@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { client } from '@/sanity/lib/client'
-import { projectsByServicesQuery } from '@/sanity/lib/queries'
+import { projectsByServicesQuery, serviceDetailPageQuery } from '@/sanity/lib/queries'
 import StillMotionClient from './StillMotionClient'
 import { BreadcrumbJsonLd, ServiceJsonLd, FAQJsonLd } from '@/components/services/JsonLd'
 
@@ -29,13 +29,15 @@ export default async function StillMotionPage() {
   const projects = await client.fetch(projectsByServicesQuery, {
     serviceNames: ['Photography', 'Videography'],
   })
+  const content = await client.fetch(serviceDetailPageQuery, { pageKey: 'still-motion' })
+  const faqItems = content?.faqs?.length ? content.faqs : FAQ_ITEMS
 
   return (
     <>
       <BreadcrumbJsonLd items={[{ name: 'Home', url: '/' }, { name: 'Services', url: '/services' }, { name: 'Still & Motion', url: '/services/still-motion' }]} />
       <ServiceJsonLd name="Still & Motion Production" description="Photography, videography, animation, motion graphics, and post-production. Full in-house team." url="/services/still-motion" />
-      <FAQJsonLd items={FAQ_ITEMS} />
-      <StillMotionClient faqItems={FAQ_ITEMS} projects={projects ?? []} />
+      <FAQJsonLd items={faqItems} />
+      <StillMotionClient faqItems={faqItems} projects={projects ?? []} content={content ?? null} />
     </>
   )
 }

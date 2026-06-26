@@ -103,6 +103,38 @@ export const allServicesByCategoryQuery = defineQuery(
   }`
 )
 
+// Editable copy for the main /services page (singleton).
+export const servicesPageQuery = defineQuery(
+  `*[_type == "servicesPage"][0] {
+    hero,
+    disciplinesLabel,
+    disciplines,
+    stats,
+    clientLogosEyebrow,
+    processEyebrow,
+    processHeading,
+    processSteps,
+    faqs
+  }`
+)
+
+// Editable copy for a single service detail page (by fixed pageKey).
+export const serviceDetailPageQuery = defineQuery(
+  `*[_type == "serviceDetailPage" && pageKey == $pageKey][0] {
+    hero,
+    outcomesHeading,
+    outcomes,
+    capabilitiesHeading,
+    capabilities,
+    processHeading,
+    processSteps,
+    whyUsHeading,
+    whyUsItems,
+    otherServices,
+    faqs
+  }`
+)
+
 export const allPartnersQuery = defineQuery(
   `*[_type == "partner"] | order(orderRank) {
     _id,

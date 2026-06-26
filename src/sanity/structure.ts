@@ -5,6 +5,15 @@ import { orderableDocumentListDeskItem } from '@sanity/orderable-document-list'
 // follows the list order via `orderRank`).
 const ORDERABLE = ['project', 'teamMember', 'partner', 'diaryPost']
 
+// Types handled explicitly below, so they don't also appear in the catch-all.
+const HANDLED = [
+  'siteSettings',
+  ...ORDERABLE,
+  'service',
+  'servicesPage',
+  'serviceDetailPage',
+]
+
 export const structure: StructureResolver = (S, context) =>
   S.list()
     .title('Content')
@@ -19,8 +28,50 @@ export const structure: StructureResolver = (S, context) =>
       orderableDocumentListDeskItem({ type: 'teamMember', title: 'Team Member', S, context }),
       orderableDocumentListDeskItem({ type: 'partner', title: 'Partner', S, context }),
       S.divider(),
-      // Everything else (e.g. Service) keeps the default list.
+      // Services: page content (editable copy) + the offerings list.
+      S.listItem()
+        .title('Services')
+        .id('servicesGroup')
+        .child(
+          S.list()
+            .title('Services')
+            .items([
+              S.listItem()
+                .title('Services Page (main)')
+                .id('servicesPage')
+                .child(S.document().schemaType('servicesPage').documentId('servicesPage')),
+              S.divider(),
+              S.listItem()
+                .title('Brand Development')
+                .id('sdpBrand')
+                .child(
+                  S.document()
+                    .schemaType('serviceDetailPage')
+                    .documentId('serviceDetailPage-brand-development'),
+                ),
+              S.listItem()
+                .title('Still & Motion')
+                .id('sdpStill')
+                .child(
+                  S.document()
+                    .schemaType('serviceDetailPage')
+                    .documentId('serviceDetailPage-still-motion'),
+                ),
+              S.listItem()
+                .title('Communication')
+                .id('sdpComms')
+                .child(
+                  S.document()
+                    .schemaType('serviceDetailPage')
+                    .documentId('serviceDetailPage-communication'),
+                ),
+              S.divider(),
+              S.documentTypeListItem('service').title('Service offerings (list)'),
+            ]),
+        ),
+      S.divider(),
+      // Anything not handled above keeps the default list.
       ...S.documentTypeListItems().filter(
-        (listItem) => !['siteSettings', ...ORDERABLE].includes(listItem.getId() as string),
+        (listItem) => !HANDLED.includes(listItem.getId() as string),
       ),
     ])

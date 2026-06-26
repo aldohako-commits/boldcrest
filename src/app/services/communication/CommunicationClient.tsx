@@ -7,6 +7,7 @@ import ProcessTable from '@/components/services/ProcessTable'
 import WhyUsSection from '@/components/services/WhyUsSection'
 import FAQSection from '@/components/services/FAQSection'
 import OtherServices from '@/components/services/OtherServices'
+import type { ServicePageContent } from '../brand-development/BrandDevelopmentClient'
 
 interface FAQItem { question: string; answer: string }
 
@@ -61,27 +62,58 @@ const OTHER_SERVICES = [
   { title: 'Still & Motion', href: '/services/still-motion', description: 'Frames and footage that hold attention.', color: '#f9b311' },
 ]
 
-export default function CommunicationClient({ faqItems, projects }: { faqItems: FAQItem[]; projects: Project[] }) {
+export default function CommunicationClient({
+  faqItems,
+  projects,
+  content,
+}: {
+  faqItems: FAQItem[]
+  projects: Project[]
+  content?: ServicePageContent | null
+}) {
+  const hero = content?.hero
+  const outcomes = content?.outcomes?.length ? content.outcomes : OUTCOMES
+  const services = content?.capabilities?.length
+    ? content.capabilities.map((c) => ({ name: c.name, href: c.link, description: c.description }))
+    : SERVICES
+  const process = content?.processSteps?.length ? content.processSteps : PROCESS
+  const whyUs = content?.whyUsItems?.length ? content.whyUsItems : WHY_US
+  const otherServices = OTHER_SERVICES.map((s, i) => ({
+    ...s,
+    title: content?.otherServices?.[i]?.title ?? s.title,
+    description: content?.otherServices?.[i]?.description ?? s.description,
+  }))
+
   return (
     <main className="relative">
       <ServiceHero
-        label="Communication"
-        title="Strategy, Content, and Distribution. Orchestrated to Reach the Right People."
-        subtitle="A great brand in silence is a waste. We put yours where it belongs, in front of the right audience, saying the right thing, at the right moment. From monthly social management to full-scale campaign orchestration."
-        ctaLabel="Start a Communication Project"
+        label={hero?.label ?? 'Communication'}
+        title={hero?.title ?? 'Strategy, Content, and Distribution. Orchestrated to Reach the Right People.'}
+        subtitle={
+          hero?.subtitle ??
+          'A great brand in silence is a waste. We put yours where it belongs, in front of the right audience, saying the right thing, at the right moment. From monthly social management to full-scale campaign orchestration.'
+        }
+        ctaLabel={hero?.ctaLabel ?? 'Start a Communication Project'}
       />
       <ProjectMarquee projects={projects} accentColor="#004c95" />
       <OutcomesServices
-        outcomesHeading="What Strategic Communication Delivers?"
-        outcomes={OUTCOMES}
-        servicesHeading="Our Communication Capabilities"
-        services={SERVICES}
+        outcomesHeading={content?.outcomesHeading ?? 'What Strategic Communication Delivers?'}
+        outcomes={outcomes}
+        servicesHeading={content?.capabilitiesHeading ?? 'Our Communication Capabilities'}
+        services={services}
         accentColor="#004c95"
       />
-      <ProcessTable heading="How We Run Communication" steps={PROCESS} accentColor="#004c95" />
-      <WhyUsSection heading="Why Brands Choose BoldCrest for Communication" items={WHY_US} />
+      <ProcessTable
+        heading={content?.processHeading ?? 'How We Run Communication'}
+        steps={process}
+        accentColor="#004c95"
+      />
+      <WhyUsSection
+        heading={content?.whyUsHeading ?? 'Why Brands Choose BoldCrest for Communication'}
+        items={whyUs}
+      />
       <FAQSection heading="Communication Questions Answered" items={faqItems} noTopBorder grayBg />
-      <OtherServices services={OTHER_SERVICES} />
+      <OtherServices services={otherServices} />
     </main>
   )
 }

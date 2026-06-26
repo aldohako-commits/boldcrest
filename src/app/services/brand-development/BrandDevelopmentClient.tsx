@@ -61,27 +61,75 @@ const OTHER_SERVICES = [
   { title: 'Communication', href: '/services/communication', description: 'Strategy and distribution that reach the right people.', color: '#004c95' },
 ]
 
-export default function BrandDevelopmentClient({ faqItems, projects }: { faqItems: FAQItem[]; projects: Project[] }) {
+// Editable copy from Sanity (serviceDetailPage). All optional — falls back to
+// the constants above so the page never breaks.
+export interface ServicePageContent {
+  hero?: { label?: string; title?: string; subtitle?: string; ctaLabel?: string }
+  outcomesHeading?: string
+  outcomes?: { title: string; description: string }[]
+  capabilitiesHeading?: string
+  capabilities?: { name: string; link: string; description: string }[]
+  processHeading?: string
+  processSteps?: { number: string; title: string; description: string }[]
+  whyUsHeading?: string
+  whyUsItems?: { title: string; description: string }[]
+  otherServices?: { title: string; description: string }[]
+  faqs?: FAQItem[]
+}
+
+export default function BrandDevelopmentClient({
+  faqItems,
+  projects,
+  content,
+}: {
+  faqItems: FAQItem[]
+  projects: Project[]
+  content?: ServicePageContent | null
+}) {
+  const hero = content?.hero
+  const outcomes = content?.outcomes?.length ? content.outcomes : OUTCOMES
+  const services = content?.capabilities?.length
+    ? content.capabilities.map((c) => ({ name: c.name, href: c.link, description: c.description }))
+    : SERVICES
+  const process = content?.processSteps?.length ? content.processSteps : PROCESS
+  const whyUs = content?.whyUsItems?.length ? content.whyUsItems : WHY_US
+  const otherServices = OTHER_SERVICES.map((s, i) => ({
+    ...s,
+    title: content?.otherServices?.[i]?.title ?? s.title,
+    description: content?.otherServices?.[i]?.description ?? s.description,
+  }))
+
   return (
     <main className="relative">
       <ServiceHero
-        label="Brand Development"
-        title="Brand Systems That Clarify Who You Are and Amplify How You're Seen"
-        subtitle="Your brand is the promise you make before you say a word. We build identity systems, logos, visual languages, packaging, guidelines, and campaigns, that earn trust on sight and hold up everywhere your name appears."
-        ctaLabel="Start Your Brand Project"
+        label={hero?.label ?? 'Brand Development'}
+        title={hero?.title ?? "Brand Systems That Clarify Who You Are and Amplify How You're Seen"}
+        subtitle={
+          hero?.subtitle ??
+          'Your brand is the promise you make before you say a word. We build identity systems, logos, visual languages, packaging, guidelines, and campaigns, that earn trust on sight and hold up everywhere your name appears.'
+        }
+        ctaLabel={hero?.ctaLabel ?? 'Start Your Brand Project'}
       />
       <ProjectMarquee projects={projects} accentColor="#DA291C" />
       <OutcomesServices
-        outcomesHeading="What Strong Brand Development Does for Your Business?"
-        outcomes={OUTCOMES}
-        servicesHeading="Our Brand Development Capabilities"
-        services={SERVICES}
+        outcomesHeading={content?.outcomesHeading ?? 'What Strong Brand Development Does for Your Business?'}
+        outcomes={outcomes}
+        servicesHeading={content?.capabilitiesHeading ?? 'Our Brand Development Capabilities'}
+        services={services}
         accentColor="#DA291C"
       />
-      <ProcessTable heading="How We Build Brand Identity Systems" steps={PROCESS} accentColor="#DA291C" />
-      <WhyUsSection heading="What Sets Our Brand Development Apart" items={WHY_US} accentColor="#DA291C" />
+      <ProcessTable
+        heading={content?.processHeading ?? 'How We Build Brand Identity Systems'}
+        steps={process}
+        accentColor="#DA291C"
+      />
+      <WhyUsSection
+        heading={content?.whyUsHeading ?? 'What Sets Our Brand Development Apart'}
+        items={whyUs}
+        accentColor="#DA291C"
+      />
       <FAQSection heading="Brand Development Questions Answered" items={faqItems} noTopBorder grayBg />
-      <OtherServices services={OTHER_SERVICES} />
+      <OtherServices services={otherServices} />
     </main>
   )
 }

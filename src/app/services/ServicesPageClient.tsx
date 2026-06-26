@@ -32,10 +32,31 @@ interface Partner {
   logo?: { asset: { _ref: string } }
 }
 
+// Editable copy from Sanity (servicesPage singleton). All optional — falls
+// back to the constants/inline strings below so the page never breaks.
+export interface ServicesMainContent {
+  hero?: { eyebrow?: string; lines?: string[] }
+  disciplinesLabel?: string
+  disciplines?: {
+    number?: string
+    heading?: string
+    abbr?: string
+    ctaLabel?: string
+    tags?: string[]
+    description?: string
+  }[]
+  stats?: { projectsLabel?: string; partnersLabel?: string; daysLabel?: string }
+  clientLogosEyebrow?: string
+  processEyebrow?: string
+  processHeading?: string
+  processSteps?: { number: string; title: string; description: string }[]
+}
+
 interface ServicesPageClientProps {
   categories: CategoryGroup[]
   faqItems?: FAQItem[]
   partners?: Partner[]
+  content?: ServicesMainContent | null
 }
 
 const capabilities = [
@@ -155,7 +176,15 @@ function WordItem({
 }
 
 /* ── Expandable Service Cards ── */
-function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
+function ServiceShowcase({
+  categories,
+  label,
+  disciplines,
+}: {
+  categories: CategoryGroup[]
+  label: string
+  disciplines: typeof capabilities
+}) {
   const [active, setActive] = useState(0)
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-50px' })
@@ -173,7 +202,7 @@ function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.6 }}
       >
-        Disciplines
+        {label}
       </motion.p>
 
       {/* Cards */}
@@ -183,7 +212,7 @@ function ServiceShowcase({ categories }: { categories: CategoryGroup[] }) {
         animate={isInView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
       >
-        {capabilities.map((cap, i) => {
+        {disciplines.map((cap, i) => {
           const isActive = active === i
           const sanityServices =
             categories.find((c) => c.category === cap.category)?.services || []
@@ -349,7 +378,11 @@ function CountUp({ to, active }: { to: number; active: boolean }) {
   return <>{n.toLocaleString('en-US')}</>
 }
 
-function Stats() {
+function Stats({
+  labels,
+}: {
+  labels: { projectsLabel?: string; partnersLabel?: string; daysLabel?: string }
+}) {
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
   const [counts, setCounts] = useState({
@@ -371,9 +404,9 @@ function Stats() {
   }, [])
 
   const stats = [
-    { value: counts.projects, label: 'Projects delivered', bg: '#1f1f1f' },
-    { value: counts.partners, label: 'Partners', bg: '#171717' },
-    { value: counts.days, label: 'Days active', bg: '#0f0f0f' },
+    { value: counts.projects, label: labels.projectsLabel ?? 'Projects delivered', bg: '#1f1f1f' },
+    { value: counts.partners, label: labels.partnersLabel ?? 'Partners', bg: '#171717' },
+    { value: counts.days, label: labels.daysLabel ?? 'Days active', bg: '#0f0f0f' },
   ]
 
   return (
@@ -416,7 +449,7 @@ const CLIENT_NAMES = [
   'Ina\'s Farm', 'EOS Mezze', 'NFMA', 'Magniflex Albania',
 ]
 
-function ClientLogos({ partners = [] }: { partners?: Partner[] }) {
+function ClientLogos({ partners = [], eyebrow }: { partners?: Partner[]; eyebrow: string }) {
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
   const [page, setPage] = useState(0)
@@ -482,7 +515,7 @@ function ClientLogos({ partners = [] }: { partners?: Partner[] }) {
           transition={{ duration: 0.6 }}
         >
           <p className="mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
-            Trusted by the ambitious<span className="text-accent">.</span>
+            {eyebrow}<span className="text-accent">.</span>
           </p>
           <div className="h-px w-full bg-border" />
         </motion.div>
@@ -611,7 +644,15 @@ function ProcessRow({ step, index }: { step: typeof PROCESS_STEPS[number]; index
   )
 }
 
-function ProcessSection() {
+function ProcessSection({
+  eyebrow,
+  heading,
+  steps,
+}: {
+  eyebrow: string
+  heading: string
+  steps: typeof PROCESS_STEPS
+}) {
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
@@ -625,7 +666,7 @@ function ProcessSection() {
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ duration: 0.6 }}
           >
-            Process
+            {eyebrow}
           </motion.p>
 
           <motion.h2
@@ -634,14 +675,14 @@ function ProcessSection() {
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            How every BoldCrest project works<span className="text-accent">.</span>
+            {heading}<span className="text-accent">.</span>
           </motion.h2>
         </div>
 
         {/* Steps — vertical editorial rows with hairline dividers (no closing
             bottom line; it read as redundant against the next section). */}
         <div>
-          {PROCESS_STEPS.map((step, i) => (
+          {steps.map((step, i) => (
             <ProcessRow key={step.number} step={step} index={i} />
           ))}
         </div>
@@ -654,7 +695,27 @@ export default function ServicesPageClient({
   categories,
   faqItems,
   partners = [],
+  content,
 }: ServicesPageClientProps) {
+  const heroEyebrow = content?.hero?.eyebrow ?? 'Services'
+  const heroLines = content?.hero?.lines?.length
+    ? content.hero.lines
+    : ['We craft brands', 'and tell stories', "that don't just inform.", 'They pull people in.']
+  const disciplinesLabel = content?.disciplinesLabel ?? 'Disciplines'
+  const disciplines = capabilities.map((cap, i) => {
+    const d = content?.disciplines?.[i]
+    return {
+      ...cap,
+      number: d?.number ?? cap.number,
+      heading: d?.heading ?? cap.heading,
+      abbr: d?.abbr ?? cap.abbr,
+      ctaLabel: d?.ctaLabel ?? cap.ctaLabel,
+      tags: d?.tags?.length ? d.tags : cap.tags,
+      description: d?.description ?? cap.description,
+    }
+  })
+  const processSteps = content?.processSteps?.length ? content.processSteps : PROCESS_STEPS
+
   return (
     <main className="relative">
       {/* ── Hero (Manifesto) ── */}
@@ -666,7 +727,7 @@ export default function ServicesPageClient({
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
-            Services
+            {heroEyebrow}
           </motion.p>
           <motion.h1
             className="font-display text-[clamp(2.5rem,6vw,5rem)] font-bold leading-[1.05] tracking-[-0.03em]"
@@ -674,10 +735,11 @@ export default function ServicesPageClient({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            <span className="block"><WordReveal text="We craft brands" /></span>
-            <span className="block"><WordReveal text="and tell stories" /></span>
-            <span className="block"><WordReveal text="that don't just inform." /></span>
-            <span className="block"><WordReveal text="They pull people in." /></span>
+            {heroLines.map((line, i) => (
+              <span key={i} className="block">
+                <WordReveal text={line} />
+              </span>
+            ))}
           </motion.h1>
         </div>
         {/* Divider */}
@@ -687,16 +749,20 @@ export default function ServicesPageClient({
       </section>
 
       {/* ── Service Showcase Cards ── */}
-      <ServiceShowcase categories={categories} />
+      <ServiceShowcase categories={categories} label={disciplinesLabel} disciplines={disciplines} />
 
       {/* ── Process Timeline ── */}
-      <ProcessSection />
+      <ProcessSection
+        eyebrow={content?.processEyebrow ?? 'Process'}
+        heading={content?.processHeading ?? 'How every BoldCrest project works'}
+        steps={processSteps}
+      />
 
       {/* ── Stats + Testimonial ── */}
-      <Stats />
+      <Stats labels={content?.stats ?? {}} />
 
       {/* ── Client Logos ── */}
-      <ClientLogos partners={partners} />
+      <ClientLogos partners={partners} eyebrow={content?.clientLogosEyebrow ?? 'Trusted by the ambitious'} />
 
       {/* ── FAQ ── */}
       {faqItems && faqItems.length > 0 && (

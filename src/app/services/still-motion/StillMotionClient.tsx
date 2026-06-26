@@ -7,6 +7,7 @@ import ProcessTable from '@/components/services/ProcessTable'
 import WhyUsSection from '@/components/services/WhyUsSection'
 import FAQSection from '@/components/services/FAQSection'
 import OtherServices from '@/components/services/OtherServices'
+import type { ServicePageContent } from '../brand-development/BrandDevelopmentClient'
 
 interface FAQItem { question: string; answer: string }
 
@@ -61,27 +62,51 @@ const OTHER_SERVICES = [
   { title: 'Communication', href: '/services/communication', description: 'Strategy and distribution that reach the right people.', color: '#004c95' },
 ]
 
-export default function StillMotionClient({ faqItems, projects }: { faqItems: FAQItem[]; projects: Project[] }) {
+export default function StillMotionClient({
+  faqItems,
+  projects,
+  content,
+}: {
+  faqItems: FAQItem[]
+  projects: Project[]
+  content?: ServicePageContent | null
+}) {
+  const hero = content?.hero
+  const outcomes = content?.outcomes?.length ? content.outcomes : OUTCOMES
+  const services = content?.capabilities?.length
+    ? content.capabilities.map((c) => ({ name: c.name, href: c.link, description: c.description }))
+    : SERVICES
+  const process = content?.processSteps?.length ? content.processSteps : PROCESS
+  const whyUs = content?.whyUsItems?.length ? content.whyUsItems : WHY_US
+  const otherServices = OTHER_SERVICES.map((s, i) => ({
+    ...s,
+    title: content?.otherServices?.[i]?.title ?? s.title,
+    description: content?.otherServices?.[i]?.description ?? s.description,
+  }))
+
   return (
     <main className="relative">
       <ServiceHero
-        label="Still & Motion"
-        title="Still Frames That Hold Attention. Moving Images That Move People."
-        subtitle="Photography, videography, animation, and post-production, handled by a full in-house team that plans, shoots, edits, and delivers production-ready content. Every frame intentional. Every second earned."
-        ctaLabel="Start a Production Project"
+        label={hero?.label ?? 'Still & Motion'}
+        title={hero?.title ?? 'Still Frames That Hold Attention. Moving Images That Move People.'}
+        subtitle={
+          hero?.subtitle ??
+          'Photography, videography, animation, and post-production, handled by a full in-house team that plans, shoots, edits, and delivers production-ready content. Every frame intentional. Every second earned.'
+        }
+        ctaLabel={hero?.ctaLabel ?? 'Start a Production Project'}
       />
       <ProjectMarquee projects={projects} accentColor="#f9b311" />
       <OutcomesServices
-        outcomesHeading="What Professional Production Delivers?"
-        outcomes={OUTCOMES}
-        servicesHeading="Our Still & Motion Capabilities"
-        services={SERVICES}
+        outcomesHeading={content?.outcomesHeading ?? 'What Professional Production Delivers?'}
+        outcomes={outcomes}
+        servicesHeading={content?.capabilitiesHeading ?? 'Our Still & Motion Capabilities'}
+        services={services}
         accentColor="#f9b311"
       />
-      <ProcessTable heading="How We Run Production" steps={PROCESS} accentColor="#f9b311" />
-      <WhyUsSection heading="Why Brands Choose BoldCrest for Production" items={WHY_US} />
+      <ProcessTable heading={content?.processHeading ?? 'How We Run Production'} steps={process} accentColor="#f9b311" />
+      <WhyUsSection heading={content?.whyUsHeading ?? 'Why Brands Choose BoldCrest for Production'} items={whyUs} />
       <FAQSection heading="Production Questions Answered" items={faqItems} noTopBorder grayBg />
-      <OtherServices services={OTHER_SERVICES} />
+      <OtherServices services={otherServices} />
     </main>
   )
 }
