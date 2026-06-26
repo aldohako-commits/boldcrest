@@ -107,13 +107,6 @@ export default async function ProjectPage({
         ),
       )
     : project.media
-  const thumbnailVideoMeta =
-    project.thumbnailType === 'video'
-      ? await getVimeoMeta(project.thumbnailVideo)
-      : { aspect: null, poster: null }
-  const thumbnailVideoAspect = thumbnailVideoMeta.aspect
-  const thumbnailVideoPoster = thumbnailVideoMeta.poster
-
   // Four projects in the same category (service); fall back to recent work to
   // always fill the row.
   const { data: relatedData } = await sanityFetch({
@@ -183,12 +176,6 @@ export default async function ProjectPage({
         <div className="relative w-full">
           <ContentStack
             media={mediaWithAspect}
-            thumbnail={project.thumbnail}
-            thumbnailVideo={project.thumbnailVideo}
-            thumbnailVideoAspect={thumbnailVideoAspect}
-            thumbnailVideoPoster={thumbnailVideoPoster}
-            thumbnailType={project.thumbnailType}
-            coverAsFirstSlide={project.coverAsFirstSlide}
             altBase={[project.client, project.name]
               .filter(Boolean)
               .join(', ')}

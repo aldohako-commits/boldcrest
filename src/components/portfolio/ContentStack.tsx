@@ -46,15 +46,6 @@ interface ThumbnailImage {
 
 interface ContentStackProps {
   media?: MediaBlock[]
-  thumbnail?: ThumbnailImage
-  thumbnailVideo?: string
-  thumbnailVideoAspect?: number | null
-  thumbnailVideoPoster?: string | null
-  thumbnailType?: string
-  /** When false, the cover/thumbnail is NOT duplicated as the first slide — the
-   *  slide stack starts from `media` instead. Defaults to true (undefined on
-   *  existing docs) so current projects are unchanged. */
-  coverAsFirstSlide?: boolean
   /** Descriptive base for image alt text, e.g. "Client — Project Name". */
   altBase?: string
   /** Appended to alt text, e.g. "Branding · BoldCrest". */
@@ -110,12 +101,6 @@ function radiusClass(index: number, total: number): string {
 
 export default function ContentStack({
   media,
-  thumbnail,
-  thumbnailVideo,
-  thumbnailVideoAspect,
-  thumbnailVideoPoster,
-  thumbnailType,
-  coverAsFirstSlide,
   altBase,
   altSuffix,
 }: ContentStackProps) {
@@ -123,59 +108,11 @@ export default function ContentStack({
     [altBase, altSuffix].filter(Boolean).join(', ') || 'BoldCrest project'
   const items: StackItem[] = []
 
-  // Thumbnail as the first slide — unless the project opts to decouple it
-  // (coverAsFirstSlide === false), in which case the cover stays a card-only
-  // thumbnail and the slide stack starts from the media list. Defaults to true
-  // (undefined on existing docs) so current projects are unchanged.
-  const showCoverSlide = coverAsFirstSlide !== false
-  if (showCoverSlide && thumbnailType === 'video' && thumbnailVideo) {
-    items.push({
-      type: 'video',
-      key: 'thumb-video',
-      content: (
-        <VimeoEmbed
-          url={thumbnailVideo}
-          aspect={thumbnailVideoAspect}
-          poster={thumbnailVideoPoster}
-          className="bg-bg-card"
-        />
-      ),
-      thumbSource: thumbnail?.asset?._ref ? thumbnail : null,
-      posterUrl: thumbnailVideoPoster,
-      aspect:
-        thumbnailVideoAspect ||
-        refAspect(thumbnail?.asset?._ref) ||
-        FALLBACK_ASPECT,
-    })
-  } else if (showCoverSlide && thumbnail?.asset?._ref) {
-    items.push({
-      type: 'image',
-      key: 'thumb-image',
-      content: (
-        <div
-          className="relative select-none [-webkit-touch-callout:none]"
-          onContextMenu={(e) => e.preventDefault()}
-        >
-          <Image
-            loader={sanityImageLoader}
-            src={urlFor(thumbnail).width(1800).quality(85).url()}
-            alt={thumbnail.alt || baseAlt}
-            width={1800}
-            height={1200}
-            priority
-            draggable={false}
-            className="h-auto w-full"
-            sizes="(max-width: 959px) 100vw, 70vw"
-          />
-          <span aria-hidden className="absolute inset-0" />
-        </div>
-      ),
-      thumbSource: thumbnail,
-      aspect: refAspect(thumbnail.asset._ref) || FALLBACK_ASPECT,
-    })
-  }
-
-  // Media items
+  // Slides come entirely from the `media` list. The cover/thumbnail is a separate
+  // field (used for the card + social/OG image); a copy of it lives as the first
+  // media item, so the opening slide is editable/reorderable like any other and
+  // can be swapped for a different one without touching the cover.
+  let firstImageRendered = false
   if (media) {
     for (const block of media) {
       if (block._type === 'videoMedia') {
@@ -203,6 +140,10 @@ export default function ContentStack({
         const ref = getImageRef(img)
         if (!ref) continue
         const source = getImageSource(img)!
+        // The first image (usually the cover, now media[0]) loads eagerly for LCP;
+        // the rest stay lazy.
+        const isFirstImage = !firstImageRendered
+        firstImageRendered = true
         items.push({
           type: 'image',
           key: img._key,
@@ -222,7 +163,9 @@ export default function ContentStack({
                 alt={img.alt || baseAlt}
                 width={1800}
                 height={1200}
-                loading="lazy"
+                {...(isFirstImage
+                  ? { priority: true }
+                  : { loading: 'lazy' as const })}
                 draggable={false}
                 className="h-auto w-full"
                 sizes="(max-width: 959px) 100vw, 70vw"

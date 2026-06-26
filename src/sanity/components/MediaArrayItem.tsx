@@ -1,5 +1,5 @@
-import { set, unset, type ObjectItemProps } from 'sanity'
-import { Box, Button, Flex } from '@sanity/ui'
+import { set, unset, useFormValue, type ObjectItemProps } from 'sanity'
+import { Box, Button, Flex, Text } from '@sanity/ui'
 import { PlayIcon, SplitVerticalIcon } from '@sanity/icons'
 
 /**
@@ -19,10 +19,22 @@ export function MediaArrayItem(props: ObjectItemProps) {
   const { open, readOnly, inputProps } = props
   const value = props.value as unknown as {
     _type?: string
+    _key?: string
     half?: boolean
     feature?: boolean
   }
   const isVideo = value?._type === 'videoMedia'
+
+  // 1-based position of this item within the media array, shown to the left of the
+  // row so slides are easy to reference ("slide 4"). Resolved by finding this
+  // item's _key in the parent array (the item component isn't given its index).
+  const arrayValue = useFormValue(props.path.slice(0, -1)) as
+    | Array<{ _key?: string }>
+    | undefined
+  const index = Array.isArray(arrayValue)
+    ? arrayValue.findIndex((m) => m?._key === value?._key)
+    : -1
+  const number = index >= 0 ? index + 1 : null
 
   // When the item is open (full edit form) leave it completely alone.
   if (open || readOnly) return props.renderDefault(props)
@@ -68,6 +80,16 @@ export function MediaArrayItem(props: ObjectItemProps) {
 
   return (
     <Flex align="center" gap={1}>
+      {number != null && (
+        <Box
+          paddingLeft={2}
+          style={{ minWidth: '2.5ch', textAlign: 'right', flexShrink: 0 }}
+        >
+          <Text size={1} muted weight="medium">
+            {number}
+          </Text>
+        </Box>
+      )}
       <Box flex={1} style={{ minWidth: 0 }}>
         {props.renderDefault(props)}
       </Box>

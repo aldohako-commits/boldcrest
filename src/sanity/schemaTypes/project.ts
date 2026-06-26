@@ -133,14 +133,6 @@ export const project = defineType({
       hidden: ({ parent }) => parent?.thumbnailType !== 'video',
     }),
     defineField({
-      name: 'coverAsFirstSlide',
-      title: 'Use cover as first slide',
-      type: 'boolean',
-      description:
-        'On (default): the cover/thumbnail above also shows as the first slide of the project. Turn OFF when you want the opening slide to be different from the cover — the first slide then comes from the Media list below instead.',
-      initialValue: true,
-    }),
-    defineField({
       name: 'media',
       title: 'Media',
       type: 'array',
