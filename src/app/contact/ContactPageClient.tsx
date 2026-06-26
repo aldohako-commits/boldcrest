@@ -126,12 +126,10 @@ export default function ContactPageClient({
                 Tirana, Albania
               </a>
               <a
-                href="https://g.page/boldcrest"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="tel:+355695111150"
                 className="mt-5 block text-[1.05rem] text-white transition-colors duration-300 hover:text-text-secondary"
               >
-                41°18&apos;44&quot;N, 19°48&apos;28&quot;E
+                (00) 355 69 511 11 50
               </a>
             </div>
 
