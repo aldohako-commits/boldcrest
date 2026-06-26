@@ -1,6 +1,7 @@
 import { defineField, defineType } from 'sanity'
 import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list'
 import { MediaArrayItem } from '../components/MediaArrayItem'
+import { NumberedListItem } from '../components/NumberedListItem'
 
 export const project = defineType({
   name: 'project',
@@ -290,8 +291,10 @@ export const project = defineType({
   preview: {
     select: { title: 'name', subtitle: 'client', media: 'thumbnail', order: 'order' },
     prepare({ title, subtitle, media, order }) {
-      const n = typeof order === 'number' ? `${order}.  ` : ''
-      return { title: `${n}${title ?? ''}`, subtitle, media }
+      // Title stays clean; `order` is passed through for the number column.
+      const value = { title, subtitle, media, order }
+      return value
     },
   },
+  components: { preview: NumberedListItem },
 })

@@ -1,5 +1,6 @@
 import { defineField, defineType } from 'sanity'
 import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list'
+import { NumberedListItem } from '../components/NumberedListItem'
 
 export const partner = defineType({
   name: 'partner',
@@ -51,8 +52,9 @@ export const partner = defineType({
   preview: {
     select: { title: 'name', media: 'logo', order: 'order' },
     prepare({ title, media, order }) {
-      const n = typeof order === 'number' ? `${order}.  ` : ''
-      return { title: `${n}${title ?? ''}`, media }
+      const value = { title, media, order }
+      return value
     },
   },
+  components: { preview: NumberedListItem },
 })
