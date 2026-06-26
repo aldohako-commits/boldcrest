@@ -11,7 +11,8 @@
  * lives at `drafts.${id}` and the published doc at `${id}`.
  */
 import {useState} from 'react'
-import {useClient, useToast, type DocumentActionComponent} from 'sanity'
+import {useClient, type DocumentActionComponent} from 'sanity'
+import {useToast} from '@sanity/ui'
 import {TrashIcon} from '@sanity/icons'
 
 const API_VERSION = '2024-01-01'
