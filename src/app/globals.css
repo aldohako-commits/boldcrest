@@ -120,16 +120,15 @@ html {
   overflow-x: clip;
 }
 
-/* Normalize non-Latin fallback glyphs to the display font's metrics. Metropolis
-   has no Cyrillic, so a character like the "Є" in MORЄ falls back to a system
-   font and renders larger than the surrounding Latin caps; `from-font` scales the
-   fallback to match. No effect on Latin text (it's already Metropolis). */
-.font-display {
-  font-size-adjust: from-font;
-}
-
 body {
   font-family: var(--font-body), sans-serif;
+  /* Normalize non-Latin fallback glyphs to each element's own font metrics, so a
+     character like the Cyrillic "Є" in MORЄ (absent from Metropolis → falls back
+     to a system font) doesn't render larger than the surrounding Latin caps.
+     `font-size-adjust` is inherited, so this covers ALL text — headings, cards,
+     grid, related projects, etc. No effect on Latin text or on fonts that already
+     include the glyph. */
+  font-size-adjust: from-font;
   background: var(--bg);
   color: var(--text-primary);
   /* `clip`, NOT `hidden`. `overflow-x: hidden` turns <body> into a scroll
