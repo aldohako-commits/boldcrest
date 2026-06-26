@@ -680,12 +680,27 @@ export default function ContentStack({
             className="pointer-events-none absolute -left-[5px] -right-[5px] z-10 h-[3px] -translate-y-1/2 rounded-full bg-white/75 pointer-coarse:hidden"
           />
           {(() => {
-            const renderRailBtn = (item: StackItem, i: number, half: boolean, isActive: boolean) => {
+            const renderRailBtn = (
+              item: StackItem,
+              i: number,
+              half: boolean,
+              isActive: boolean,
+              side: 'left' | 'right' | null = null,
+            ) => {
               // Full items hover-light on their own (`group`); paired halves share a
               // hover group on the row (`group/pair`) so hovering EITHER lights both.
               const dim = half
                 ? 'opacity-30 group-hover/pair:opacity-70'
                 : 'opacity-30 group-hover:opacity-70'
+              // Round only the OUTER corners of a pair so the two halves read as one
+              // joined thumbnail: left half rounds its left edge, right half its right
+              // edge, the touching inner edges stay square. Full items round all four.
+              const radius =
+                side === 'left'
+                  ? 'rounded-l-[3px]'
+                  : side === 'right'
+                    ? 'rounded-r-[3px]'
+                    : 'rounded-[3px]'
               return (
                 <button
                   key={item.key}
@@ -697,7 +712,7 @@ export default function ContentStack({
                   aria-label={`Go to media ${i + 1}`}
                   aria-current={isActive}
                   style={{ aspectRatio: String(item.aspect) }}
-                  className={`relative block overflow-hidden rounded-[3px] ${half ? 'min-w-0 flex-1' : 'group w-full'}`}
+                  className={`relative block overflow-hidden ${radius} ${half ? 'min-w-0 flex-1' : 'group w-full'}`}
                 >
                   <span
                     className={`absolute inset-0 transition-opacity duration-300 ${
@@ -759,8 +774,8 @@ export default function ContentStack({
                       if (e.target === e.currentTarget) scrollToItem(i)
                     }}
                   >
-                    {renderRailBtn(item, i, true, pairActive)}
-                    {renderRailBtn(next, i + 1, true, pairActive)}
+                    {renderRailBtn(item, i, true, pairActive, 'left')}
+                    {renderRailBtn(next, i + 1, true, pairActive, 'right')}
                   </div>,
                 )
                 i++
