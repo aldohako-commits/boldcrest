@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 
 interface VimeoEmbedProps {
   url: string
@@ -11,6 +11,10 @@ interface VimeoEmbedProps {
   /** true → Vimeo's native player (its own poster + play button, sound +
    *  controls), instead of the default silent looping background clip. */
   feature?: boolean
+  /** Cover image (Vimeo oEmbed thumbnail). On the background player it sits over
+   *  the iframe until playback actually starts, so it stays visible when iOS
+   *  low-power mode blocks autoplay (instead of a black box). */
+  poster?: string | null
 }
 
 // The official Vimeo Player SDK, loaded once and shared. We use it for ONE thing:
@@ -20,6 +24,7 @@ interface VimeoEmbedProps {
 type VimeoPlayer = {
   ready: () => Promise<void>
   setQuality: (q: string) => Promise<string>
+  on: (event: string, callback: () => void) => void
 }
 type VimeoPlayerCtor = new (el: HTMLIFrameElement) => VimeoPlayer
 let sdkPromise: Promise<VimeoPlayerCtor> | null = null
@@ -57,6 +62,7 @@ export default function VimeoEmbed({
   className = '',
   aspect,
   feature = false,
+  poster,
 }: VimeoEmbedProps) {
   const videoId = extractVimeoId(url)
   // Native aspect from oEmbed; default to 16:9 when unknown. The box is set to this
@@ -65,6 +71,7 @@ export default function VimeoEmbed({
 
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
   const playerRef = useRef<VimeoPlayer | null>(null)
+  const [bgPlaying, setBgPlaying] = useState(false)
 
   // Once the frame is loaded, attach the SDK player and pin a retina-aware rendition:
   // smallest quality that covers the box at the device's pixel density, capped at
@@ -77,6 +84,9 @@ export default function VimeoEmbed({
         if (playerRef.current) return
         const player = new Player(iframe)
         playerRef.current = player
+        // Hide the cover overlay only once the clip actually starts playing. If
+        // autoplay is blocked (iOS low-power), this never fires → cover stays.
+        player.on('play', () => setBgPlaying(true))
         return player.ready().then(() => {
           const side = Math.max(iframe.clientWidth, iframe.clientHeight)
           const need = side * (window.devicePixelRatio || 1)
@@ -133,6 +143,15 @@ export default function VimeoEmbed({
         loading="lazy"
         title="Vimeo video"
       />
+      {poster && (
+        <span
+          aria-hidden
+          className={`pointer-events-none absolute inset-0 bg-cover bg-center transition-opacity duration-700 ${
+            bgPlaying ? 'opacity-0' : 'opacity-100'
+          }`}
+          style={{ backgroundImage: `url(${poster})` }}
+        />
+      )}
     </div>
   )
 }

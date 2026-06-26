@@ -10,7 +10,7 @@ import {
 import ProjectHero from '@/components/portfolio/ProjectHero'
 import ProjectDetails from '@/components/portfolio/ProjectDetails'
 import ContentStack from '@/components/portfolio/ContentStack'
-import { getVimeoAspect, parseAspectRatio } from '@/lib/vimeo'
+import { getVimeoAspect, getVimeoMeta, parseAspectRatio } from '@/lib/vimeo'
 import RelatedProjects from '@/components/portfolio/RelatedProjects'
 import JsonLd from '@/components/JsonLd'
 import {
@@ -94,18 +94,16 @@ export default async function ProjectPage({
             vimeoUrl?: string
             aspectRatio?: string
             aspectRatioCustom?: string
-          }) =>
-            block?._type === 'videoMedia' && block.vimeoUrl
-              ? {
-                  ...block,
-                  // Manual override wins ("custom" reads the free-text value);
-                  // "auto"/unset falls back to Vimeo's real shape.
-                  aspect:
-                    parseAspectRatio(
-                      block.aspectRatio === 'custom' ? block.aspectRatioCustom : block.aspectRatio,
-                    ) ?? (await getVimeoAspect(block.vimeoUrl)),
-                }
-              : block,
+          }) => {
+            if (block?._type !== 'videoMedia' || !block.vimeoUrl) return block
+            const meta = await getVimeoMeta(block.vimeoUrl)
+            // Manual override wins ("custom" reads the free-text value);
+            // "auto"/unset falls back to Vimeo's real shape.
+            const override = parseAspectRatio(
+              block.aspectRatio === 'custom' ? block.aspectRatioCustom : block.aspectRatio,
+            )
+            return { ...block, aspect: override ?? meta.aspect, poster: meta.poster }
+          },
         ),
       )
     : project.media

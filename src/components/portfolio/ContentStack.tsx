@@ -18,6 +18,8 @@ interface VideoMedia {
   feature?: boolean
   /** true → render side-by-side with the next 'half' item (no gap). */
   half?: boolean
+  /** Cover image (Vimeo oEmbed thumbnail), resolved server-side. */
+  poster?: string | null
 }
 
 interface ImageMedia {
@@ -60,6 +62,8 @@ interface StackItem {
   content: React.ReactNode
   // Small image source for the thumbnail rail (null → video/no-image placeholder)
   thumbSource: ThumbnailImage | { asset: { _ref: string } } | null
+  // External cover URL (Vimeo poster) for the rail when there's no Sanity image.
+  posterUrl?: string | null
   // Native aspect ratio (w/h) of the SLIDE, so the rail thumbnail keeps the slide's
   // real proportions (square→square, tall→tall) instead of a forced/cropped box.
   aspect: number
@@ -166,10 +170,12 @@ export default function ContentStack({
               url={video.vimeoUrl}
               aspect={video.aspect}
               feature={video.feature}
+              poster={video.poster}
               className="bg-bg-card"
             />
           ),
           thumbSource: null,
+          posterUrl: video.poster,
           aspect: video.aspect || FALLBACK_ASPECT,
           half: video.half,
         })
@@ -697,6 +703,13 @@ export default function ContentStack({
                         draggable={false}
                         sizes="(pointer: coarse) 44px, 72px"
                         className="object-cover"
+                      />
+                    ) : item.posterUrl ? (
+                      // Video cover (Vimeo poster) — external URL, so a plain bg image.
+                      <span
+                        aria-hidden
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{ backgroundImage: `url(${item.posterUrl})` }}
                       />
                     ) : (
                       <span className="flex h-full w-full items-center justify-center bg-bg-elevated">
