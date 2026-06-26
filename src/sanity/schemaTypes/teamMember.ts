@@ -33,6 +33,10 @@ export const teamMember = defineType({
   ],
   orderings: [orderRankOrdering],
   preview: {
-    select: { title: 'name', subtitle: 'role', media: 'image' },
+    select: { title: 'name', subtitle: 'role', media: 'image', order: 'order' },
+    prepare({ title, subtitle, media, order }) {
+      const n = typeof order === 'number' ? `${order}.  ` : ''
+      return { title: `${n}${title ?? ''}`, subtitle, media }
+    },
   },
 })

@@ -49,6 +49,10 @@ export const partner = defineType({
   ],
   orderings: [orderRankOrdering],
   preview: {
-    select: { title: 'name', media: 'logo' },
+    select: { title: 'name', media: 'logo', order: 'order' },
+    prepare({ title, media, order }) {
+      const n = typeof order === 'number' ? `${order}.  ` : ''
+      return { title: `${n}${title ?? ''}`, media }
+    },
   },
 })

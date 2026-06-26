@@ -280,6 +280,10 @@ export const project = defineType({
   ],
   orderings: [orderRankOrdering],
   preview: {
-    select: { title: 'name', subtitle: 'client', media: 'thumbnail' },
+    select: { title: 'name', subtitle: 'client', media: 'thumbnail', order: 'order' },
+    prepare({ title, subtitle, media, order }) {
+      const n = typeof order === 'number' ? `${order}.  ` : ''
+      return { title: `${n}${title ?? ''}`, subtitle, media }
+    },
   },
 })

@@ -30,6 +30,11 @@ export default defineConfig({
   dataset,
   // Add and edit the content schema in the './sanity/schemaTypes' folder
   schema,
+  // Hide the Sanity 4 "Releases"/versions UI — keep it simple: a document is
+  // either published (live) or a draft (offline). Removes the Releases tool,
+  // the version-perspective clutter, and scheduled drafts.
+  releases: { enabled: false },
+  scheduledDrafts: { enabled: false },
   plugins: [
     structureTool({structure}),
     // Vision is for querying with GROQ from inside the Studio

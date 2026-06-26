@@ -86,6 +86,10 @@ export const diaryPost = defineType({
     },
   ],
   preview: {
-    select: { title: 'title', subtitle: 'category' },
+    select: { title: 'title', subtitle: 'category', order: 'order' },
+    prepare({ title, subtitle, order }) {
+      const n = typeof order === 'number' ? `${order}.  ` : ''
+      return { title: `${n}${title ?? ''}`, subtitle }
+    },
   },
 })
