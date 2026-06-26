@@ -11,14 +11,23 @@
  * lives at `drafts.${id}` and the published doc at `${id}`.
  */
 import {useState} from 'react'
-import {useClient, type DocumentActionComponent} from 'sanity'
+import {useClient, useToast, type DocumentActionComponent} from 'sanity'
 import {TrashIcon} from '@sanity/icons'
 
 const API_VERSION = '2024-01-01'
 
+function describeError(err: unknown): string {
+  const msg = err instanceof Error ? err.message : String(err)
+  // Sanity blocks deleting a doc that other docs still reference.
+  return /reference/i.test(msg)
+    ? 'Other documents still reference this one, so Sanity won’t delete it.'
+    : msg
+}
+
 export const deleteDraftAction: DocumentActionComponent = (props) => {
   const {id, draft, onComplete} = props
   const client = useClient({apiVersion: API_VERSION})
+  const toast = useToast()
   const [open, setOpen] = useState(false)
 
   // Nothing to discard if there are no unpublished changes.
@@ -38,9 +47,12 @@ export const deleteDraftAction: DocumentActionComponent = (props) => {
       onConfirm: async () => {
         try {
           await client.delete(`drafts.${id}`)
-        } finally {
+          toast.push({status: 'success', title: 'Draft deleted — published version kept'})
           setOpen(false)
           onComplete()
+        } catch (err) {
+          toast.push({status: 'error', title: 'Could not delete draft', description: describeError(err)})
+          setOpen(false)
         }
       },
     },
@@ -50,6 +62,7 @@ export const deleteDraftAction: DocumentActionComponent = (props) => {
 export const deletePublishedAction: DocumentActionComponent = (props) => {
   const {id, published, draft, onComplete} = props
   const client = useClient({apiVersion: API_VERSION})
+  const toast = useToast()
   const [open, setOpen] = useState(false)
 
   // Nothing to delete if it was never published.
@@ -70,9 +83,15 @@ export const deletePublishedAction: DocumentActionComponent = (props) => {
       onConfirm: async () => {
         try {
           await client.delete(id)
-        } finally {
+          toast.push({
+            status: 'success',
+            title: draft ? 'Published version deleted — draft kept' : 'Published document deleted',
+          })
           setOpen(false)
           onComplete()
+        } catch (err) {
+          toast.push({status: 'error', title: 'Could not delete published version', description: describeError(err)})
+          setOpen(false)
         }
       },
     },
