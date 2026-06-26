@@ -22,8 +22,11 @@ export default function WeDoSection() {
           </p>
           <Link
             href="/work"
-            className="mt-8 flex w-full items-center justify-between rounded-full px-8 py-5 text-[0.85rem] font-semibold uppercase tracking-[0.1em] transition-opacity duration-300 hover:opacity-80"
-            style={{ backgroundColor: 'var(--zone-fg)', color: 'var(--zone-bg)' }}
+            // Half-width ghost pill — same outlined look as the "Meet the People"
+            // button (transparent-on-dark fill, light text, faint border) instead of
+            // the old solid white fill.
+            className="mt-8 flex w-1/2 items-center justify-between rounded-full border px-6 py-5 text-[0.85rem] font-semibold uppercase tracking-[0.1em]"
+            style={{ backgroundColor: 'var(--zone-bg, #0a0a0a)', color: 'var(--zone-contrast, #EDEDED)', borderColor: 'var(--zone-contrast-faint, rgba(237,237,237,0.3))' }}
           >
             View All Work
             <svg width="18" height="18" viewBox="0 0 16 16" fill="none">

@@ -170,7 +170,7 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
             </p>
             <Link
               href="/people"
-              className="mt-8 flex w-full items-center justify-between rounded-full border px-8 py-5 text-[0.85rem] font-semibold uppercase tracking-[0.1em]"
+              className="mt-8 flex w-1/2 items-center justify-between rounded-full border px-6 py-5 text-[0.85rem] font-semibold uppercase tracking-[0.1em]"
               // Pill follows the bg tone so it transitions with everything else:
               // BLACK pill + light text on the dark bg, flipping to a WHITE pill +
               // dark text on the light transition band. Fill = --zone-bg, text =
