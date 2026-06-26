@@ -170,7 +170,7 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
             </p>
             <Link
               href="/people"
-              className="mt-8 flex w-1/2 items-center justify-between rounded-full border px-6 py-5 text-[0.85rem] font-semibold uppercase tracking-[0.1em]"
+              className="mt-8 flex w-1/2 items-center justify-between gap-2 whitespace-nowrap rounded-full border px-5 py-4 text-[0.72rem] font-semibold uppercase tracking-[0.04em]"
               // Pill follows the bg tone so it transitions with everything else:
               // BLACK pill + light text on the dark bg, flipping to a WHITE pill +
               // dark text on the light transition band. Fill = --zone-bg, text =
@@ -180,7 +180,7 @@ function TeamStrip({ members }: { members: TeamMember[] }) {
               style={{ backgroundColor: 'var(--zone-bg, #0a0a0a)', color: 'var(--zone-contrast, #EDEDED)', borderColor: 'var(--zone-contrast-faint, rgba(237,237,237,0.3))' }}
             >
               Meet the People
-              <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
                 <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </Link>

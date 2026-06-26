@@ -25,11 +25,11 @@ export default function WeDoSection() {
             // Half-width ghost pill — same outlined look as the "Meet the People"
             // button (transparent-on-dark fill, light text, faint border) instead of
             // the old solid white fill.
-            className="mt-8 flex w-1/2 items-center justify-between rounded-full border px-6 py-5 text-[0.85rem] font-semibold uppercase tracking-[0.1em]"
+            className="mt-8 flex w-1/2 items-center justify-between gap-2 whitespace-nowrap rounded-full border px-5 py-4 text-[0.72rem] font-semibold uppercase tracking-[0.04em]"
             style={{ backgroundColor: 'var(--zone-bg, #0a0a0a)', color: 'var(--zone-contrast, #EDEDED)', borderColor: 'var(--zone-contrast-faint, rgba(237,237,237,0.3))' }}
           >
             View All Work
-            <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
               <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </Link>
