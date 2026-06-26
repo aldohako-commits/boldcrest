@@ -83,7 +83,15 @@ export function MediaArrayItem(props: ObjectItemProps) {
       {number != null && (
         <Box
           paddingLeft={2}
-          style={{ minWidth: '2.5ch', textAlign: 'right', flexShrink: 0 }}
+          // pointer-events: none so the number can never intercept the drag
+          // handle / row interactions next to it.
+          style={{
+            minWidth: '2.5ch',
+            textAlign: 'right',
+            flexShrink: 0,
+            pointerEvents: 'none',
+            userSelect: 'none',
+          }}
         >
           <Text size={1} muted weight="medium">
             {number}

@@ -267,8 +267,16 @@ export const project = defineType({
       name: 'featured',
       title: 'Featured',
       type: 'boolean',
-      description: 'Show this project on the homepage Featured section',
+      description: 'Show this project on the homepage Featured (Selected Works) section.',
       initialValue: false,
+    }),
+    defineField({
+      name: 'featuredOrder',
+      title: 'Featured order (homepage)',
+      type: 'number',
+      description:
+        'Position in the homepage Featured section — 1 shows first, 2 next, and so on. Only used when Featured is on.',
+      hidden: ({ parent }) => !parent?.featured,
     }),
     defineField({
       name: 'order',
