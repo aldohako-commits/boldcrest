@@ -18,11 +18,6 @@ export const structure: StructureResolver = (S, context) =>
   S.list()
     .title('Content')
     .items([
-      S.listItem()
-        .title('Site Settings')
-        .id('siteSettings')
-        .child(S.document().schemaType('siteSettings').documentId('siteSettings')),
-      S.divider(),
       orderableDocumentListDeskItem({ type: 'project', title: 'Project', S, context }),
       orderableDocumentListDeskItem({ type: 'diaryPost', title: 'Diary Post', S, context }),
       orderableDocumentListDeskItem({ type: 'teamMember', title: 'Team Member', S, context }),
@@ -65,8 +60,6 @@ export const structure: StructureResolver = (S, context) =>
                     .schemaType('serviceDetailPage')
                     .documentId('serviceDetailPage-communication'),
                 ),
-              S.divider(),
-              S.documentTypeListItem('service').title('Service offerings (list)'),
             ]),
         ),
       S.divider(),
