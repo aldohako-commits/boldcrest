@@ -13,13 +13,6 @@ import {structureTool} from 'sanity/structure'
 import {apiVersion, dataset, projectId} from './src/sanity/env'
 import {schema} from './src/sanity/schemaTypes'
 import {structure} from './src/sanity/structure'
-import {deleteDraftAction, deletePublishedAction} from './src/sanity/actions/deleteVersions'
-
-// Content types that commonly carry a published + draft pair. The granular
-// "Delete draft only" / "Delete published only" actions are added for these so
-// you never have to nuke both at once (each self-hides when that version is
-// absent).
-const VERSIONED_TYPES = ['project', 'teamMember', 'partner', 'diaryPost']
 
 // BoldCrest crest as the workspace icon (replaces the default "D" tile).
 const BoldStudioIcon = () =>
@@ -37,12 +30,6 @@ export default defineConfig({
   dataset,
   // Add and edit the content schema in the './sanity/schemaTypes' folder
   schema,
-  document: {
-    actions: (prev, context) =>
-      VERSIONED_TYPES.includes(context.schemaType)
-        ? [...prev, deleteDraftAction, deletePublishedAction]
-        : prev,
-  },
   plugins: [
     structureTool({structure}),
     // Vision is for querying with GROQ from inside the Studio
