@@ -8,6 +8,7 @@ import { siteSettings } from './siteSettings'
 import { diaryPost } from './diaryPost'
 import { servicesPage } from './servicesPage'
 import { serviceDetailPage } from './serviceDetailPage'
+import { yearPhoto } from './yearPhoto'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
@@ -19,5 +20,6 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     diaryPost,
     servicesPage,
     serviceDetailPage,
+    yearPhoto,
   ],
 }

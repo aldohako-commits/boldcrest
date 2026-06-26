@@ -188,6 +188,15 @@ export const allTeamMembersQuery = defineQuery(
   }`
 )
 
+export const allYearPhotosQuery = defineQuery(
+  `*[_type == "yearPhoto"] | order(orderRank) {
+    _id,
+    image,
+    year,
+    "alt": image.alt
+  }`
+)
+
 export const latestDiaryPostsQuery = defineQuery(
   `*[_type == "diaryPost"] | order(orderRank) [0...4] {
     _id,

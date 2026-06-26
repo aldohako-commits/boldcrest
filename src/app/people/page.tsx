@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { sanityFetch } from '@/sanity/lib/live'
-import { allTeamMembersQuery } from '@/sanity/lib/queries'
+import { allTeamMembersQuery, allYearPhotosQuery } from '@/sanity/lib/queries'
 import PeoplePageClient from './PeoplePageClient'
 
 export const metadata: Metadata = {
@@ -17,7 +17,12 @@ export const metadata: Metadata = {
 }
 
 export default async function PeoplePage() {
-  const { data: members } = await sanityFetch({ query: allTeamMembersQuery })
+  const [{ data: members }, { data: yearPhotos }] = await Promise.all([
+    sanityFetch({ query: allTeamMembersQuery }),
+    sanityFetch({ query: allYearPhotosQuery }),
+  ])
 
-  return <PeoplePageClient members={members ?? []} />
+  return (
+    <PeoplePageClient members={members ?? []} yearPhotos={yearPhotos ?? []} />
+  )
 }

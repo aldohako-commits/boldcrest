@@ -3,7 +3,7 @@ import { orderableDocumentListDeskItem } from '@sanity/orderable-document-list'
 
 // These types are drag-and-drop orderable in the Studio list (their site order
 // follows the list order via `orderRank`).
-const ORDERABLE = ['project', 'teamMember', 'partner', 'diaryPost']
+const ORDERABLE = ['project', 'teamMember', 'partner', 'diaryPost', 'yearPhoto']
 
 // Types handled explicitly below, so they don't also appear in the catch-all.
 const HANDLED = [
@@ -20,7 +20,28 @@ export const structure: StructureResolver = (S, context) =>
     .items([
       orderableDocumentListDeskItem({ type: 'project', title: 'Project', S, context }),
       orderableDocumentListDeskItem({ type: 'diaryPost', title: 'Diary Post', S, context }),
-      orderableDocumentListDeskItem({ type: 'teamMember', title: 'Team Member', S, context }),
+      // People → Team Members + Year Photo (yearly group photos for the /people strip)
+      S.listItem()
+        .title('People')
+        .id('peopleGroup')
+        .child(
+          S.list()
+            .title('People')
+            .items([
+              orderableDocumentListDeskItem({
+                type: 'teamMember',
+                title: 'Team Members',
+                S,
+                context,
+              }),
+              orderableDocumentListDeskItem({
+                type: 'yearPhoto',
+                title: 'Year Photo',
+                S,
+                context,
+              }),
+            ]),
+        ),
       orderableDocumentListDeskItem({ type: 'partner', title: 'Partner', S, context }),
       S.divider(),
       // Services: page content (editable copy) + the offerings list.

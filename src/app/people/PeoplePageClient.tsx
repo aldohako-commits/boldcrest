@@ -17,9 +17,21 @@ interface TeamMember {
   }
 }
 
+interface YearPhoto {
+  _id: string
+  image?: { asset: { _ref: string } }
+  year?: string
+  alt?: string
+}
+
 interface PeoplePageClientProps {
   members: TeamMember[]
+  yearPhotos?: YearPhoto[]
 }
+
+/* One photo in the /people year-photo strip: either a Sanity image (managed in
+   Studio under People → Year Photo) or a bundled static fallback. */
+type StripPhoto = { image?: YearPhoto['image']; staticSrc?: string; alt: string }
 
 /* ── Word-by-word reveal triggered by active state ── */
 function BigStatement({ text, accent, active, className = '' }: {
@@ -81,8 +93,7 @@ const FOUNDERS_PHOTO: string = '/People - Photos/Old 2.png'
 
 /* ── Auto-scrolling + draggable team-photo strip (b&w → color on hover) ── */
 const PHOTOS = [1, 2, 3, 4, 5, 6, 7]
-const PhotoMarquee = memo(function PhotoMarquee() {
-  const photos = PHOTOS
+const PhotoMarquee = memo(function PhotoMarquee({ photos }: { photos: StripPhoto[] }) {
   // 4 copies = a long-enough ring; items are RECYCLED (head → tail) so the loop is
   // seamless regardless of the count.
   const repeated = [...photos, ...photos, ...photos, ...photos]
@@ -231,11 +242,13 @@ const PhotoMarquee = memo(function PhotoMarquee() {
       className="relative min-h-0 w-full flex-1 cursor-grab touch-pan-y select-none overflow-hidden active:cursor-grabbing"
     >
       <div ref={trackRef} className="flex h-full w-max will-change-transform">
-        {repeated.map((n, i) => (
+        {repeated.map((p, i) => (
           <div key={i} className="group relative h-full aspect-[1286/1500] shrink-0">
             <Image
-              src={`/People - Photos/${n}.jpg`}
-              alt={`BoldCrest team ${n}`}
+              {...(p.image
+                ? { loader: sanityImageLoader, src: urlFor(p.image).width(700).url() }
+                : { src: p.staticSrc as string })}
+              alt={p.alt}
               fill
               // The band is height-driven, so its real width is ~21–26vw on
               // typical screens; 34vw over-fetched on wide monitors. Cap the
@@ -483,7 +496,24 @@ const FacesGallery = memo(function FacesGallery({ team }: { team: FaceItem[] }) 
   )
 })
 
-export default function PeoplePageClient({ members }: PeoplePageClientProps) {
+export default function PeoplePageClient({
+  members,
+  yearPhotos = [],
+}: PeoplePageClientProps) {
+  // Year-photo strip: managed Sanity photos (People → Year Photo) if any, else
+  // the bundled static set so the strip is never empty.
+  const stripPhotos: StripPhoto[] = useMemo(
+    () =>
+      yearPhotos.filter((p) => p.image?.asset?._ref).length
+        ? yearPhotos
+            .filter((p) => p.image?.asset?._ref)
+            .map((p) => ({ image: p.image, alt: p.alt || 'BoldCrest team' }))
+        : PHOTOS.map((n) => ({
+            staticSrc: `/People - Photos/${n}.jpg`,
+            alt: `BoldCrest team ${n}`,
+          })),
+    [yearPhotos],
+  )
   const [current, setCurrent] = useState(0)
   const [isLocked, setIsLocked] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -920,7 +950,7 @@ export default function PeoplePageClient({ members }: PeoplePageClientProps) {
           <div aria-hidden className="h-[63px] shrink-0 [@media(max-height:780px)]:h-[35px]" />
 
           {/* Photo band — auto-scrolling, draggable, b&w → color on hover (5 shown). */}
-          <PhotoMarquee />
+          <PhotoMarquee photos={stripPhotos} />
         </section>
 
         {/* ═══════════════════════════════════════════
