@@ -119,12 +119,13 @@ export default function Header() {
                 }
               }}
             >
-              {/* Desktop (lg): logo height = "Start a Project" pill height (~35.6px /
-                  2.225rem). Scaled down proportionally for mid (~88%) and mobile (~78%). */}
+              {/* Logo sized to the "Start a Project" pill height on desktop
+                  (1.6rem → 2.225rem, +39%); that same +39% is applied uniformly
+                  across all breakpoints. */}
               <svg
                 viewBox="0 0 384.09 384"
                 aria-hidden="true"
-                className="h-[1.75rem] w-[1.75rem] md:h-[1.95rem] md:w-[1.95rem] lg:h-[2.225rem] lg:w-[2.225rem]"
+                className="h-[2.225rem] w-[2.225rem]"
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
