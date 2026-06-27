@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Box, Card, Flex, Text } from '@sanity/ui'
 import { useClient } from 'sanity'
 import { OrderableDocumentList } from '@sanity/orderable-document-list'
@@ -35,6 +35,12 @@ export function OrderableListWithStatusFilter(props: {
   const type = props?.options?.type as string
   const client = useClient({ apiVersion: '2024-01-01' })
   const [view, setView] = useState<View>('both')
+
+  // Sanity reuses this component instance across list panes, so reset to the
+  // default "Both" whenever the list type changes (e.g. Project → Diary Post).
+  useEffect(() => {
+    setView('both')
+  }, [type])
 
   return (
     <Flex direction="column" style={{ height: '100%', minHeight: 0 }}>
