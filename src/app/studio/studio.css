@@ -1,0 +1,9 @@
+/* BoldStudio tweaks.
+   Hide Sanity's built-in published/draft *perspective switcher* in the document
+   pane header. It only switches which version you VIEW (not the document state)
+   and shows both "Published" and "Draft" at once, which reads like versioning.
+   We surface a single read-only status pill at the top of the form instead
+   (see src/sanity/components/PublishToggle.tsx). */
+[data-testid='document-perspective-list'] {
+  display: none !important;
+}

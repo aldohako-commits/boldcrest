@@ -1,8 +1,9 @@
 import type { StructureResolver } from 'sanity/structure'
-import { orderableDocumentListDeskItem } from '@sanity/orderable-document-list'
+import { OrderableListWithStatusFilter } from './components/OrderableListWithStatusFilter'
 
 // These types are drag-and-drop orderable in the Studio list (their site order
-// follows the list order via `orderRank`).
+// follows the list order via `orderRank`). They're presented through a
+// Published / Drafts / Both filter bar (OrderableListWithStatusFilter).
 const ORDERABLE = ['project', 'teamMember', 'partner', 'diaryPost', 'yearPhoto']
 
 // Types handled explicitly below, so they don't also appear in the catch-all.
@@ -14,12 +15,34 @@ const HANDLED = [
   'serviceDetailPage',
 ]
 
-export const structure: StructureResolver = (S, context) =>
-  S.list()
+export const structure: StructureResolver = (S) => {
+  // A drag-orderable list with a Published / Drafts / Both filter bar on top.
+  // "Both" is the default and keeps full drag-to-reorder. Document clicks resolve
+  // through the .child() editor; "Create new" lives in the pane ⋯ menu.
+  const filterableList = (type: string, title: string) =>
+    S.listItem()
+      .title(title)
+      .id(type)
+      .child(
+        S.component(OrderableListWithStatusFilter)
+          .id(type)
+          .title(title)
+          .options({ type })
+          .menuItems([
+            S.menuItem().title('Create new').intent({ type: 'create', params: { type } }),
+          ])
+          .child((id: string) =>
+            S.document()
+              .schemaType(type)
+              .documentId(String(id).replace(/^drafts\./, '')),
+          ),
+      )
+
+  return S.list()
     .title('Content')
     .items([
-      orderableDocumentListDeskItem({ type: 'project', title: 'Project', S, context }),
-      orderableDocumentListDeskItem({ type: 'diaryPost', title: 'Diary Post', S, context }),
+      filterableList('project', 'Project'),
+      filterableList('diaryPost', 'Diary Post'),
       // People → Team Members + Year Photo (yearly group photos for the /people strip)
       S.listItem()
         .title('People')
@@ -28,21 +51,11 @@ export const structure: StructureResolver = (S, context) =>
           S.list()
             .title('People')
             .items([
-              orderableDocumentListDeskItem({
-                type: 'teamMember',
-                title: 'Team Members',
-                S,
-                context,
-              }),
-              orderableDocumentListDeskItem({
-                type: 'yearPhoto',
-                title: 'Year Photo',
-                S,
-                context,
-              }),
+              filterableList('teamMember', 'Team Members'),
+              filterableList('yearPhoto', 'Year Photo'),
             ]),
         ),
-      orderableDocumentListDeskItem({ type: 'partner', title: 'Partner', S, context }),
+      filterableList('partner', 'Partner'),
       S.divider(),
       // Services: page content (editable copy) + the offerings list.
       S.listItem()
@@ -89,3 +102,4 @@ export const structure: StructureResolver = (S, context) =>
         (listItem) => !HANDLED.includes(listItem.getId() as string),
       ),
     ])
+}
