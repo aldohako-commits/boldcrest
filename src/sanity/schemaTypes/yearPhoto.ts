@@ -1,6 +1,7 @@
 import { defineField, defineType } from 'sanity'
 import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list'
 import { NumberedListItem } from '../components/NumberedListItem'
+import { PublishToggle } from '../components/PublishToggle'
 
 // Yearly team / group photos shown in the auto-scrolling strip on /people.
 // Drag-and-drop orderable (the strip follows this order). Upload next year's
@@ -47,5 +48,5 @@ export const yearPhoto = defineType({
       return value
     },
   },
-  components: { preview: NumberedListItem },
+  components: { preview: NumberedListItem, input: PublishToggle },
 })

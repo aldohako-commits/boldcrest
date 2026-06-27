@@ -2,6 +2,7 @@ import { defineField, defineType } from 'sanity'
 import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list'
 import { MediaArrayItem } from '../components/MediaArrayItem'
 import { NumberedListItem } from '../components/NumberedListItem'
+import { PublishToggle } from '../components/PublishToggle'
 
 export const project = defineType({
   name: 'project',
@@ -303,5 +304,5 @@ export const project = defineType({
       return value
     },
   },
-  components: { preview: NumberedListItem },
+  components: { preview: NumberedListItem, input: PublishToggle },
 })

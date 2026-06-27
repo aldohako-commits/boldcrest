@@ -1,6 +1,7 @@
 import { defineField, defineType } from 'sanity'
 import { orderRankField, orderRankOrdering } from '@sanity/orderable-document-list'
 import { NumberedListItem } from '../components/NumberedListItem'
+import { PublishToggle } from '../components/PublishToggle'
 
 export const teamMember = defineType({
   name: 'teamMember',
@@ -47,5 +48,5 @@ export const teamMember = defineType({
       return value
     },
   },
-  components: { preview: NumberedListItem },
+  components: { preview: NumberedListItem, input: PublishToggle },
 })
