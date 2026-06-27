@@ -1,9 +1,9 @@
 import type { StructureResolver } from 'sanity/structure'
+import { orderableDocumentListDeskItem } from '@sanity/orderable-document-list'
 import { OrderableListWithStatusFilter } from './components/OrderableListWithStatusFilter'
 
 // These types are drag-and-drop orderable in the Studio list (their site order
-// follows the list order via `orderRank`). They're presented through a
-// Published / Drafts / Both filter bar (OrderableListWithStatusFilter).
+// follows the list order via `orderRank`).
 const ORDERABLE = ['project', 'teamMember', 'partner', 'diaryPost', 'yearPhoto']
 
 // Types handled explicitly below, so they don't also appear in the catch-all.
@@ -15,10 +15,10 @@ const HANDLED = [
   'serviceDetailPage',
 ]
 
-export const structure: StructureResolver = (S) => {
-  // A drag-orderable list with a Published / Drafts / Both filter bar on top.
-  // "Both" is the default and keeps full drag-to-reorder. Document clicks resolve
-  // through the .child() editor; "Create new" lives in the pane ⋯ menu.
+export const structure: StructureResolver = (S, context) => {
+  // Project + Diary: drag-orderable list with a Published / Drafts / Both filter
+  // bar on top (defaults to Both, keeps drag-reorder). People + Partner use the
+  // plain orderable list (no publish-status UI).
   const filterableList = (type: string, title: string) =>
     S.listItem()
       .title(title)
@@ -51,11 +51,21 @@ export const structure: StructureResolver = (S) => {
           S.list()
             .title('People')
             .items([
-              filterableList('teamMember', 'Team Members'),
-              filterableList('yearPhoto', 'Year Photo'),
+              orderableDocumentListDeskItem({
+                type: 'teamMember',
+                title: 'Team Members',
+                S,
+                context,
+              }),
+              orderableDocumentListDeskItem({
+                type: 'yearPhoto',
+                title: 'Year Photo',
+                S,
+                context,
+              }),
             ]),
         ),
-      filterableList('partner', 'Partner'),
+      orderableDocumentListDeskItem({ type: 'partner', title: 'Partner', S, context }),
       S.divider(),
       // Services: page content (editable copy) + the offerings list.
       S.listItem()
