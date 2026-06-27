@@ -174,8 +174,14 @@ export default function PageTransitionProvider({
       navigate(href)
     }
 
-    document.addEventListener('click', handleClick)
-    return () => document.removeEventListener('click', handleClick)
+    // Capture phase: run BEFORE Next.js <Link>'s own onClick (which fires during
+    // React's bubble-phase delegation). We preventDefault here so Link sees
+    // `defaultPrevented` and skips its early navigation — otherwise Next would
+    // navigate first and the new page would flash in beneath the overlay before
+    // the wipe even starts. We do NOT stopPropagation, so other onClick handlers
+    // (mobile-menu close, magnetic buttons) still run normally.
+    document.addEventListener('click', handleClick, true)
+    return () => document.removeEventListener('click', handleClick, true)
   }, [navigate])
 
   return (
