@@ -83,10 +83,15 @@ export function OrderableListWithStatusFilter(props: {
       </Card>
 
       <Box style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
-        {/* key forces a clean remount when the filter changes */}
+        {/* key forces a clean remount when the filter changes.
+            currentVersion:'drafts' = the standard merged (draft-over-published)
+            view; required so the plugin's query doesn't fall back to its
+            release-perspective branch (sanity::partOfRelease + an undefined
+            $currentVersion param), which errors with releases disabled. Our
+            Both/Published/Drafts filter then layers on top of that. */}
         <OrderableDocumentList
           key={view}
-          options={{ type, client, filter: FILTERS[view] }}
+          options={{ type, client, filter: FILTERS[view], currentVersion: 'drafts' }}
         />
       </Box>
     </Flex>
