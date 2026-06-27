@@ -77,9 +77,10 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
                   onClose()
                 }}
               >
+                {/* Logo sized to match the header logo outside the menu. */}
                 <svg
                   viewBox="0 0 384.09 384"
-                  className="h-[1.6rem] w-[1.6rem]"
+                  className="h-[2.225rem] w-[2.225rem]"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
