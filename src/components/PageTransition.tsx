@@ -20,9 +20,9 @@ export function usePageTransition() {
 }
 
 /* ── Timing (ms) ── */
-const WIPE_IN = 500
-const HOLD = 150
-const WIPE_OUT = 450
+const WIPE_IN = 380
+const HOLD = 100
+const WIPE_OUT = 350
 const EASE = 'cubic-bezier(0.77, 0, 0.175, 1)'
 
 export default function PageTransitionProvider({
@@ -77,7 +77,7 @@ export default function PageTransitionProvider({
 
       // Fade in logo early in the wipe so the crest still reads at this speed
       setTimeout(() => {
-        logo.style.transition = `opacity 0.28s ease, transform 0.28s ease`
+        logo.style.transition = `opacity 0.22s ease, transform 0.22s ease`
         logo.style.opacity = '1'
         logo.style.transform = 'translateY(0) scale(1)'
       }, WIPE_IN * 0.25)
@@ -123,7 +123,7 @@ export default function PageTransitionProvider({
 
       requestAnimationFrame(() => {
         // Fade out logo first
-        logo.style.transition = 'opacity 0.25s ease, transform 0.25s ease'
+        logo.style.transition = 'opacity 0.2s ease, transform 0.2s ease'
         logo.style.opacity = '0'
         logo.style.transform = 'translateY(-15px) scale(0.95)'
 
@@ -139,7 +139,7 @@ export default function PageTransitionProvider({
             setIsTransitioning(false)
           }, WIPE_OUT + 20)
           timers.push(t3)
-        }, 150)
+        }, 100)
         timers.push(t2)
       })
     }
