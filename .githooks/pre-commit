@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+#
+# BoldCrest pre-commit secret guard.
+# Scans STAGED additions for likely API keys / secrets and blocks the commit if
+# any are found. Second layer of defense beneath GitHub push protection.
+#
+# Bypass for a confirmed false positive:  git commit --no-verify
+#
+set -euo pipefail
+
+# Added lines only (diff-filter AM), excluding this hook, lockfiles and sourcemaps.
+added=$(git diff --cached -U0 --no-color --diff-filter=AM \
+          -- . ':(exclude).githooks/**' ':(exclude)*lock*' ':(exclude)*.map' 2>/dev/null \
+        | grep -E '^\+' | grep -vE '^\+\+\+' || true)
+
+[ -z "$added" ] && exit 0
+
+# High-precision provider patterns + DB-credential URLs + a strict generic
+# "<secret-ish key> = '<20+ char value>'" rule. process.env / examples filtered out.
+PAT='AKIA[0-9A-Z]{16}'
+PAT="$PAT"'|AIza[0-9A-Za-z_-]{35}'
+PAT="$PAT"'|gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}'
+PAT="$PAT"'|sk_live_[A-Za-z0-9]{20,}|pk_live_[A-Za-z0-9]{20,}|rk_live_[A-Za-z0-9]{20,}'
+PAT="$PAT"'|sk-ant-[A-Za-z0-9_-]{30,}|sk-[A-Za-z0-9]{40,}'
+PAT="$PAT"'|xox[baprs]-[A-Za-z0-9-]{12,}|glpat-[A-Za-z0-9_-]{20,}|shp(at|ss|ca|pa)_[a-f0-9]{32}'
+PAT="$PAT"'|-----BEGIN [A-Z ]*PRIVATE KEY-----'
+PAT="$PAT"'|(mongodb\+srv|postgres|postgresql|mysql|redis)://[^:@ ]+:[^@ ]+@'
+PAT="$PAT"'|(api[_-]?key|secret|token|password|passwd|access[_-]?key|client[_-]?secret|auth[_-]?token)["'"'"' ]*[:=][ ]*["'"'"'][A-Za-z0-9_\-]{20,}["'"'"']'
+
+hits=$(printf '%s\n' "$added" \
+  | grep -nIE "$PAT" \
+  | grep -viE 'process\.env|import\.meta\.env|example|placeholder|your[_-]|xxxx|dummy|changeme|<[a-z]' \
+  || true)
+
+if [ -n "$hits" ]; then
+  echo "" >&2
+  echo "🛑 Commit blocked — a possible secret was found in your staged changes:" >&2
+  printf '%s\n' "$hits" | sed 's/^/     /' >&2
+  echo "" >&2
+  echo "   Move the value to an untracked .env.local and read it via process.env." >&2
+  echo "   If this is a genuine false positive:  git commit --no-verify" >&2
+  echo "" >&2
+  exit 1
+fi
+exit 0
