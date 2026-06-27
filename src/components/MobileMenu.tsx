@@ -59,8 +59,9 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
               border: '1px solid rgba(255,255,255,0.08)',
             }}
           >
-            {/* Header row inside the menu — logo + close */}
-            <div className="flex items-center justify-between px-5 h-14">
+            {/* Header row inside the menu — logo + close. Taller so the larger
+                logo gets a real "header zone" with breathing room above the nav. */}
+            <div className="flex items-center justify-between px-5 h-[4.25rem]">
               <Link
                 href={`${linkBase}/`}
                 onClick={(e) => {
@@ -89,14 +90,16 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
                   />
                 </svg>
               </Link>
-              <button onClick={onClose} aria-label="Close menu" className="flex flex-col gap-[5px]">
-                <span className="h-[2px] w-7 rounded-[2px] bg-white transition-transform duration-300" style={{ transform: 'translateY(3.5px) rotate(45deg)' }} />
-                <span className="h-[2px] w-7 rounded-[2px] bg-white transition-transform duration-300" style={{ transform: 'translateY(-3.5px) rotate(-45deg)' }} />
+              {/* Close — larger X to balance the bigger logo, with a 44px-ish
+                  tap area via negative-margin padding (no layout shift). */}
+              <button onClick={onClose} aria-label="Close menu" className="-m-3 flex flex-col gap-[6px] p-3">
+                <span className="h-[2px] w-8 rounded-[2px] bg-white transition-transform duration-300" style={{ transform: 'translateY(4px) rotate(45deg)' }} />
+                <span className="h-[2px] w-8 rounded-[2px] bg-white transition-transform duration-300" style={{ transform: 'translateY(-4px) rotate(-45deg)' }} />
               </button>
             </div>
 
             {/* Links */}
-            <ul className="flex flex-col gap-1 pt-2" style={{ paddingLeft: 20, paddingRight: 20, paddingBottom: 16 }}>
+            <ul className="flex flex-col gap-1.5 pt-3" style={{ paddingLeft: 20, paddingRight: 20, paddingBottom: 20 }}>
               {navLinks.map((link, i) => (
                 <motion.li
                   key={link.href}
@@ -111,7 +114,7 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
                   <Link
                     href={`${linkBase}${link.href}`}
                     onClick={onClose}
-                    className="block py-0.5 font-display text-[2rem] font-normal leading-[1.2] text-white/60 transition-colors duration-200 hover:text-white"
+                    className="block py-1 font-display text-[2rem] font-normal leading-[1.2] text-white/60 transition-colors duration-200 hover:text-white"
                   >
                     {link.label}
                   </Link>
@@ -127,7 +130,7 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
                 <button
                   type="button"
                   onClick={() => { onClose(); openStartProject() }}
-                  className="flex w-full items-center justify-between gap-3 py-0.5 text-left font-display text-[2rem] font-normal leading-[1.2] text-white transition-colors duration-200 hover:text-accent"
+                  className="flex w-full items-center justify-between gap-3 py-1 text-left font-display text-[2rem] font-normal leading-[1.2] text-white transition-colors duration-200 hover:text-accent"
                 >
                   Start a Project
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/35">
