@@ -20,9 +20,9 @@ export function usePageTransition() {
 }
 
 /* ── Timing (ms) ── */
-const WIPE_IN = 650
-const HOLD = 250
-const WIPE_OUT = 600
+const WIPE_IN = 500
+const HOLD = 150
+const WIPE_OUT = 450
 const EASE = 'cubic-bezier(0.77, 0, 0.175, 1)'
 
 export default function PageTransitionProvider({
@@ -75,12 +75,12 @@ export default function PageTransitionProvider({
       overlay.style.transition = `transform ${WIPE_IN}ms ${EASE}`
       overlay.style.transform = 'scaleY(1)'
 
-      // Fade in logo halfway through wipe
+      // Fade in logo early in the wipe so the crest still reads at this speed
       setTimeout(() => {
-        logo.style.transition = `opacity 0.4s ease, transform 0.4s ease`
+        logo.style.transition = `opacity 0.28s ease, transform 0.28s ease`
         logo.style.opacity = '1'
         logo.style.transform = 'translateY(0) scale(1)'
-      }, WIPE_IN * 0.4)
+      }, WIPE_IN * 0.25)
 
       // After wipe fully covers screen, scroll to top and navigate
       setTimeout(() => {
