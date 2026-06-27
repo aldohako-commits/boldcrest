@@ -1055,7 +1055,7 @@ export default function PeoplePageClient({
         {/* ═══════════════════════════════════════════
             3. TEAM CULTURE + FACES (combined)
         ═══════════════════════════════════════════ */}
-        <section className="grid grid-cols-1 [align-content:safe_center] h-[100svh] overflow-x-hidden overflow-y-auto px-[var(--gutter)] pt-[80px] md:flex md:h-[100dvh] md:items-center md:overflow-hidden">
+        <section className="grid grid-cols-1 [align-content:safe_center] h-[100svh] overflow-x-hidden overflow-y-auto px-[var(--gutter)] pt-[80px] md:flex md:h-[100dvh] md:items-center md:overflow-hidden md:pt-0">
           <div className="mx-auto w-full max-w-[var(--max-width)]">
             <div className="grid items-center gap-[var(--space-lg)] md:grid-cols-2 md:gap-[var(--space-2xl)]">
               {/* Left — culture copy */}
