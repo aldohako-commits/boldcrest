@@ -20,9 +20,9 @@ export function usePageTransition() {
 }
 
 /* ── Timing (ms) ── */
-const WIPE_IN = 900
-const HOLD = 400
-const WIPE_OUT = 800
+const WIPE_IN = 650
+const HOLD = 250
+const WIPE_OUT = 600
 const EASE = 'cubic-bezier(0.77, 0, 0.175, 1)'
 
 export default function PageTransitionProvider({
