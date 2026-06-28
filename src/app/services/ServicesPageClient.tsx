@@ -165,9 +165,9 @@ function WordItem({
   const opacity = useTransform(progress, range, [0.15, 1])
   const y = useTransform(progress, range, [4, 0])
 
-  // Tint a trailing sentence period to match the muted dot used in the other
-  // page heroes (#545454). WordReveal only renders the services manifesto, so
-  // this only touches the lines that end in a full stop.
+  // Tint a trailing sentence period to match the muted accent dot used in the
+  // other page heroes. WordReveal only renders the services manifesto, so this
+  // only touches the lines that end in a full stop.
   const hasDot = word.endsWith('.')
   const base = hasDot ? word.slice(0, -1) : word
 
@@ -177,7 +177,7 @@ function WordItem({
       className="mr-[0.3em] inline-block"
     >
       {base}
-      {hasDot && <span className="text-[#545454]">.</span>}
+      {hasDot && <span className="text-accent">.</span>}
     </motion.span>
   )
 }

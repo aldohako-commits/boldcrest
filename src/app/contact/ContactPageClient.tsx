@@ -78,9 +78,9 @@ export default function ContactPageClient({
           {/* Headline left, intro right-aligned to its bottom */}
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <h1 className="font-display text-[clamp(2.5rem,6.5vw,6rem)] font-bold leading-[1.05] tracking-[-0.02em] text-white">
-              Start with a Hello<span className="text-[#545454]">.</span>
+              Start with a Hello<span className="text-accent">.</span>
               <br />
-              We&apos;ll take it from there<span className="text-[#545454]">.</span>
+              We&apos;ll take it from there<span className="text-accent">.</span>
             </h1>
 
             <p className="max-w-[440px] text-[0.95rem] leading-[1.7] text-text-secondary md:text-right">

@@ -83,7 +83,7 @@ function Word({
   // unchanged. `hover-fine:` (see globals.css) gates the hover on `any-hover`
   // so it works with a mouse/trackpad on iPad/iPhone but never sticks on touch.
   const [hoverReady, setHoverReady] = useState(false)
-  // The tinted full-stop after a word (#545454). It's a child of the word span,
+  // The accent full-stop after a word. It's a child of the word span,
   // so it already inherits the parent's skew + (for 'perceptions') the white
   // text-stroke. But its OWN fill colour wouldn't go transparent on hover the way
   // the letters do — so on a 'perceptions' hover we flip just the dot's fill to
@@ -172,7 +172,7 @@ function Word({
               const el = e.currentTarget as HTMLElement
               ;(el.style as unknown as Record<string, string>).webkitTextStroke = '0px transparent'
               el.style.color = ''
-              if (dotRef.current) dotRef.current.style.color = '#545454'
+              if (dotRef.current) dotRef.current.style.color = ''
             }
           : undefined
       }
@@ -181,8 +181,8 @@ function Word({
       {dotAfter && (
         <span
           ref={dotRef}
-          className="transition-all duration-[0.4s]"
-          style={{ color: '#545454', transitionTimingFunction: 'var(--ease-out-expo)' }}
+          className="text-accent transition-all duration-[0.4s]"
+          style={{ transitionTimingFunction: 'var(--ease-out-expo)' }}
         >
           .
         </span>

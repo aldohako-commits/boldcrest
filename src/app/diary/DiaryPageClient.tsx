@@ -171,7 +171,7 @@ export default function DiaryPageClient({ posts, initialCategory }: DiaryPageCli
             >
               The Latest<br />
               From Our<br />
-              World<span className="text-[#545454]">.</span>
+              World<span className="text-accent">.</span>
             </motion.h1>
 
             <motion.p
