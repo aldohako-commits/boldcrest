@@ -927,11 +927,11 @@ export default function PeoplePageClient({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
                   >
-                    Two earthquakes,{' '}
+                    Two earthquakes<span className="text-accent">,</span>{' '}
                     <br className="hidden md:block" />
-                    a pandemic, and{' '}
+                    a pandemic<span className="text-accent">,</span> and{' '}
                     <br className="hidden md:block" />
-                    a decision<span className="text-text-tertiary">.</span>
+                    a decision<span className="text-accent">.</span>
                   </motion.h1>
 
                   <motion.p
