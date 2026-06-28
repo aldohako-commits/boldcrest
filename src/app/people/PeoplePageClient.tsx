@@ -604,10 +604,13 @@ export default function PeoplePageClient({
     setTimeout(() => setIsLocked(false), TRANSITION_DURATION + 100)
   }, [current, isLocked])
 
-  // Wheel handler
+  // Wheel handler. Gated on TOUCH, not width: it runs for any non-touch pointer
+  // (mouse/trackpad) — INCLUDING a desktop window squeezed below 768px, which
+  // renders the "mobile" stack but has no touch to drive it. Touch devices
+  // (phone/iPad) skip this and use the touch handler instead.
   useEffect(() => {
     const el = containerRef.current
-    if (!el || isMobile) return
+    if (!el || isTouch) return
 
     const onWheel = (e: WheelEvent) => {
       const last = TOTAL_SECTIONS - 1
@@ -628,6 +631,22 @@ export default function PeoplePageClient({
         }
         return
       }
+
+      // In the narrow ("mobile") layout a slide can be taller than the viewport
+      // and scroll internally (overflow-y-auto). Mirror the touch rule: let the
+      // wheel scroll the slide first, and only advance the deck once the slide is
+      // at the matching edge. (Wide desktop slides are overflow-hidden, so this is
+      // gated on isMobile and the deck keeps stepping per scroll there.)
+      if (isMobile) {
+        const slide = wrapperRef.current?.children[current] as HTMLElement | undefined
+        if (slide && slide.scrollHeight > slide.clientHeight + 4) {
+          const atTop = slide.scrollTop <= 2
+          const atBottom =
+            slide.scrollTop + slide.clientHeight >= slide.scrollHeight - 2
+          if ((e.deltaY > 0 && !atBottom) || (e.deltaY < 0 && !atTop)) return
+        }
+      }
+
       e.preventDefault()
       if (isLocked) return
       if (Math.abs(e.deltaY) < 15) return // ignore tiny scroll
@@ -637,7 +656,7 @@ export default function PeoplePageClient({
 
     el.addEventListener('wheel', onWheel, { passive: false })
     return () => el.removeEventListener('wheel', onWheel)
-  }, [current, isLocked, goTo, isMobile])
+  }, [current, isLocked, goTo, isMobile, isTouch])
 
   // Touch handler — drives the deck on both touch-laptops and mobile. On
   // mobile a slide taller than the viewport scrolls internally first; the deck
