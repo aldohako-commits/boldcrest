@@ -257,7 +257,7 @@ export default function ProjectMarquee({
                       {project.client}
                     </span>
                   )}
-                  <h3 className="mt-1.5 font-display text-[1.05rem] font-semibold uppercase text-text-primary">
+                  <h3 className="mt-1.5 font-display text-[1.05rem] font-semibold uppercase leading-[1.15] text-text-primary">
                     {withSmallMarks(project.tagline || project.name)}
                   </h3>
                   <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -285,7 +285,7 @@ export default function ProjectMarquee({
                     {project.client}
                   </span>
                 )}
-                <h3 className="mt-1 font-display text-[1rem] font-semibold uppercase text-text-primary">
+                <h3 className="mt-1 font-display text-[1rem] font-semibold uppercase leading-[1.15] text-text-primary">
                   {withSmallMarks(project.tagline || project.name)}
                 </h3>
                 <div className="mt-2.5 flex flex-wrap items-center gap-1.5">

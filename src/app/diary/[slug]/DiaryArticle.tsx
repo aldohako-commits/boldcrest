@@ -246,7 +246,7 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
 
               <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
                 <motion.h1
-                  className="max-w-[20ch] font-display text-[clamp(2.5rem,6vw,5rem)] font-bold leading-[1.05] tracking-[-0.03em]"
+                  className="max-w-[20ch] font-display text-[clamp(2.5rem,6vw,5rem)] font-bold leading-[1.12] tracking-[-0.03em]"
                   initial={{ opacity: 0, y: 40 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}

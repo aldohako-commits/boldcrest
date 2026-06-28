@@ -93,7 +93,7 @@ function DiaryCard({
         )}
 
         <Link href={postHref} className="block">
-          <h3 className="font-display text-[0.85rem] font-bold uppercase leading-[1.3] tracking-[0.02em] text-white transition-colors duration-200 group-hover:text-text-tertiary md:text-[clamp(1rem,1.5vw,1.3rem)]">
+          <h3 className="font-display text-[0.85rem] font-bold uppercase leading-[1.2] tracking-[0.02em] text-white transition-colors duration-200 group-hover:text-text-tertiary md:text-[clamp(1rem,1.5vw,1.3rem)]">
             {post.title}
           </h3>
 

@@ -110,7 +110,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                 {project.client}
               </span>
             )}
-            <h3 className="mt-1.5 font-display text-[1.15rem] font-semibold uppercase text-text-primary">
+            <h3 className="mt-1.5 font-display text-[1.15rem] font-semibold uppercase leading-[1.15] text-text-primary">
               {withSmallMarks(project.tagline || project.name)}
             </h3>
             <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -138,7 +138,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
               {project.client}
             </span>
           )}
-          <h3 className="mt-1 font-display text-[1rem] font-semibold uppercase text-text-primary">
+          <h3 className="mt-1 font-display text-[1rem] font-semibold uppercase leading-[1.15] text-text-primary">
             {withSmallMarks(project.tagline || project.name)}
           </h3>
           {/* Industry (client category) on its own row, services on the next */}

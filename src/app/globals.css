@@ -102,6 +102,20 @@
   box-sizing: border-box;
 }
 
+/* Form controls reset `font` to the UA default (Tailwind preflight does
+   `button { font: inherit }`), and that shorthand beats the `font-display`
+   utility — so a <button class="font-display"> silently rendered in the system
+   sans instead of Metropolis. Re-assert the display font for any form control
+   that opted into it. This rule is intentionally un-layered so it wins over the
+   layered preflight/utilities, and it uses --font-metropolis directly because
+   --font-display is an @theme-inline token (not emitted as a runtime CSS var). */
+button.font-display,
+input.font-display,
+select.font-display,
+textarea.font-display {
+  font-family: var(--font-metropolis), sans-serif;
+}
+
 html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;

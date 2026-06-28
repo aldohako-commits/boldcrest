@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 import MobileMenu from './MobileMenu'
 import { useStartProject } from './start-project/StartProjectProvider'
@@ -72,7 +73,57 @@ export default function Header() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-[1000] flex justify-center pointer-events-none" style={{ padding: '1rem var(--gutter)', height: '5rem' }}>
+      {/* Frosted pill BACKGROUND — its own fixed layer at z-999, BELOW the mobile
+          menu panel (z-1001). Kept separate from the header content (z-1002) on
+          purpose: when the menu closes, this pill's opacity change happens HIDDEN
+          behind the shrinking panel, so the pill is simply revealed when the panel
+          unmounts — no visible "fade in from nowhere". Mirrors the pill wrapper's
+          geometry + width animation so it stays perfectly aligned with the content. */}
+      <div
+        className="fixed top-0 left-0 right-0 flex justify-center pointer-events-none"
+        style={{ padding: '1rem var(--gutter)', height: '5rem', zIndex: 999 }}
+        aria-hidden
+      >
+        <div
+          style={{
+            position: 'relative',
+            width: scrolled && !isMobile ? 'min(56rem, 85%)' : '100%',
+            height: '3.5rem',
+            transition: 'width 650ms cubic-bezier(0.23, 1, 0.32, 1)',
+          }}
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              borderRadius: '1.75rem',
+              backgroundColor: 'rgba(10, 10, 10, 0.88)',
+              backdropFilter: 'blur(24px) saturate(1.5)',
+              WebkitBackdropFilter: 'blur(24px) saturate(1.5)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              // Hidden while the menu is open (the panel is the surface then). The
+              // fade to/from this state is invisible because it's behind the panel.
+              boxShadow: scrolled && !mobileOpen ? '0 8px 32px rgba(0,0,0,0.3)' : 'none',
+              opacity: scrolled && !mobileOpen ? 1 : 0,
+              transition: 'opacity 200ms ease-out, box-shadow 400ms ease-out',
+            }}
+          />
+        </div>
+      </div>
+
+      <header
+        className="fixed top-0 left-0 right-0 flex justify-center pointer-events-none"
+        style={{
+          padding: '1rem var(--gutter)',
+          height: '5rem',
+          // Always sit above the mobile menu overlay/panel (z-1000/1001) so the
+          // header's own solid logo + morphing hamburger stay on top through the
+          // ENTIRE open AND close. (If we dropped this on close, the still-exiting
+          // panel would cover the solid logo/X for ~0.4s and read as a fade-out.)
+          // Still below the cookie banner (1800), Start-a-Project (1900/2000),
+          // page transition (9999) and loading screen, so nothing else regresses.
+          zIndex: 1002,
+        }}
+      >
         {/* Pill wrapper — width animates */}
         <div
           className="relative flex items-center pointer-events-auto"
@@ -82,20 +133,8 @@ export default function Header() {
             transition: 'width 650ms cubic-bezier(0.23, 1, 0.32, 1)',
           }}
         >
-          {/* Frosted glass background — fades in separately */}
-          <div
-            className="absolute inset-0 z-[-1]"
-            style={{
-              borderRadius: '1.75rem',
-              backgroundColor: 'rgba(10, 10, 10, 0.88)',
-              backdropFilter: 'blur(24px) saturate(1.5)',
-              WebkitBackdropFilter: 'blur(24px) saturate(1.5)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              boxShadow: scrolled ? '0 8px 32px rgba(0,0,0,0.3)' : 'none',
-              opacity: scrolled ? 1 : 0,
-              transition: 'opacity 200ms ease-out, box-shadow 400ms ease-out',
-            }}
-          />
+          {/* (Frosted pill background lives in its own z-999 layer above — see top
+              of component — so it can sit below the menu panel.) */}
 
           {/* Inner content */}
           <div
@@ -131,6 +170,10 @@ export default function Header() {
               // crossfades). The menu's own logo fades in over this identical,
               // co-located crest, so total brightness stays ~constant.
               onClick={(e) => {
+                // The header logo now sits above the open menu, so a tap on it
+                // should also close the menu (the route effect handles it when we
+                // actually navigate, but not when we're already home).
+                setMobileOpen(false)
                 if (!embed && pathname === '/') {
                   e.preventDefault()
                   window.dispatchEvent(new CustomEvent('boldcrest:back-to-top'))
@@ -245,26 +288,29 @@ export default function Header() {
               </span>
             </button>
 
-            {/* Mobile Hamburger */}
+            {/* Mobile Hamburger ↔ X — ONE element that geometrically morphs (no
+                fade). Two centred strokes: the top is full width; the bottom is
+                short (scaleX 0.6, centred) so it reads as a hamburger. On open both
+                converge to the centre and swing ±45° while the short stroke EXTENDS
+                on both sides (scaleX → 1) into a clean, symmetric X. Because the
+                header now sits above the open panel, this same element is what's
+                visible open and closed — the morph is continuous, never a crossfade.
+                top-[13px] centres each 2px stroke in the 28px box. */}
             <button
-              className="z-10 flex flex-col gap-[5px] md:hidden"
+              className="relative z-10 h-7 w-7 md:hidden"
               onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label="Toggle menu"
-              style={{
-                // Fade the hamburger out as the menu opens (the menu's X fades in);
-                // fades back in on close. No morph — just a clean crossfade.
-                opacity: mobileOpen ? 0 : 1,
-                pointerEvents: mobileOpen ? 'none' : 'auto',
-                // Nudge left so it lands on the open menu's X (which sits inside the
-                // card's right padding) for a seamless crossfade from the pill header.
-                marginRight: '7px',
-                transition: 'opacity 250ms cubic-bezier(0.16, 1, 0.3, 1)',
-              }}
+              aria-label={mobileOpen ? 'Close menu' : 'Toggle menu'}
+              style={{ marginRight: '7px' }}
             >
-              <span className="h-[2px] w-7 rounded-[2px] bg-white" />
-              <span
-                className="h-[2px] rounded-[2px] bg-white"
-                style={{ width: '60%', marginLeft: 'auto' }}
+              <motion.span
+                className="absolute right-0 top-[13px] h-[2px] w-7 rounded-[2px] bg-white"
+                animate={mobileOpen ? { rotate: 45, y: 0 } : { rotate: 0, y: -3.5 }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              />
+              <motion.span
+                className="absolute right-0 top-[13px] h-[2px] w-7 origin-center rounded-[2px] bg-white"
+                animate={mobileOpen ? { rotate: -45, y: 0, scaleX: 1 } : { rotate: 0, y: 3.5, scaleX: 0.6 }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               />
             </button>
           </div>
