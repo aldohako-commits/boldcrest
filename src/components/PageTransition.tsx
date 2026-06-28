@@ -219,7 +219,7 @@ export default function PageTransitionProvider({
             viewBox="0 0 384.09 384"
             xmlns="http://www.w3.org/2000/svg"
             aria-label="BoldCrest"
-            style={{ width: 'clamp(3rem, 7vw, 4.5rem)', height: 'auto', color: '#fff' }}
+            style={{ width: 'clamp(3rem, 7vw, 4.5rem)', height: 'auto', color: '#545454' }}
           >
             <path
               fill="currentColor"

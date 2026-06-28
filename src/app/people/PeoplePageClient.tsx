@@ -1158,7 +1158,8 @@ export default function PeoplePageClient({
 
     {/* Careers gray band — flows in after the last slide, above the global footer */}
     <section className="bg-[#1e1e1e] px-[var(--gutter)] py-[var(--space-2xl)]">
-      <div className="mx-auto flex max-w-[var(--max-width)] flex-col items-start gap-[var(--space-lg)] md:flex-row md:items-center md:justify-between">
+      {/* Desktop — heading left, compact ghost pill right */}
+      <div className="mx-auto hidden max-w-[var(--max-width)] md:flex md:items-center md:justify-between">
         <motion.h2
           className="font-display text-[clamp(1.8rem,3.5vw,2.8rem)] font-bold leading-[1.1] tracking-[-0.02em] text-text-primary"
           initial={{ opacity: 0, y: 30 }}
@@ -1177,6 +1178,38 @@ export default function PeoplePageClient({
           transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
         >
           <CTAButton href="https://careers.boldcrest.com" label="Visit Careers" showArrow />
+        </motion.div>
+      </div>
+
+      {/* Mobile — big bold statement + wide ghost pill below it, mirroring the home
+          "We do many things very well." block (design only; keeps the People band's
+          own dark colours, not the home zone colours). */}
+      <div className="mx-auto max-w-[var(--max-width)] md:hidden">
+        <motion.h2
+          className="font-display text-[clamp(2.8rem,12vw,5rem)] font-bold leading-[1.05] tracking-[-0.03em] text-text-primary"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
+          Want to join our team?
+        </motion.h2>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <a
+            href="https://careers.boldcrest.com"
+            className="mt-8 flex w-1/2 items-center justify-between gap-2 whitespace-nowrap rounded-full border border-white/25 px-5 py-4 text-[0.72rem] font-semibold uppercase tracking-[0.04em] text-text-secondary"
+          >
+            Visit Careers
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </a>
         </motion.div>
       </div>
     </section>
