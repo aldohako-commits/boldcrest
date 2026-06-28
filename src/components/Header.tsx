@@ -99,10 +99,24 @@ export default function Header() {
 
           {/* Inner content */}
           <div
-            className="relative flex w-full items-center justify-between transition-[padding] duration-[650ms]"
+            className="relative flex w-full items-center justify-between"
             style={{
-              padding: scrolled ? '0 1.25rem' : '0',
-              transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
+              // Pad inward when scrolled OR when the mobile menu opens. The open
+              // menu's logo/X are aligned to the scrolled-pill positions (inset by
+              // this 1.25rem), so applying the same padding on open glides the
+              // header's logo/hamburger to sit exactly under the menu's logo/X.
+              padding: scrolled || mobileOpen ? '0 1.25rem' : '0',
+              // Any menu-driven move (open AND close) uses the fast 420ms/ease-out-
+              // expo timing so it stays locked to the menu logo's slide — a single
+              // solid crest gliding 24↔44px, pure movement, no fade, no ghost. Only
+              // the actual scroll→pill transition (scrolled with the menu closed)
+              // uses the slower, springier pill timing.
+              transitionProperty: 'padding',
+              transitionDuration: scrolled && !mobileOpen ? '650ms' : '420ms',
+              transitionTimingFunction:
+                scrolled && !mobileOpen
+                  ? 'cubic-bezier(0.23, 1, 0.32, 1)'
+                  : 'cubic-bezier(0.16, 1, 0.3, 1)',
             }}
           >
             {/* Logo — goes home; if already home, smooth-scrolls to the top
@@ -111,6 +125,11 @@ export default function Header() {
               href={`${linkBase}/`}
               aria-label="BoldCrest — home"
               className="z-10 flex items-center"
+              // NOTE: the logo does NOT fade when the menu opens. Its position
+              // matches the menu's logo, so keeping it solid makes the crest read
+              // as one static logo through the open/close (only the hamburger↔X
+              // crossfades). The menu's own logo fades in over this identical,
+              // co-located crest, so total brightness stays ~constant.
               onClick={(e) => {
                 if (!embed && pathname === '/') {
                   e.preventDefault()
@@ -231,29 +250,28 @@ export default function Header() {
               className="z-10 flex flex-col gap-[5px] md:hidden"
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label="Toggle menu"
+              style={{
+                // Fade the hamburger out as the menu opens (the menu's X fades in);
+                // fades back in on close. No morph — just a clean crossfade.
+                opacity: mobileOpen ? 0 : 1,
+                pointerEvents: mobileOpen ? 'none' : 'auto',
+                // Nudge left so it lands on the open menu's X (which sits inside the
+                // card's right padding) for a seamless crossfade from the pill header.
+                marginRight: '7px',
+                transition: 'opacity 250ms cubic-bezier(0.16, 1, 0.3, 1)',
+              }}
             >
+              <span className="h-[2px] w-7 rounded-[2px] bg-white" />
               <span
-                className="h-[2px] w-7 rounded-[2px] bg-white transition-all duration-[0.4s]"
-                style={{
-                  transform: mobileOpen ? 'translateY(3.5px) rotate(45deg)' : 'none',
-                  transitionTimingFunction: 'var(--ease-out-expo)',
-                }}
-              />
-              <span
-                className="h-[2px] rounded-[2px] bg-white transition-all duration-[0.4s]"
-                style={{
-                  width: mobileOpen ? '28px' : '60%',
-                  marginLeft: mobileOpen ? '0' : 'auto',
-                  transform: mobileOpen ? 'translateY(-3.5px) rotate(-45deg)' : 'none',
-                  transitionTimingFunction: 'var(--ease-out-expo)',
-                }}
+                className="h-[2px] rounded-[2px] bg-white"
+                style={{ width: '60%', marginLeft: 'auto' }}
               />
             </button>
           </div>
         </div>
       </header>
 
-      <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} />
+      <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} scrolled={scrolled} />
     </>
   )
 }
