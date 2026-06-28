@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
-import { motion, useScroll, useTransform, useInView } from 'framer-motion'
+import { motion, useInView } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
 import { CTAButton } from '@/components/MagneticButton'
@@ -127,44 +127,29 @@ function WordReveal({
   text: string
   className?: string
 }) {
-  const ref = useRef<HTMLSpanElement>(null)
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start 0.9', 'start 0.4'],
-  })
-
+  // Reveal the manifesto with an on-MOUNT word stagger. This is the hero (top of
+  // the page) and always in view, so we don't gate on scroll position (the old
+  // scroll-linked reveal never completed up here — the words just sat faint) or
+  // on an IntersectionObserver; framer's initial→animate runs on mount, so the
+  // stagger plays once and settles fully visible every time the page loads.
   const words = text.split(' ')
 
   return (
-    <span ref={ref} className={className}>
-      {words.map((word, i) => {
-        const start = i / words.length
-        const end = start + 1 / words.length
-        return (
-          <WordItem
-            key={i}
-            word={word}
-            range={[start, end]}
-            progress={scrollYProgress}
-          />
-        )
-      })}
+    <span className={className}>
+      {words.map((word, i) => (
+        <WordItem key={i} word={word} delay={i * 0.05} />
+      ))}
     </span>
   )
 }
 
 function WordItem({
   word,
-  range,
-  progress,
+  delay,
 }: {
   word: string
-  range: [number, number]
-  progress: ReturnType<typeof useScroll>['scrollYProgress']
+  delay: number
 }) {
-  const opacity = useTransform(progress, range, [0.15, 1])
-  const y = useTransform(progress, range, [4, 0])
-
   // Tint a trailing sentence period to match the muted accent dot used in the
   // other page heroes. WordReveal only renders the services manifesto, so this
   // only touches the lines that end in a full stop.
@@ -173,7 +158,9 @@ function WordItem({
 
   return (
     <motion.span
-      style={{ opacity, y }}
+      initial={{ opacity: 0.15, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
       className="mr-[0.3em] inline-block"
     >
       {base}
