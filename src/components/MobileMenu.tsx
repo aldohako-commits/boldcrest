@@ -21,15 +21,19 @@ interface MobileMenuProps {
   // so it EXPANDS out of the pill height (no fade) for a seamless morph; from the
   // top there's no pill, so it just unrolls from 0.
   scrolled?: boolean
+  // Fired once the panel has FULLY exited/unmounted. Header uses this to reveal
+  // the resting pill at the exact moment this panel is gone, so the two surfaces
+  // never overlap (no blend, no double-darkening) during a scrolled close.
+  onExitComplete?: () => void
 }
 
-export default function MobileMenu({ open, onClose, scrolled = false }: MobileMenuProps) {
+export default function MobileMenu({ open, onClose, scrolled = false, onExitComplete }: MobileMenuProps) {
   const { open: openStartProject } = useStartProject()
   // On a vanity form subdomain, point links at the absolute canonical site so
   // they escape the form (relative paths get rewritten back to it).
   const { linkBase } = useFormEmbed()
   return (
-    <AnimatePresence>
+    <AnimatePresence onExitComplete={onExitComplete}>
       {open && (
         <>
           {/* Blurred overlay behind menu */}
@@ -55,12 +59,16 @@ export default function MobileMenu({ open, onClose, scrolled = false }: MobileMe
             // pill, simply grows downward — the pill appears to expand into the menu.
             // From the top there's no pill, so it unrolls from 0. The header's solid
             // logo + morphing hamburger ride above, so nothing needs to fade.
+            // Close is the EXACT geometric REVERSE of open: the panel stays the one
+            // solid 0.88 surface and simply shrinks back to the pill height (no bg
+            // crossfade — that introduced a lightening dip that read as a glitch and
+            // never matched the single-layer open). The separate header pill (z-999)
+            // stays HIDDEN through the whole collapse and is only revealed once this
+            // panel has fully unmounted (Header's onExitComplete), so there are never
+            // two translucent layers blending at once. From the top there's no pill,
+            // so we collapse to 0 and fade the panel out (kills the lingering border).
             initial={{ height: scrolled ? '3.5rem' : 0 }}
             animate={{ height: 'auto', opacity: 1 }}
-            // Scrolled: collapse to the pill height (the pill is revealed beneath).
-            // Top: collapse to 0 AND fade out — otherwise the panel's 1px borders
-            // leave a ~2px line lingering at height≈0 before it unmounts. The fade
-            // only runs in the top case, so the scrolled close stays purely geometric.
             exit={{ height: scrolled ? '3.5rem' : 0, opacity: scrolled ? 1 : 0 }}
             transition={{
               height: { duration: 0.42, ease: [0.16, 1, 0.3, 1] },
@@ -72,7 +80,12 @@ export default function MobileMenu({ open, onClose, scrolled = false }: MobileMe
               backgroundColor: 'rgba(10, 10, 10, 0.88)',
               backdropFilter: 'blur(24px) saturate(1.5)',
               WebkitBackdropFilter: 'blur(24px) saturate(1.5)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              // Longhand (not the `border` shorthand): framer-motion writes longhand
+              // style props onto this element, and mixing shorthand + longhand makes
+              // React warn about conflicting style updates on rerender.
+              borderWidth: '1px',
+              borderStyle: 'solid',
+              borderColor: 'rgba(255,255,255,0.08)',
             }}
           >
             {/* Spacer for the header zone. The logo and the hamburger↔X now live in

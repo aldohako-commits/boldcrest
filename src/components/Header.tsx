@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
@@ -52,7 +52,36 @@ export default function Header() {
 
   useEffect(() => {
     setMobileOpen(false)
+    setPillRevealed(true)
+    setPillInstant(true)
   }, [pathname])
+
+  // Resting-pill visibility, built so open and close are exact mirror images.
+  // `pillOn` is computed at RENDER (not in an effect) so it flips in the SAME frame
+  // as the panel mounts/unmounts — an effect runs a frame late, which leaves the
+  // pill and the panel both visible for one frame and reads as a flash/double.
+  // The pill is hidden the whole time the menu panel is on screen: while open
+  // (mobileOpen) AND through the entire close collapse (pillRevealed stays false
+  // until the panel has fully exited). `revealPill` — from MobileMenu's
+  // onExitComplete — flips it back on the instant the panel is gone, so the pill
+  // and panel never coexist (no blend, no dip, no double-darkening). `pillInstant`
+  // makes the menu-driven swaps 0ms (they happen hidden behind the panel, incl.
+  // the reveal exactly at panel-gone); a plain scroll keeps the gentle 200ms fade.
+  const [pillRevealed, setPillRevealed] = useState(true)
+  const [pillInstant, setPillInstant] = useState(false)
+  const pillOn = scrolled && !mobileOpen && pillRevealed
+  const openMenu = () => { setPillInstant(true); setMobileOpen(true) }
+  const closeMenu = () => {
+    if (mobileOpen) { setPillInstant(true); setPillRevealed(false) }
+    setMobileOpen(false)
+  }
+  const revealPill = () => { setPillInstant(true); setPillRevealed(true) }
+  // A plain scroll (menu not involved) fades the pill with the gentle 200ms curve.
+  const mobileOpenRef = useRef(mobileOpen)
+  mobileOpenRef.current = mobileOpen
+  useEffect(() => {
+    if (!mobileOpenRef.current) setPillInstant(false)
+  }, [scrolled])
 
   // Track viewport width so the CTA can collapse to its compact "+" form
   // before it crowds the nav, and so the scrolled pill stays full-width on
@@ -102,9 +131,15 @@ export default function Header() {
               border: '1px solid rgba(255,255,255,0.08)',
               // Hidden while the menu is open (the panel is the surface then). The
               // fade to/from this state is invisible because it's behind the panel.
-              boxShadow: scrolled && !mobileOpen ? '0 8px 32px rgba(0,0,0,0.3)' : 'none',
-              opacity: scrolled && !mobileOpen ? 1 : 0,
-              transition: 'opacity 200ms ease-out, box-shadow 400ms ease-out',
+              boxShadow: pillOn ? '0 8px 32px rgba(0,0,0,0.3)' : 'none',
+              opacity: pillOn ? 1 : 0,
+              // `pillInstant` (0ms) is used for menu-driven swaps, which always
+              // happen hidden behind the panel — so the pill switches on/off
+              // invisibly and is simply revealed when the panel is gone. A plain
+              // scroll uses the gentle 200ms fade.
+              transition: pillInstant
+                ? 'opacity 0ms, box-shadow 400ms ease-out'
+                : 'opacity 200ms ease-out, box-shadow 400ms ease-out',
             }}
           />
         </div>
@@ -173,7 +208,7 @@ export default function Header() {
                 // The header logo now sits above the open menu, so a tap on it
                 // should also close the menu (the route effect handles it when we
                 // actually navigate, but not when we're already home).
-                setMobileOpen(false)
+                closeMenu()
                 if (!embed && pathname === '/') {
                   e.preventDefault()
                   window.dispatchEvent(new CustomEvent('boldcrest:back-to-top'))
@@ -298,7 +333,7 @@ export default function Header() {
                 top-[13px] centres each 2px stroke in the 28px box. */}
             <button
               className="relative z-10 h-7 w-7 md:hidden"
-              onClick={() => setMobileOpen(!mobileOpen)}
+              onClick={() => (mobileOpen ? closeMenu() : openMenu())}
               aria-label={mobileOpen ? 'Close menu' : 'Toggle menu'}
               style={{ marginRight: '7px' }}
             >
@@ -317,7 +352,12 @@ export default function Header() {
         </div>
       </header>
 
-      <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} scrolled={scrolled} />
+      <MobileMenu
+        open={mobileOpen}
+        onClose={closeMenu}
+        scrolled={scrolled}
+        onExitComplete={revealPill}
+      />
     </>
   )
 }

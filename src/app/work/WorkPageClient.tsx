@@ -219,7 +219,7 @@ function ProjectListRow({ project, index }: { project: Project; index: number })
       >
         <div className="flex items-baseline gap-3">
           <h3 className="font-display text-[clamp(1.1rem,2vw,1.5rem)] font-bold text-text-primary transition-colors duration-200 group-hover:text-white">
-            {project.client || project.name}
+            {withSmallMarks(project.client || project.name)}
           </h3>
           {(project.tagline || (project.client && project.name)) && (
             <span className="font-display text-[clamp(1.1rem,2vw,1.5rem)] font-normal text-text-primary">
