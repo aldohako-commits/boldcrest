@@ -703,10 +703,10 @@ export default function PeoplePageClient({
       if (Math.abs(wheelAccum.current) < 28) return
       const dir = wheelAccum.current > 0 ? 1 : -1
       wheelAccum.current = 0
-      // Fixed window from the snap: long enough to outlast the slide lock plus
-      // the strong start of the trackpad momentum tail; the accumulation
-      // threshold + 200ms gesture-gap reset absorb any weak leftover.
-      swallowUntil.current = e.timeStamp + TRANSITION_DURATION + 250
+      // Fixed window from the snap. Middle ground (1150ms): long enough to absorb
+      // most of a hard flick's momentum tail (fewer skips) but a FIXED, predictable
+      // wait — not "absorb until all momentum dies", which felt too slow to re-step.
+      swallowUntil.current = e.timeStamp + TRANSITION_DURATION + 450
       goTo(current + dir)
     }
 
