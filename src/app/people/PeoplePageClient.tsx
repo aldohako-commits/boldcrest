@@ -545,12 +545,16 @@ export default function PeoplePageClient({
   const lastSlideReady = useRef(false)
   // Wheel-stepping state (refs survive handler re-creation): accumulated intent
   // within one continuous gesture + its last timestamp (so a gentle swipe of
-  // tiny deltas still advances), and a "swallow until" deadline (an event
-  // timestamp) so one hard flick advances exactly one slide. A deadline (not a
-  // timer) can't be orphaned by a React re-render, so it always lapses on its own.
+  // tiny deltas still advances), a "swallow until" deadline (an event timestamp)
+  // so one hard flick advances exactly one slide, and a "the wheel stream has
+  // paused since the last step" flag — set true on any >120ms gap, cleared on a
+  // step. Past the fixed window we only step once that flag is set, so a really
+  // hard flick whose momentum is STILL streaming past the window keeps getting
+  // absorbed (no skip) instead of stepping again.
   const wheelAccum = useRef(0)
   const lastWheelTs = useRef(0)
   const swallowUntil = useRef(0)
+  const pausedSinceStep = useRef(true)
   const lenis = useLenis()
 
   // On mobile the full-screen slide deck can't hold tall content, so we fall
@@ -681,32 +685,38 @@ export default function PeoplePageClient({
 
       e.preventDefault()
 
-      // Absorb the trackpad inertia that trails a step so one hard flick
-      // advances exactly one slide (leftover momentum can't double-step). Fixed
-      // window from the snap (a deadline, so it always lapses on its own — it
-      // can never block the next real scroll).
-      if (e.timeStamp < swallowUntil.current) return
-      if (isLocked) return
-
       // Normalise across delta modes so a mouse notch and a trackpad swipe are
-      // comparable, then accumulate intent WITHIN one continuous gesture (reset
-      // on a pause or a direction change) so even a gentle swipe — whose
-      // individual deltas are tiny — reliably crosses the threshold instead of
-      // being ignored (the old "needs a second scroll").
+      // comparable, and track the gap since the previous wheel event. Any real
+      // pause (>120ms) means the user lifted off — mark the stream as paused.
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? el.clientHeight : 1
       const dy = e.deltaY * unit
-      if (e.timeStamp - lastWheelTs.current > 200 || Math.sign(dy) !== Math.sign(wheelAccum.current)) {
+      const gap = e.timeStamp - lastWheelTs.current
+      lastWheelTs.current = e.timeStamp
+      if (gap > 120) pausedSinceStep.current = true
+
+      // Absorb the trackpad inertia that trails a step so one hard flick advances
+      // exactly one slide (leftover momentum can't double-step). Fixed window from
+      // the snap — AND, if a REALLY hard flick's momentum is still streaming past
+      // the window (no pause since the step), keep eating it until it actually
+      // pauses, so the tail can't accumulate into an extra step. A normal flick's
+      // momentum dies (with a pause) before the window ends, so it behaves exactly
+      // like the plain fixed window (next step stays fast).
+      if (e.timeStamp < swallowUntil.current) return
+      if (!pausedSinceStep.current) return
+      if (isLocked) return
+
+      // Accumulate intent WITHIN one continuous gesture (reset on a pause or a
+      // direction change) so even a gentle swipe — whose individual deltas are
+      // tiny — reliably crosses the threshold instead of being ignored.
+      if (gap > 200 || Math.sign(dy) !== Math.sign(wheelAccum.current)) {
         wheelAccum.current = 0
       }
-      lastWheelTs.current = e.timeStamp
       wheelAccum.current += dy
       if (Math.abs(wheelAccum.current) < 28) return
       const dir = wheelAccum.current > 0 ? 1 : -1
       wheelAccum.current = 0
-      // Fixed window from the snap: long enough to outlast the slide lock plus
-      // the strong start of the trackpad momentum tail; the accumulation
-      // threshold + 200ms gesture-gap reset absorb any weak leftover.
       swallowUntil.current = e.timeStamp + TRANSITION_DURATION + 250
+      pausedSinceStep.current = false
       goTo(current + dir)
     }
 
