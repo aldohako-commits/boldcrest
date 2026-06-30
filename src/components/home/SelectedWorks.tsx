@@ -51,7 +51,7 @@ function ProjectCard({
     >
       <Link href={`/work/${project.slug?.current}`} className="group block">
         {/* Card container — fixed aspect, overflow hidden */}
-        <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-bg-card md:rounded-2xl">
+        <div className="relative aspect-[1.28/1] overflow-hidden rounded-xl bg-bg-card md:rounded-2xl">
           {/* Image — translates UP on hover (desktop only) */}
           {project.thumbnailType === 'video' && project.thumbnailVideo ? (
             <iframe
@@ -64,7 +64,7 @@ function ProjectCard({
           ) : project.thumbnail?.asset ? (
             <Image
               loader={sanityImageLoader}
-              src={urlFor(project.thumbnail).width(1200).height(900).url()}
+              src={urlFor(project.thumbnail).width(1200).height(938).url()}
               alt={project.name}
               fill
               loading="lazy"

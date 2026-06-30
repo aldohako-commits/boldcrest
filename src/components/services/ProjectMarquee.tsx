@@ -215,7 +215,7 @@ export default function ProjectMarquee({
               style={{ width: 'clamp(320px, 32vw, 580px)' }}
             >
               {/* Card container */}
-              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-bg-card">
+              <div className="relative aspect-[1.28/1] overflow-hidden rounded-2xl bg-bg-card">
                 {/* Image / Video — translates UP on hover (desktop only) */}
                 {vimeoId ? (
                   <iframe
@@ -228,7 +228,7 @@ export default function ProjectMarquee({
                 ) : project.thumbnail?.asset?._ref ? (
                   <Image
                     loader={sanityImageLoader}
-                    src={urlFor(project.thumbnail).width(1400).height(1050).quality(85).url()}
+                    src={urlFor(project.thumbnail).width(1400).height(1094).quality(85).url()}
                     alt={project.name}
                     fill
                     draggable={false}

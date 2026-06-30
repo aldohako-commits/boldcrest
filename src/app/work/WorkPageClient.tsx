@@ -72,7 +72,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
         className="group block"
       >
         {/* Card container — fixed aspect, overflow hidden */}
-        <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-bg-card md:rounded-2xl">
+        <div className="relative aspect-[1.28/1] overflow-hidden rounded-xl bg-bg-card md:rounded-2xl">
           {/* Image — translates UP on hover (desktop only) */}
           {project.thumbnailType === 'video' && project.thumbnailVideo ? (
             <iframe
@@ -87,7 +87,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
               loader={sanityImageLoader}
               src={urlFor(project.thumbnail)
                 .width(1400)
-                .height(1050)
+                .height(1094)
                 .url()}
               alt={project.name}
               fill
@@ -253,10 +253,10 @@ function ProjectListRow({ project, index }: { project: Project; index: number })
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
             >
-              <div className="relative h-[160px] w-[240px] overflow-hidden rounded-lg shadow-2xl">
+              <div className="relative h-[188px] w-[240px] overflow-hidden rounded-lg shadow-2xl">
                 <Image
                   loader={sanityImageLoader}
-                  src={urlFor(project.thumbnail).width(480).height(320).url()}
+                  src={urlFor(project.thumbnail).width(480).height(375).url()}
                   alt={project.name}
                   fill
                   className="object-cover"

@@ -43,11 +43,11 @@ export default function RelatedProjects({
               className={`group ${index === 4 ? 'hidden md:block' : 'block'}`}
             >
               {/* Thumbnail */}
-              <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-bg-card">
+              <div className="relative aspect-[1.28/1] overflow-hidden rounded-xl bg-bg-card">
                 {project.thumbnail?.asset?._ref ? (
                   <Image
                     loader={sanityImageLoader}
-                    src={urlFor(project.thumbnail).width(800).height(600).quality(80).url()}
+                    src={urlFor(project.thumbnail).width(800).height(625).quality(80).url()}
                     alt={project.name}
                     fill
                     sizes="(max-width: 768px) 50vw, 23vw"
