@@ -517,13 +517,15 @@ export default function PeoplePageClient({
   const [current, setCurrent] = useState(0)
   const [isLocked, setIsLocked] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  // Landscape phones get the desktop deck (≥768px wide) but only ~390px tall, so
-  // content-heavy slides clip. Treat them like mobile for SCROLL purposes: tall
-  // slides scroll internally and the deck advances at the edges. `compact` is the
-  // OR of the two — off landscape-short it equals isMobile, so desktop/portrait
-  // behaviour is byte-for-byte unchanged.
+  // Landscape phones are ≥768px wide (so NOT isMobile) but only ~390px tall — the
+  // wheel/touch-jacked deck can't show a slide's worth of copy in that height, and
+  // Lenis (active because !isMobile) is STOPPED per-slide, which blocks the slides'
+  // native scroll → content clips with no way to reach it. So in landscape-short we
+  // switch the whole page OFF the deck and into a normal vertical scroll: the
+  // wrapper stops translating, sections grow to their content, body scroll is never
+  // locked, and the deck handlers bail. isLandscapeShort is never isMobile, so
+  // portrait and desktop behaviour is byte-for-byte unchanged.
   const [isLandscapeShort, setIsLandscapeShort] = useState(false)
-  const compact = isMobile || isLandscapeShort
   // Any touch-capable device (phone AND iPad) — the deck locks scroll on all of
   // them, so the custom pull-to-refresh must run on all of them, not just <768px.
   const [isTouch, setIsTouch] = useState(false)
@@ -573,6 +575,13 @@ export default function PeoplePageClient({
   // html/body overflow lock below instead.
   useEffect(() => {
     if (!lenis) return
+    // Landscape-short is a normal scroll page — Lenis must stay ACTIVE the whole
+    // time (a stopped Lenis preventDefaults wheel and blocks native scrolling).
+    if (isLandscapeShort) {
+      lenis.resize()
+      lenis.start()
+      return
+    }
     const last = TOTAL_SECTIONS - 1
     if (current === last) {
       // Snap onto the last slide first: keep Lenis STOPPED for a beat after we
@@ -588,7 +597,7 @@ export default function PeoplePageClient({
       return () => clearTimeout(t)
     }
     lenis.stop()
-  }, [lenis, current])
+  }, [lenis, current, isLandscapeShort])
 
   // Gate page-scroll on the last slide independently of Lenis: hold for a beat
   // after arriving so leftover hard-scroll momentum is absorbed (the deck snaps
@@ -624,7 +633,8 @@ export default function PeoplePageClient({
   // (phone/iPad) skip this and use the touch handler instead.
   useEffect(() => {
     const el = containerRef.current
-    if (!el || isTouch) return
+    // Landscape-short is a normal scroll page — no wheel-jacking.
+    if (!el || isTouch || isLandscapeShort) return
 
     const onWheel = (e: WheelEvent) => {
       const last = TOTAL_SECTIONS - 1
@@ -646,12 +656,12 @@ export default function PeoplePageClient({
         return
       }
 
-      // In the narrow ("mobile") layout or landscape-short, a slide can be taller
-      // than the viewport and scroll internally (overflow-y-auto). Mirror the touch
-      // rule: let the wheel scroll the slide first, and only advance the deck once
-      // the slide is at the matching edge. `compact` covers both isMobile and
-      // isLandscapeShort so landscape phones get the same edge-scroll behaviour.
-      if (compact) {
+      // In the narrow ("mobile") layout a slide can be taller than the viewport
+      // and scroll internally (overflow-y-auto). Mirror the touch rule: let the
+      // wheel scroll the slide first, and only advance the deck once the slide is
+      // at the matching edge. (Wide desktop slides are overflow-hidden, so this is
+      // gated on isMobile and the deck keeps stepping per scroll there.)
+      if (isMobile) {
         const slide = wrapperRef.current?.children[current] as HTMLElement | undefined
         if (slide && slide.scrollHeight > slide.clientHeight + 4) {
           const atTop = slide.scrollTop <= 2
@@ -670,14 +680,15 @@ export default function PeoplePageClient({
 
     el.addEventListener('wheel', onWheel, { passive: false })
     return () => el.removeEventListener('wheel', onWheel)
-  }, [current, isLocked, goTo, compact, isTouch])
+  }, [current, isLocked, goTo, isMobile, isTouch, isLandscapeShort])
 
   // Touch handler — drives the deck on both touch-laptops and mobile. On
   // mobile a slide taller than the viewport scrolls internally first; the deck
   // only advances once the swipe starts from the relevant scroll edge.
   useEffect(() => {
     const el = containerRef.current
-    if (!el) return
+    // Landscape-short is a normal scroll page — let native touch scroll run.
+    if (!el || isLandscapeShort) return
 
     const onTouchStart = (e: TouchEvent) => {
       touchStartY.current = e.touches[0].clientY
@@ -716,7 +727,7 @@ export default function PeoplePageClient({
       if (Math.abs(diff) < 50) return
       // When the slide can scroll internally, only advance from its edges so
       // mid-content swipes just scroll the slide (mobile only).
-      if (compact && scrollable) {
+      if (isMobile && scrollable) {
         if (diff > 0 && atBottom) goTo(current + 1)
         else if (diff < 0 && atTop) goTo(current - 1)
         return
@@ -731,7 +742,7 @@ export default function PeoplePageClient({
       el.removeEventListener('touchstart', onTouchStart)
       el.removeEventListener('touchend', onTouchEnd)
     }
-  }, [current, isLocked, goTo, compact])
+  }, [current, isLocked, goTo, isMobile, isLandscapeShort])
 
   // ── Custom pull-to-refresh (mobile, first slide only) ──────────────────────
   // Native PTR can't fire on this page: the deck locks document scroll
@@ -740,7 +751,7 @@ export default function PeoplePageClient({
   // reveals a spinner and reloads past a threshold. A downward swipe on slide 0
   // otherwise does nothing (no previous slide), so this reuses an idle gesture.
   useEffect(() => {
-    if (!isTouch || current !== 0) return
+    if (!isTouch || current !== 0 || isLandscapeShort) return
     const el = containerRef.current
     if (!el) return
     const THRESHOLD = 56
@@ -800,11 +811,11 @@ export default function PeoplePageClient({
       el.removeEventListener('touchend', onEnd)
       el.removeEventListener('touchcancel', onEnd)
     }
-  }, [isTouch, current])
+  }, [isTouch, current, isLandscapeShort])
 
   // Keyboard handler
   useEffect(() => {
-    if (isMobile) return
+    if (isMobile || isLandscapeShort) return
     const onKey = (e: KeyboardEvent) => {
       const last = TOTAL_SECTIONS - 1
       // On the final slide, leave the keys to native scrolling (footer) — except
@@ -818,7 +829,7 @@ export default function PeoplePageClient({
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [current, goTo, isMobile])
+  }, [current, goTo, isMobile, isLandscapeShort])
 
   // Lock page scroll while navigating slides; release on the last slide so the
   // footer below the deck can be reached with a normal scroll. Lock the <html>
@@ -827,6 +838,12 @@ export default function PeoplePageClient({
   // disabled, so the page must scroll freely — never lock.
   useEffect(() => {
     const html = document.documentElement
+    // Landscape-short is a normal scroll page — never lock the document.
+    if (isLandscapeShort) {
+      html.style.overflow = ''
+      document.body.style.overflow = ''
+      return
+    }
     const last = TOTAL_SECTIONS - 1
     if (current === last) {
       html.style.overflow = ''
@@ -840,7 +857,7 @@ export default function PeoplePageClient({
       html.style.overflow = ''
       document.body.style.overflow = ''
     }
-  }, [current, isMobile])
+  }, [current, isMobile, isLandscapeShort])
 
   // Footer "back to top" resets the deck to the first slide. Setting current to
   // 0 also triggers the body-lock effect above, which scrolls the document up.
@@ -850,7 +867,10 @@ export default function PeoplePageClient({
     return () => window.removeEventListener('boldcrest:back-to-top', handler)
   }, [])
 
-  const active = (i: number) => current === i
+  // On the deck only the current slide is "active" (its copy animates in). On the
+  // landscape-short scroll page every section is on-screen as you scroll, so all
+  // are active — otherwise the off-current sections would sit dimmed/hidden.
+  const active = (i: number) => isLandscapeShort || current === i
 
   // Faces grid — local preview photos for now; Sanity members take over
   // once optimized images are uploaded (empty LOCAL_TEAM to switch back).
@@ -880,7 +900,13 @@ export default function PeoplePageClient({
     <>
     <div
       ref={containerRef}
-      className={isMobile ? 'relative h-[100svh] overflow-hidden bg-bg' : 'relative h-[100dvh] overflow-hidden bg-bg'}
+      className={
+        isLandscapeShort
+          ? 'relative bg-bg' // normal scroll page: auto height, no overflow lock
+          : isMobile
+            ? 'relative h-[100svh] overflow-hidden bg-bg'
+            : 'relative h-[100dvh] overflow-hidden bg-bg'
+      }
     >
       {/* Pull-to-refresh spinner — sibling of the translated wrapper so it stays
           fixed to the viewport top while the deck slides. Hidden above the top
@@ -913,13 +939,13 @@ export default function PeoplePageClient({
       <motion.div
         ref={wrapperRef}
         className="relative will-change-transform"
-        animate={{ y: `${-current * 100}${isMobile ? 'svh' : 'dvh'}` }}
+        animate={{ y: isLandscapeShort ? 0 : `${-current * 100}${isMobile ? 'svh' : 'dvh'}` }}
         transition={{ duration: TRANSITION_DURATION / 1000, ease: [0.76, 0, 0.24, 1] }}
       >
         {/* ═══════════════════════════════════════════
             0. HERO
         ═══════════════════════════════════════════ */}
-        <section className="relative flex h-[100svh] flex-col overflow-x-hidden overflow-y-auto bg-bg md:h-[100dvh] md:overflow-hidden landscape-short:overflow-y-auto">
+        <section className="relative flex h-[100svh] flex-col overflow-x-hidden overflow-y-auto bg-bg md:h-[100dvh] md:overflow-hidden landscape-short:h-auto! landscape-short:min-h-0! landscape-short:overflow-visible! landscape-short:pb-14">
           {/* Hero copy — full-width stretch, top-aligned to match Work/Services/Diary */}
           <div className="shrink-0 px-[var(--gutter)] pt-[120px] [@media(max-height:780px)]:pt-[92px]">
             <div className="w-full">
@@ -979,17 +1005,22 @@ export default function PeoplePageClient({
               "People" label gap (logo bottom ≈57px, label top = the copy's pt → 63px
               gap; pt drops to 92px on short screens → 35px gap). The band below is
               flex-1, so it still fills ALL remaining height down to the bottom edge —
-              no void/black bar. */}
-          <div aria-hidden className="h-[63px] shrink-0 [@media(max-height:780px)]:h-[35px]" />
+              no void/black bar. Both are dropped in landscape-short: the strip is a
+              cramped micro-carousel at 390px tall, so the hero is just the copy there. */}
+          {!isLandscapeShort && (
+            <>
+              <div aria-hidden className="h-[63px] shrink-0 [@media(max-height:780px)]:h-[35px]" />
 
-          {/* Photo band — auto-scrolling, draggable, b&w → color on hover (5 shown). */}
-          <PhotoMarquee photos={stripPhotos} />
+              {/* Photo band — auto-scrolling, draggable, b&w → color on hover (5 shown). */}
+              <PhotoMarquee photos={stripPhotos} />
+            </>
+          )}
         </section>
 
         {/* ═══════════════════════════════════════════
             1. THE MOTTO
         ═══════════════════════════════════════════ */}
-        <section className="grid grid-cols-1 [align-content:safe_center] h-[100svh] overflow-x-hidden overflow-y-auto px-[var(--gutter)] md:flex md:h-[100dvh] md:items-center md:overflow-hidden landscape-short:overflow-y-auto landscape-short:items-start landscape-short:pt-[5.5rem] landscape-short:pb-8">
+        <section className="grid grid-cols-1 [align-content:safe_center] h-[100svh] overflow-x-hidden overflow-y-auto px-[var(--gutter)] md:flex md:h-[100dvh] md:items-center md:overflow-hidden landscape-short:h-auto! landscape-short:min-h-0! landscape-short:overflow-visible! landscape-short:items-start! landscape-short:py-14">
           <div className="mx-auto w-full max-w-[var(--max-width)] text-center">
             <FadeUp active={active(1)}>
               <p className="mb-[var(--space-md)] text-[0.75rem] font-semibold uppercase tracking-[0.25em] text-text-tertiary">
@@ -1030,7 +1061,7 @@ export default function PeoplePageClient({
         {/* ═══════════════════════════════════════════
             2. THE FOUNDERS
         ═══════════════════════════════════════════ */}
-        <section className="grid grid-cols-1 [align-content:safe_center] h-[100svh] overflow-x-hidden overflow-y-auto px-[var(--gutter)] md:flex md:h-[100dvh] md:items-center md:overflow-hidden landscape-short:overflow-y-auto landscape-short:items-start landscape-short:pt-[5.5rem] landscape-short:pb-8">
+        <section className="grid grid-cols-1 [align-content:safe_center] h-[100svh] overflow-x-hidden overflow-y-auto px-[var(--gutter)] md:flex md:h-[100dvh] md:items-center md:overflow-hidden landscape-short:h-auto! landscape-short:min-h-0! landscape-short:overflow-visible! landscape-short:items-start! landscape-short:py-14">
           <div className="mx-auto w-full max-w-[var(--max-width)]">
             <div className="grid gap-[var(--space-md)] md:grid-cols-[1fr_1fr] md:items-center md:gap-[var(--space-xl)]">
               <FadeUp active={active(2)}>
@@ -1088,7 +1119,7 @@ export default function PeoplePageClient({
         {/* ═══════════════════════════════════════════
             3. TEAM CULTURE + FACES (combined)
         ═══════════════════════════════════════════ */}
-        <section className="grid grid-cols-1 [align-content:safe_center] h-[100svh] overflow-x-hidden overflow-y-auto px-[var(--gutter)] pt-[80px] md:flex md:h-[100dvh] md:items-center md:overflow-hidden md:pt-0 landscape-short:overflow-y-auto landscape-short:items-start landscape-short:pt-[5.5rem] landscape-short:pb-8">
+        <section className="grid grid-cols-1 [align-content:safe_center] h-[100svh] overflow-x-hidden overflow-y-auto px-[var(--gutter)] pt-[80px] md:flex md:h-[100dvh] md:items-center md:overflow-hidden md:pt-0 landscape-short:h-auto! landscape-short:min-h-0! landscape-short:overflow-visible! landscape-short:items-start! landscape-short:py-14">
           <div className="mx-auto w-full max-w-[var(--max-width)]">
             <div className="grid items-center gap-[var(--space-lg)] md:grid-cols-2 md:gap-[var(--space-2xl)]">
               {/* Left — culture copy */}
@@ -1131,7 +1162,7 @@ export default function PeoplePageClient({
         {/* ═══════════════════════════════════════════
             7. THE WORK PHILOSOPHY
         ═══════════════════════════════════════════ */}
-        <section className="grid grid-cols-1 [align-content:safe_center] h-[100svh] overflow-x-hidden overflow-y-auto px-[var(--gutter)] md:flex md:h-[100dvh] md:items-center md:overflow-hidden landscape-short:overflow-y-auto landscape-short:items-start landscape-short:pt-[5.5rem] landscape-short:pb-8">
+        <section className="grid grid-cols-1 [align-content:safe_center] h-[100svh] overflow-x-hidden overflow-y-auto px-[var(--gutter)] md:flex md:h-[100dvh] md:items-center md:overflow-hidden landscape-short:h-auto! landscape-short:min-h-0! landscape-short:overflow-visible! landscape-short:items-start! landscape-short:py-14">
           <div className="mx-auto w-full max-w-[var(--max-width)]">
             <div className="mx-auto max-w-[700px] text-center">
               <FadeUp active={active(4)}>
@@ -1167,7 +1198,7 @@ export default function PeoplePageClient({
             5. CLOSING (last slide — releases the scroll lock so the
             global footer can flow in below via normal scroll)
         ═══════════════════════════════════════════ */}
-        <section className="grid grid-cols-1 [align-content:safe_center] h-[100svh] overflow-x-hidden overflow-y-auto px-[var(--gutter)] md:flex md:h-[100dvh] md:items-center md:overflow-hidden landscape-short:overflow-y-auto landscape-short:items-start landscape-short:pt-[5.5rem] landscape-short:pb-8">
+        <section className="grid grid-cols-1 [align-content:safe_center] h-[100svh] overflow-x-hidden overflow-y-auto px-[var(--gutter)] md:flex md:h-[100dvh] md:items-center md:overflow-hidden landscape-short:h-auto! landscape-short:min-h-0! landscape-short:overflow-visible! landscape-short:items-start! landscape-short:py-14">
           <div className="mx-auto w-full max-w-[var(--max-width)]">
             <FadeUp active={active(5)}>
               <p className="mb-[var(--space-md)] text-[0.75rem] font-semibold uppercase tracking-[0.25em] text-text-tertiary">

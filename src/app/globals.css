@@ -19,11 +19,7 @@
    in landscape) and normal desktops; `orientation: landscape` excludes portrait
    phones. So `landscape-short:` utilities touch landscape phones and nothing else.
    Use it to scale heroes down + tighten vertical rhythm for the short height. */
-@custom-variant landscape-short {
-  @media (orientation: landscape) and (max-height: 480px) {
-    @slot;
-  }
-}
+@custom-variant landscape-short (@media (orientation: landscape) and (max-height: 480px));
 
 /* ============================================
    BOLDCREST DESIGN SYSTEM
