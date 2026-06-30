@@ -97,13 +97,16 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
   const touchStartY = useRef(0)
   // Cover-slide wheel state (refs so they survive handler re-creation):
   // accumulated intent within one continuous gesture, the last wheel timestamp
-  // (to scope accumulation to a single gesture), and a "swallow until" deadline
-  // (an event-timestamp) that absorbs the trailing trackpad inertia for a fixed
-  // window after a snap. A deadline (not a timer) can't be orphaned by a React
-  // re-render, so it always releases on its own.
+  // (drives both the accumulation reset and the momentum gap test), a momentum
+  // "swallow" flag set on a snap, and the magnitude of the last swallowed event.
+  // The swallow is gap-based: it absorbs the trailing inertia for exactly as long
+  // as the wheel stream keeps flowing and releases the moment it pauses (a real
+  // gesture boundary) or the user out-pushes the decaying tail — using
+  // timestamps only, so there's no timer to orphan and it can't get stuck.
   const wheelAccum = useRef(0)
   const lastWheelTs = useRef(0)
-  const swallowUntil = useRef(0)
+  const swallowActive = useRef(false)
+  const lastMomMag = useRef(0)
   const lenis = useLenis()
 
   const hasBody = post.body && post.body.length > 0
@@ -143,19 +146,32 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
     if (!el) return
 
     const onWheel = (e: WheelEvent) => {
-      // Absorb the trackpad inertia that trails a snap so a hard flick can't
-      // overshoot into the article. Fixed window from the snap (a deadline, so
-      // it always lapses on its own) — long enough to outlast the slide lock plus
-      // the strong start of the momentum tail; the accumulation threshold + the
-      // 200ms gesture-gap reset below absorb any weak leftover.
-      if (e.timeStamp < swallowUntil.current) { e.preventDefault(); return }
-      if (isLocked) { e.preventDefault(); return }
-
       // Normalise across delta modes (px / line / page) so one mouse-wheel
       // notch and a trackpad swipe are comparable.
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? el.clientHeight : 1
       const dy = e.deltaY * unit
       const absdy = Math.abs(dy)
+      const gap = e.timeStamp - lastWheelTs.current
+      lastWheelTs.current = e.timeStamp
+
+      // Gap-based momentum swallow: after a snap, absorb the trailing trackpad
+      // inertia so a hard flick can't overshoot into the article. Inertia is a
+      // continuous, decaying stream — keep eating it (and pin the article to the
+      // top) while events keep flowing. Release the instant the stream pauses
+      // (>120ms gap = a real new gesture) or the user out-pushes the decaying
+      // tail, then stay released for the rest of that gesture.
+      if (swallowActive.current) {
+        if (gap > 120 || absdy > lastMomMag.current * 1.3 + 8) {
+          swallowActive.current = false
+        } else {
+          e.preventDefault()
+          lastMomMag.current = absdy
+          if (current === 1 && articleRef.current) articleRef.current.scrollTop = 0
+          return
+        }
+      }
+
+      if (isLocked) { e.preventDefault(); return }
 
       if (current === 0) {
         e.preventDefault()
@@ -164,13 +180,13 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
         // gentle first swipe — whose individual deltas are tiny — reliably
         // crosses the threshold instead of being ignored (the old "needs a
         // second scroll" feel).
-        if (dy <= 0 || e.timeStamp - lastWheelTs.current > 200) wheelAccum.current = 0
-        lastWheelTs.current = e.timeStamp
+        if (dy <= 0 || gap > 200) wheelAccum.current = 0
         if (dy > 0) {
           wheelAccum.current += dy
           if (wheelAccum.current >= 28) {
             wheelAccum.current = 0
-            swallowUntil.current = e.timeStamp + TRANSITION_DURATION + 250
+            swallowActive.current = true
+            lastMomMag.current = absdy
             goTo(1)
           }
         }
@@ -182,7 +198,8 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
       const art = articleRef.current
       if (dy < 0 && art && art.scrollTop <= 0) {
         e.preventDefault()
-        swallowUntil.current = e.timeStamp + TRANSITION_DURATION + 250
+        swallowActive.current = true
+        lastMomMag.current = absdy
         goTo(0)
       }
     }
