@@ -545,14 +545,15 @@ export default function PeoplePageClient({
   const lastSlideReady = useRef(false)
   // Wheel-stepping state (refs survive handler re-creation): accumulated intent
   // within one continuous gesture + its last timestamp (so a gentle swipe of tiny
-  // deltas still advances), plus a gap-based momentum "swallow" flag so one hard
-  // flick advances exactly one slide — it absorbs ALL the trailing inertia until
-  // the wheel stream PAUSES, so the tail can never accumulate into an extra step
-  // however long the inertia lasts. No magnitude override (it mis-read inertia's
-  // bumps and let a hard flick skip), so nothing can release mid-flick.
+  // deltas still advances), plus a gap-based momentum "swallow" (flag + snap
+  // timestamp + last swallowed magnitude) so one hard flick advances exactly one
+  // slide — it absorbs the trailing inertia until the wheel stream PAUSES, so the
+  // tail can never accumulate into an extra step however long the inertia lasts.
   const wheelAccum = useRef(0)
   const lastWheelTs = useRef(0)
   const swallowActive = useRef(false)
+  const swallowStart = useRef(0)
+  const lastMomMag = useRef(0)
   const lenis = useLenis()
 
   // On mobile the full-screen slide deck can't hold tall content, so we fall
@@ -687,18 +688,26 @@ export default function PeoplePageClient({
       // comparable.
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? el.clientHeight : 1
       const dy = e.deltaY * unit
+      const absdy = Math.abs(dy)
       const gap = e.timeStamp - lastWheelTs.current
       lastWheelTs.current = e.timeStamp
 
-      // Gap-based momentum swallow: after a step, eat the WHOLE continuous
-      // trackpad inertia stream until it PAUSES (>120ms gap = the user lifted
+      // Gap-based momentum swallow: after a step, keep eating the continuous
+      // trackpad inertia stream until it PAUSES (>150ms gap = the user lifted
       // off), so a hard flick's tail — however long it lasts — can never
-      // accumulate into an extra step. No magnitude override (it mis-read real
-      // inertia and let a hard flick skip), so nothing can release mid-flick.
+      // accumulate into an extra step. Past a 120ms ramp gate, a delta clearly
+      // bigger than the previous one (an abrupt NEW flick) releases early so you
+      // can step again without waiting for the tail to die. Real inertia only
+      // decays / accelerates smoothly, so it can never trip that — only a
+      // deliberate re-flick can.
       if (swallowActive.current) {
-        if (gap > 120) {
+        const sinceSnap = e.timeStamp - swallowStart.current
+        if (gap > 150) {
+          swallowActive.current = false
+        } else if (sinceSnap > 120 && absdy > lastMomMag.current * 1.3 + 12) {
           swallowActive.current = false
         } else {
+          lastMomMag.current = absdy
           return
         }
       }
@@ -717,6 +726,8 @@ export default function PeoplePageClient({
       const dir = wheelAccum.current > 0 ? 1 : -1
       wheelAccum.current = 0
       swallowActive.current = true
+      swallowStart.current = e.timeStamp
+      lastMomMag.current = absdy
       goTo(current + dir)
     }
 

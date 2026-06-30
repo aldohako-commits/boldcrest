@@ -97,16 +97,18 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
   const touchStartY = useRef(0)
   // Cover-slide wheel state (refs so they survive handler re-creation):
   // accumulated intent within one continuous gesture, the last wheel timestamp
-  // (drives the accumulation reset + the momentum gap test), and a momentum
-  // "swallow" flag set on a snap. The swallow absorbs ALL of the trailing inertia
-  // (pinning the article to the top) and releases ONLY when the wheel stream
-  // pauses (>150ms gap = the user lifted off). No magnitude heuristic — there is
-  // nothing that can release mid-flick, so a hard flick can never overshoot into
-  // the body. (Every "re-flick" magnitude trick mis-read real inertia's bumps and
-  // let it scroll to the end; this can't.)
+  // (drives the accumulation reset + the momentum gap test), a momentum "swallow"
+  // flag set on a snap, the snap timestamp, and the magnitude of the last
+  // swallowed event. The swallow absorbs the trailing inertia (pinning the
+  // article to the top so it can't drift) and releases when EITHER the stream
+  // pauses (a real gesture boundary) OR — once past the inertia ramp — a clearly
+  // larger push arrives (a deliberate new flick punching through dying inertia).
+  // Timestamps only: no timer to orphan, can't get stuck.
   const wheelAccum = useRef(0)
   const lastWheelTs = useRef(0)
   const swallowActive = useRef(false)
+  const swallowStart = useRef(0)
+  const lastMomMag = useRef(0)
   const lenis = useLenis()
 
   const hasBody = post.body && post.body.length > 0
@@ -154,16 +156,28 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
       const gap = e.timeStamp - lastWheelTs.current
       lastWheelTs.current = e.timeStamp
 
-      // Momentum swallow: after a snap, absorb the WHOLE trailing trackpad inertia
-      // stream (and pin the article to the top) so a hard flick can never overshoot
-      // into the body. Release only when the stream pauses (>120ms gap = the user
-      // lifted off and is starting a fresh gesture). No magnitude override — that's
-      // the only way to guarantee it can't release mid-flick.
+      // Momentum swallow: after a snap, absorb the trailing trackpad inertia so a
+      // hard flick can't overshoot into the article. Inertia is a continuous
+      // stream (~60fps) — eat it (and pin the article to the top) while it flows.
+      // Release when EITHER:
+      //  • the stream pauses (>150ms gap) — the user lifted off, real new gesture; or
+      //  • past the ramp window (>120ms after the snap) a delta clearly bigger
+      //    than the immediately-preceding one arrives — a deliberate NEW flick to
+      //    scroll the body right away.
+      // Why 1.3× is safe: past the ramp gate, real inertia only ever DECAYS (each
+      // event ≤ the previous) and active acceleration only rises SMOOTHLY (a few %
+      // per frame), so neither can satisfy `> previous × 1.3 + 12`; only an abrupt
+      // re-flick jump can. So you can re-scroll almost immediately without ever
+      // mis-releasing mid-glide (which would drift the body deeper).
       if (swallowActive.current) {
-        if (gap > 120) {
+        const sinceSnap = e.timeStamp - swallowStart.current
+        if (gap > 150) {
+          swallowActive.current = false
+        } else if (sinceSnap > 120 && absdy > lastMomMag.current * 1.3 + 12) {
           swallowActive.current = false
         } else {
           e.preventDefault()
+          lastMomMag.current = absdy
           if (current === 1 && articleRef.current) articleRef.current.scrollTop = 0
           return
         }
@@ -187,6 +201,8 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
           if (wheelAccum.current >= 28) {
             wheelAccum.current = 0
             swallowActive.current = true
+            swallowStart.current = e.timeStamp
+            lastMomMag.current = absdy
             goTo(1)
           }
         }
@@ -199,6 +215,8 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
       if (dy < 0 && art && art.scrollTop <= 0) {
         e.preventDefault()
         swallowActive.current = true
+        swallowStart.current = e.timeStamp
+        lastMomMag.current = absdy
         goTo(0)
       }
     }
