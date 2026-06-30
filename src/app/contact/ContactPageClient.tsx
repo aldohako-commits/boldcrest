@@ -69,7 +69,7 @@ export default function ContactPageClient({
   return (
     <main className="relative">
       {/* ── Hero ── */}
-      <section className="flex flex-col px-[var(--gutter)] pt-[120px] pb-0">
+      <section className="flex flex-col px-[var(--gutter)] pt-[120px] pb-0 landscape-short:pt-[5.5rem]">
         <div className="w-full">
           <p className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary">
             Contact
@@ -77,7 +77,7 @@ export default function ContactPageClient({
 
           {/* Headline left, intro right-aligned to its bottom */}
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <h1 className="font-display text-[clamp(2.5rem,6.5vw,6rem)] font-bold leading-[1.05] tracking-[-0.02em] text-white">
+            <h1 className="font-display text-[clamp(2.5rem,6.5vw,6rem)] font-bold leading-[1.05] tracking-[-0.02em] text-white landscape-short:text-[2.4rem]">
               Start with a Hello<span className="text-accent">.</span>
               <br />
               We&apos;ll take it from there<span className="text-accent">.</span>

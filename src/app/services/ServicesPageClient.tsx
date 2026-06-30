@@ -713,7 +713,7 @@ export default function ServicesPageClient({
   return (
     <main className="relative">
       {/* ── Hero (Manifesto) ── */}
-      <section className="flex flex-col px-[var(--gutter)] pt-[120px] pb-0">
+      <section className="flex flex-col px-[var(--gutter)] pt-[120px] pb-0 landscape-short:pt-[5.5rem]">
         <div>
           <motion.p
             className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
@@ -724,7 +724,7 @@ export default function ServicesPageClient({
             {heroEyebrow}
           </motion.p>
           <motion.h1
-            className="font-display text-[clamp(2.5rem,6vw,5rem)] font-bold leading-[1.05] tracking-[-0.03em]"
+            className="font-display text-[clamp(2.5rem,6vw,5rem)] font-bold leading-[1.05] tracking-[-0.03em] landscape-short:text-[1.9rem]"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
@@ -737,7 +737,7 @@ export default function ServicesPageClient({
           </motion.h1>
         </div>
         {/* Divider */}
-        <div className="mt-10 md:mt-12 lg:mt-16">
+        <div className="mt-10 md:mt-12 lg:mt-16 landscape-short:mt-5">
           <div className="h-px w-full bg-border" />
         </div>
       </section>

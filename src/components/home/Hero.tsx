@@ -296,13 +296,13 @@ export default function Hero() {
   const reduce = useReducedMotion() ?? false
 
   return (
-    <section className="px-[var(--gutter)] pt-[clamp(8rem,17vh,14rem)] pb-[var(--space-2xl)]">
+    <section className="px-[var(--gutter)] pt-[clamp(8rem,17vh,14rem)] pb-[var(--space-2xl)] landscape-short:pt-[5.5rem] landscape-short:pb-[var(--space-lg)]">
       {/* Desktop lines */}
       <AnimatedHeading
         lines={DESKTOP_LINES}
         stagger={LINE_STAGGER_DESKTOP}
         reduce={reduce}
-        className="hidden cursor-default select-none [-webkit-tap-highlight-color:transparent] font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[1.05] tracking-[-0.03em] md:block"
+        className="hidden cursor-default select-none [-webkit-tap-highlight-color:transparent] font-display text-[clamp(3rem,8vw,7rem)] font-bold leading-[1.05] tracking-[-0.03em] md:block landscape-short:text-[2.75rem]"
       />
 
       {/* Mobile lines */}

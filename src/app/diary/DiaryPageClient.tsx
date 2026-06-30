@@ -151,7 +151,7 @@ export default function DiaryPageClient({ posts, initialCategory }: DiaryPageCli
   return (
     <main className="relative">
       {/* Hero */}
-      <section className="flex flex-col px-[var(--gutter)] pt-[120px] pb-0">
+      <section className="flex flex-col px-[var(--gutter)] pt-[120px] pb-0 landscape-short:pt-[5.5rem]">
         <div>
           <motion.p
             className="mb-4 text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-text-tertiary"
@@ -164,7 +164,7 @@ export default function DiaryPageClient({ posts, initialCategory }: DiaryPageCli
 
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <motion.h1
-              className="font-display text-[clamp(2.5rem,6vw,5.5rem)] font-bold leading-[1] tracking-[-0.03em] text-white"
+              className="font-display text-[clamp(2.5rem,6vw,5.5rem)] font-bold leading-[1] tracking-[-0.03em] text-white landscape-short:text-[2.25rem]"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}

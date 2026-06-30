@@ -13,6 +13,18 @@
   }
 }
 
+/* Landscape phones ONLY. A phone on its side is wide (≥768px → it gets the md+
+   desktop layout) but only ~390–430px TALL, so desktop heroes/decks sized for a
+   tall viewport overflow or clip. `max-height: 480px` excludes iPads (≥744px tall
+   in landscape) and normal desktops; `orientation: landscape` excludes portrait
+   phones. So `landscape-short:` utilities touch landscape phones and nothing else.
+   Use it to scale heroes down + tighten vertical rhythm for the short height. */
+@custom-variant landscape-short {
+  @media (orientation: landscape) and (max-height: 480px) {
+    @slot;
+  }
+}
+
 /* ============================================
    BOLDCREST DESIGN SYSTEM
    ============================================ */
