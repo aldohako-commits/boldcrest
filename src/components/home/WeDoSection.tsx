@@ -11,7 +11,7 @@ export default function WeDoSection() {
         {/* Desktop — inline button */}
         <p className="hidden text-center font-display text-[clamp(2.8rem,8vw,8rem)] font-bold leading-[1.05] tracking-[-0.03em] md:block" style={{ color: 'var(--zone-fg)' }}>
           We do many{' '}
-          <InlineButton href="/work" label="View All Work" className="!text-white" lineColor="#000000" />{' '}
+          <InlineButton href="/work" label="View All Work" adaptive />{' '}
           things very well.
         </p>
 

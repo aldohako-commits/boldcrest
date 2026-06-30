@@ -217,7 +217,11 @@ export function InlineButton({
   return (
     <MagneticBase
       href={href}
-      lineColor={lineColor}
+      // Adaptive pill flips black↔white with the color-transition zone, so the
+      // trailing hover outlines must flip too: track --zone-contrast (dark ink on
+      // a light bg, light ink on dark bg) instead of the fixed white default —
+      // otherwise the strokes are invisible/white-on-white over the light band.
+      lineColor={lineColor ?? (adaptive ? 'var(--zone-contrast, #fff)' : undefined)}
       className={`inline-flex items-center gap-3 rounded-[var(--radius-pill)] border border-white/25 px-[1em] py-[0.42em] align-middle text-[0.35em] font-semibold uppercase tracking-[0.15em] text-text-secondary transition-all duration-[0.5s] hover:border-white/60 hover:text-white ${className}`}
       style={
         adaptive
