@@ -545,17 +545,14 @@ export default function PeoplePageClient({
   const lastSlideReady = useRef(false)
   // Wheel-stepping state (refs survive handler re-creation): accumulated intent
   // within one continuous gesture + its last timestamp (so a gentle swipe of tiny
-  // deltas still advances), plus a gap-based momentum "swallow" (flag + peak
-  // magnitude + whether it's started decaying + last swallowed magnitude) so one
-  // hard flick advances exactly one slide — it absorbs the trailing inertia until
+  // deltas still advances), plus a gap-based momentum "swallow" flag so one hard
+  // flick advances exactly one slide — it absorbs ALL the trailing inertia until
   // the wheel stream PAUSES, so the tail can never accumulate into an extra step
-  // however long the inertia lasts.
+  // however long the inertia lasts. No magnitude override (it mis-read inertia's
+  // bumps and let a hard flick skip), so nothing can release mid-flick.
   const wheelAccum = useRef(0)
   const lastWheelTs = useRef(0)
   const swallowActive = useRef(false)
-  const momPeak = useRef(0)
-  const momDecayed = useRef(false)
-  const lastMomMag = useRef(0)
   const lenis = useLenis()
 
   // On mobile the full-screen slide deck can't hold tall content, so we fall
@@ -690,26 +687,18 @@ export default function PeoplePageClient({
       // comparable.
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? el.clientHeight : 1
       const dy = e.deltaY * unit
-      const absdy = Math.abs(dy)
       const gap = e.timeStamp - lastWheelTs.current
       lastWheelTs.current = e.timeStamp
 
-      // Gap-based momentum swallow: after a step, keep eating the continuous
+      // Gap-based momentum swallow: after a step, eat the WHOLE continuous
       // trackpad inertia stream until it PAUSES (>150ms gap = the user lifted
       // off), so a hard flick's tail — however long it lasts — can never
-      // accumulate into an extra step. A deliberate NEW flick releases early
-      // (so stepping stays responsive), but only AFTER the first flick's inertia
-      // has peaked and decayed — so a really HARD flick's own acceleration (a
-      // rise before any decay) can't trip the release and skip a slide.
+      // accumulate into an extra step. No magnitude override (it mis-read real
+      // inertia and let a hard flick skip), so nothing can release mid-flick.
       if (swallowActive.current) {
-        if (absdy > momPeak.current) momPeak.current = absdy
-        if (absdy < momPeak.current * 0.7) momDecayed.current = true
         if (gap > 150) {
           swallowActive.current = false
-        } else if (momDecayed.current && absdy > lastMomMag.current * 1.3 + 12) {
-          swallowActive.current = false
         } else {
-          lastMomMag.current = absdy
           return
         }
       }
@@ -728,9 +717,6 @@ export default function PeoplePageClient({
       const dir = wheelAccum.current > 0 ? 1 : -1
       wheelAccum.current = 0
       swallowActive.current = true
-      momPeak.current = absdy
-      momDecayed.current = false
-      lastMomMag.current = absdy
       goTo(current + dir)
     }
 
