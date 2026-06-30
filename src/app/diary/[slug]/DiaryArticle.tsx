@@ -97,13 +97,13 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
   const touchStartY = useRef(0)
   // Cover-slide wheel state (refs so they survive handler re-creation):
   // accumulated intent within one continuous gesture, the last wheel timestamp
-  // (to scope accumulation to a single gesture), and a momentum "swallow" flag
-  // + its fixed-window timer that absorbs the trailing trackpad inertia after a
-  // snap (auto-releases — never extended by trailing events).
+  // (to scope accumulation to a single gesture), and a "swallow until" deadline
+  // (an event-timestamp) that absorbs the trailing trackpad inertia for a fixed
+  // window after a snap. A deadline (not a timer) can't be orphaned by a React
+  // re-render, so it always releases on its own.
   const wheelAccum = useRef(0)
   const lastWheelTs = useRef(0)
-  const swallowMomentum = useRef(false)
-  const settleTimer = useRef<number>(0)
+  const swallowUntil = useRef(0)
   const lenis = useLenis()
 
   const hasBody = post.body && post.body.length > 0
@@ -142,22 +142,13 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
     const el = containerRef.current
     if (!el) return
 
-    // Fixed window from the snap — does NOT extend on each event, so it always
-    // releases on its own and can never block the user's NEXT real scroll (the
-    // earlier "move the cursor to scroll again" bug came from re-arming it on
-    // every trailing momentum event). Long enough to outlast the slide lock plus
-    // the strong start of the trackpad momentum tail; the accumulation threshold
-    // + 200ms gesture-gap reset below absorb any weak leftover.
-    const armSwallow = () => {
-      swallowMomentum.current = true
-      window.clearTimeout(settleTimer.current)
-      settleTimer.current = window.setTimeout(() => { swallowMomentum.current = false }, TRANSITION_DURATION + 250)
-    }
-
     const onWheel = (e: WheelEvent) => {
       // Absorb the trackpad inertia that trails a snap so a hard flick can't
-      // overshoot into the article.
-      if (swallowMomentum.current) { e.preventDefault(); return }
+      // overshoot into the article. Fixed window from the snap (a deadline, so
+      // it always lapses on its own) — long enough to outlast the slide lock plus
+      // the strong start of the momentum tail; the accumulation threshold + the
+      // 200ms gesture-gap reset below absorb any weak leftover.
+      if (e.timeStamp < swallowUntil.current) { e.preventDefault(); return }
       if (isLocked) { e.preventDefault(); return }
 
       // Normalise across delta modes (px / line / page) so one mouse-wheel
@@ -179,7 +170,7 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
           wheelAccum.current += dy
           if (wheelAccum.current >= 28) {
             wheelAccum.current = 0
-            armSwallow()
+            swallowUntil.current = e.timeStamp + TRANSITION_DURATION + 250
             goTo(1)
           }
         }
@@ -191,15 +182,12 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
       const art = articleRef.current
       if (dy < 0 && art && art.scrollTop <= 0) {
         e.preventDefault()
-        armSwallow()
+        swallowUntil.current = e.timeStamp + TRANSITION_DURATION + 250
         goTo(0)
       }
     }
     el.addEventListener('wheel', onWheel, { passive: false })
-    return () => {
-      el.removeEventListener('wheel', onWheel)
-      window.clearTimeout(settleTimer.current)
-    }
+    return () => el.removeEventListener('wheel', onWheel)
   }, [current, isLocked, goTo])
 
   // Touch
