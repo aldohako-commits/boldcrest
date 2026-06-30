@@ -161,18 +161,19 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
       // stream (~60fps) — eat it (and pin the article to the top) while it flows.
       // Release when EITHER:
       //  • the stream pauses (>150ms gap) — the user lifted off, real new gesture; or
-      //  • past the inertia ramp window (>180ms after the snap) a clearly larger
-      //    push arrives — a deliberate NEW flick to scroll the body right away.
-      // Why 1.5× is safe: once past the ramp gate, real inertia only ever DECAYS
-      // (each event ≤ the previous), so it can never satisfy `> last × 1.5`; only
-      // an abrupt re-flick can. The gate skips the brief ramp-up where inertia
-      // momentarily grows. So this lets you re-scroll immediately without ever
+      //  • past the ramp window (>120ms after the snap) a delta clearly bigger
+      //    than the immediately-preceding one arrives — a deliberate NEW flick to
+      //    scroll the body right away.
+      // Why 1.3× is safe: past the ramp gate, real inertia only ever DECAYS (each
+      // event ≤ the previous) and active acceleration only rises SMOOTHLY (a few %
+      // per frame), so neither can satisfy `> previous × 1.3 + 12`; only an abrupt
+      // re-flick jump can. So you can re-scroll almost immediately without ever
       // mis-releasing mid-glide (which would drift the body deeper).
       if (swallowActive.current) {
         const sinceSnap = e.timeStamp - swallowStart.current
         if (gap > 150) {
           swallowActive.current = false
-        } else if (sinceSnap > 180 && absdy > lastMomMag.current * 1.5 + 12) {
+        } else if (sinceSnap > 120 && absdy > lastMomMag.current * 1.3 + 12) {
           swallowActive.current = false
         } else {
           e.preventDefault()
