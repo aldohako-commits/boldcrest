@@ -98,16 +98,19 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
   // Cover-slide wheel state (refs so they survive handler re-creation):
   // accumulated intent within one continuous gesture, the last wheel timestamp
   // (drives the accumulation reset + the momentum gap test), a momentum "swallow"
-  // flag set on a snap, the snap timestamp, and the magnitude of the last
-  // swallowed event. The swallow absorbs the trailing inertia (pinning the
-  // article to the top so it can't drift) and releases when EITHER the stream
-  // pauses (a real gesture boundary) OR — once past the inertia ramp — a clearly
-  // larger push arrives (a deliberate new flick punching through dying inertia).
-  // Timestamps only: no timer to orphan, can't get stuck.
+  // flag set on a snap, the peak magnitude seen this swallow + whether we've seen
+  // it start decaying, and the magnitude of the last swallowed event. The swallow
+  // absorbs the trailing inertia (pinning the article to the top so it can't
+  // drift) and releases when EITHER the stream pauses (a real gesture boundary)
+  // OR — only after the inertia has peaked AND decayed — a clearly larger push
+  // arrives (a deliberate new flick). Requiring the decay first is what stops a
+  // really HARD flick's own acceleration (a rise before any decay) from tripping
+  // the release mid-flick and scrolling the body to the end.
   const wheelAccum = useRef(0)
   const lastWheelTs = useRef(0)
   const swallowActive = useRef(false)
-  const swallowStart = useRef(0)
+  const momPeak = useRef(0)
+  const momDecayed = useRef(false)
   const lastMomMag = useRef(0)
   const lenis = useLenis()
 
@@ -161,20 +164,19 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
       // stream (~60fps) — eat it (and pin the article to the top) while it flows.
       // Release when EITHER:
       //  • the stream pauses (>150ms gap) — the user lifted off, real new gesture; or
-      //  • past the ramp window (>120ms after the snap) a delta clearly bigger
-      //    than the immediately-preceding one arrives — a deliberate NEW flick to
-      //    scroll the body right away.
-      // Why 120ms is the floor: the gate must outlast the FIRST flick's own active
-      // acceleration (finger still down), which can have >1.3× frame-to-frame
-      // jumps. Shorter (tried 80ms) lets that active flick trip the override
-      // mid-gesture and scroll the body all the way to the end. Past ~120ms the
-      // flick has lifted and inertia only DECAYS, so only an abrupt NEW re-flick
-      // can satisfy `> previous × 1.3 + 12`.
+      //  • the inertia has already PEAKED and started DECAYING, and then a clearly
+      //    larger delta arrives — a deliberate NEW flick to scroll the body now.
+      // Gating on "decay seen first" (not a fixed time) is what stops a really
+      // HARD flick: its own acceleration is a rise BEFORE any decay, so it can
+      // never trip the release mid-flick (which used to scroll the body to the
+      // end). Once the flick has lifted and inertia decays, only an abrupt
+      // re-flick rises back above `previous × 1.3 + 12`.
       if (swallowActive.current) {
-        const sinceSnap = e.timeStamp - swallowStart.current
+        if (absdy > momPeak.current) momPeak.current = absdy
+        if (absdy < momPeak.current * 0.7) momDecayed.current = true
         if (gap > 150) {
           swallowActive.current = false
-        } else if (sinceSnap > 120 && absdy > lastMomMag.current * 1.3 + 12) {
+        } else if (momDecayed.current && absdy > lastMomMag.current * 1.3 + 12) {
           swallowActive.current = false
         } else {
           e.preventDefault()
@@ -202,7 +204,8 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
           if (wheelAccum.current >= 28) {
             wheelAccum.current = 0
             swallowActive.current = true
-            swallowStart.current = e.timeStamp
+            momPeak.current = absdy
+            momDecayed.current = false
             lastMomMag.current = absdy
             goTo(1)
           }
@@ -216,7 +219,8 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
       if (dy < 0 && art && art.scrollTop <= 0) {
         e.preventDefault()
         swallowActive.current = true
-        swallowStart.current = e.timeStamp
+        momPeak.current = absdy
+        momDecayed.current = false
         lastMomMag.current = absdy
         goTo(0)
       }
