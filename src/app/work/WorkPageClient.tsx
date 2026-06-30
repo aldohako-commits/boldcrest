@@ -22,6 +22,9 @@ interface Project {
     asset: { _ref: string }
   }
   thumbnailVideo?: string
+  // Resolved server-side from thumbnailVideo (Vimeo cover) for video-cover
+  // projects, so the list-view hover preview can show the video's own frame.
+  thumbnailPoster?: string
 }
 
 interface WorkPageClientProps {
@@ -241,7 +244,7 @@ function ProjectListRow({ project, index }: { project: Project; index: number })
 
         {/* Hover thumbnail */}
         <AnimatePresence>
-          {hovered && mouseMoving && project.thumbnail?.asset && (
+          {hovered && mouseMoving && (project.thumbnailPoster || project.thumbnail?.asset) && (
             <motion.div
               className="pointer-events-none fixed z-30"
               style={{
@@ -254,14 +257,26 @@ function ProjectListRow({ project, index }: { project: Project; index: number })
               transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="relative h-[188px] w-[240px] overflow-hidden rounded-lg shadow-2xl">
-                <Image
-                  loader={sanityImageLoader}
-                  src={urlFor(project.thumbnail).width(480).height(375).url()}
-                  alt={project.name}
-                  fill
-                  className="object-cover"
-                  sizes="240px"
-                />
+                {project.thumbnailType === 'video' && project.thumbnailPoster ? (
+                  // Video-cover project: show the Vimeo cover frame (matches the
+                  // animated card), not the separate still thumbnail. Plain <img>
+                  // since it's an external Vimeo CDN URL, not a Sanity asset.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={project.thumbnailPoster}
+                    alt={project.name}
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                ) : project.thumbnail?.asset ? (
+                  <Image
+                    loader={sanityImageLoader}
+                    src={urlFor(project.thumbnail).width(480).height(375).url()}
+                    alt={project.name}
+                    fill
+                    className="object-cover"
+                    sizes="240px"
+                  />
+                ) : null}
               </div>
             </motion.div>
           )}
