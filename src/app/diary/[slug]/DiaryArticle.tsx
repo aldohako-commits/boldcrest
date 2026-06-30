@@ -98,7 +98,8 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
   // Cover-slide wheel state (refs so they survive handler re-creation):
   // accumulated intent within one continuous gesture, the last wheel timestamp
   // (to scope accumulation to a single gesture), and a momentum "swallow" flag
-  // + its settle timer that absorbs trailing trackpad inertia after a snap.
+  // + its fixed-window timer that absorbs the trailing trackpad inertia after a
+  // snap (auto-releases — never extended by trailing events).
   const wheelAccum = useRef(0)
   const lastWheelTs = useRef(0)
   const swallowMomentum = useRef(false)
@@ -141,24 +142,29 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
     const el = containerRef.current
     if (!el) return
 
-    // Keep the swallow window alive while momentum keeps arriving; it ends a
-    // short, fixed time after the LAST wheel event (i.e. once inertia settles).
+    // Fixed window from the snap — does NOT extend on each event, so it always
+    // releases on its own and can never block the user's NEXT real scroll (the
+    // earlier "move the cursor to scroll again" bug came from re-arming it on
+    // every trailing momentum event). Long enough to outlast the slide lock plus
+    // the strong start of the trackpad momentum tail; the accumulation threshold
+    // + 200ms gesture-gap reset below absorb any weak leftover.
     const armSwallow = () => {
       swallowMomentum.current = true
       window.clearTimeout(settleTimer.current)
-      settleTimer.current = window.setTimeout(() => { swallowMomentum.current = false }, 140)
+      settleTimer.current = window.setTimeout(() => { swallowMomentum.current = false }, TRANSITION_DURATION + 250)
     }
 
     const onWheel = (e: WheelEvent) => {
-      // Absorb trailing trackpad/mouse inertia after a snap so a hard flick on
-      // the cover can't overshoot into the middle of the article.
-      if (swallowMomentum.current) { e.preventDefault(); armSwallow(); return }
+      // Absorb the trackpad inertia that trails a snap so a hard flick can't
+      // overshoot into the article.
+      if (swallowMomentum.current) { e.preventDefault(); return }
       if (isLocked) { e.preventDefault(); return }
 
       // Normalise across delta modes (px / line / page) so one mouse-wheel
       // notch and a trackpad swipe are comparable.
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? el.clientHeight : 1
       const dy = e.deltaY * unit
+      const absdy = Math.abs(dy)
 
       if (current === 0) {
         e.preventDefault()
@@ -181,7 +187,7 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
       }
 
       // current === 1 — article scrolls natively; snap back only at its very top
-      if (Math.abs(dy) < 12) return
+      if (absdy < 12) return
       const art = articleRef.current
       if (dy < 0 && art && art.scrollTop <= 0) {
         e.preventDefault()

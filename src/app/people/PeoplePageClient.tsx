@@ -543,6 +543,14 @@ export default function PeoplePageClient({
   // False right after we land on the last slide; true once the snap settles and
   // page-scroll to the footer is allowed (absorbs hard-scroll momentum).
   const lastSlideReady = useRef(false)
+  // Wheel-stepping state (refs survive handler re-creation): accumulated intent
+  // within one continuous gesture + its last timestamp (so a gentle swipe of
+  // tiny deltas still advances), and a momentum "swallow" flag + settle timer so
+  // one hard flick advances exactly one slide instead of double-stepping.
+  const wheelAccum = useRef(0)
+  const lastWheelTs = useRef(0)
+  const swallowMomentum = useRef(false)
+  const settleTimer = useRef<number>(0)
   const lenis = useLenis()
 
   // On mobile the full-screen slide deck can't hold tall content, so we fall
@@ -636,6 +644,17 @@ export default function PeoplePageClient({
     // Landscape-short is a normal scroll page — no wheel-jacking.
     if (!el || isTouch || isLandscapeShort) return
 
+    // Fixed window from the snap — does NOT extend on each event, so it always
+    // releases on its own and can never block the user's NEXT real scroll. Long
+    // enough to outlast the slide lock plus the strong start of the trackpad
+    // momentum tail; the accumulation threshold + 200ms gesture-gap reset below
+    // absorb any weak leftover.
+    const armSwallow = () => {
+      swallowMomentum.current = true
+      window.clearTimeout(settleTimer.current)
+      settleTimer.current = window.setTimeout(() => { swallowMomentum.current = false }, TRANSITION_DURATION + 250)
+    }
+
     const onWheel = (e: WheelEvent) => {
       const last = TOTAL_SECTIONS - 1
       // On the final slide, let the page scroll normally so the footer shows.
@@ -672,14 +691,36 @@ export default function PeoplePageClient({
       }
 
       e.preventDefault()
+
+      // Absorb the trackpad inertia that trails a step so one hard flick
+      // advances exactly one slide (leftover momentum can't double-step).
+      if (swallowMomentum.current) return
       if (isLocked) return
-      if (Math.abs(e.deltaY) < 15) return // ignore tiny scroll
-      if (e.deltaY > 0) goTo(current + 1)
-      else goTo(current - 1)
+
+      // Normalise across delta modes so a mouse notch and a trackpad swipe are
+      // comparable, then accumulate intent WITHIN one continuous gesture (reset
+      // on a pause or a direction change) so even a gentle swipe — whose
+      // individual deltas are tiny — reliably crosses the threshold instead of
+      // being ignored (the old "needs a second scroll").
+      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? el.clientHeight : 1
+      const dy = e.deltaY * unit
+      if (e.timeStamp - lastWheelTs.current > 200 || Math.sign(dy) !== Math.sign(wheelAccum.current)) {
+        wheelAccum.current = 0
+      }
+      lastWheelTs.current = e.timeStamp
+      wheelAccum.current += dy
+      if (Math.abs(wheelAccum.current) < 28) return
+      const dir = wheelAccum.current > 0 ? 1 : -1
+      wheelAccum.current = 0
+      armSwallow()
+      goTo(current + dir)
     }
 
     el.addEventListener('wheel', onWheel, { passive: false })
-    return () => el.removeEventListener('wheel', onWheel)
+    return () => {
+      el.removeEventListener('wheel', onWheel)
+      window.clearTimeout(settleTimer.current)
+    }
   }, [current, isLocked, goTo, isMobile, isTouch, isLandscapeShort])
 
   // Touch handler — drives the deck on both touch-laptops and mobile. On
