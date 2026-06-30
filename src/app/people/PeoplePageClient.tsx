@@ -544,16 +544,13 @@ export default function PeoplePageClient({
   // page-scroll to the footer is allowed (absorbs hard-scroll momentum).
   const lastSlideReady = useRef(false)
   // Wheel-stepping state (refs survive handler re-creation): accumulated intent
-  // within one continuous gesture + its last timestamp (so a gentle swipe of tiny
-  // deltas still advances), plus a gap-based momentum "swallow" (flag + snap
-  // timestamp + last swallowed magnitude) so one hard flick advances exactly one
-  // slide — it absorbs the trailing inertia until the wheel stream PAUSES, so the
-  // tail can never accumulate into an extra step however long the inertia lasts.
+  // within one continuous gesture + its last timestamp (so a gentle swipe of
+  // tiny deltas still advances), and a "swallow until" deadline (an event
+  // timestamp) so one hard flick advances exactly one slide. A deadline (not a
+  // timer) can't be orphaned by a React re-render, so it always lapses on its own.
   const wheelAccum = useRef(0)
   const lastWheelTs = useRef(0)
-  const swallowActive = useRef(false)
-  const swallowStart = useRef(0)
-  const lastMomMag = useRef(0)
+  const swallowUntil = useRef(0)
   const lenis = useLenis()
 
   // On mobile the full-screen slide deck can't hold tall content, so we fall
@@ -684,50 +681,32 @@ export default function PeoplePageClient({
 
       e.preventDefault()
 
-      // Normalise across delta modes so a mouse notch and a trackpad swipe are
-      // comparable.
-      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? el.clientHeight : 1
-      const dy = e.deltaY * unit
-      const absdy = Math.abs(dy)
-      const gap = e.timeStamp - lastWheelTs.current
-      lastWheelTs.current = e.timeStamp
-
-      // Gap-based momentum swallow: after a step, keep eating the continuous
-      // trackpad inertia stream until it PAUSES (>150ms gap = the user lifted
-      // off), so a hard flick's tail — however long it lasts — can never
-      // accumulate into an extra step. Past a 120ms ramp gate, a delta clearly
-      // bigger than the previous one (an abrupt NEW flick) releases early so you
-      // can step again without waiting for the tail to die. Real inertia only
-      // decays / accelerates smoothly, so it can never trip that — only a
-      // deliberate re-flick can.
-      if (swallowActive.current) {
-        const sinceSnap = e.timeStamp - swallowStart.current
-        if (gap > 150) {
-          swallowActive.current = false
-        } else if (sinceSnap > 120 && absdy > lastMomMag.current * 1.3 + 12) {
-          swallowActive.current = false
-        } else {
-          lastMomMag.current = absdy
-          return
-        }
-      }
-
+      // Absorb the trackpad inertia that trails a step so one hard flick
+      // advances exactly one slide (leftover momentum can't double-step). Fixed
+      // window from the snap (a deadline, so it always lapses on its own — it
+      // can never block the next real scroll).
+      if (e.timeStamp < swallowUntil.current) return
       if (isLocked) return
 
-      // Accumulate intent WITHIN one continuous gesture (reset on a pause or a
-      // direction change) so even a gentle swipe — whose individual deltas are
-      // tiny — reliably crosses the threshold instead of being ignored (the old
-      // "needs a second scroll").
-      if (gap > 200 || Math.sign(dy) !== Math.sign(wheelAccum.current)) {
+      // Normalise across delta modes so a mouse notch and a trackpad swipe are
+      // comparable, then accumulate intent WITHIN one continuous gesture (reset
+      // on a pause or a direction change) so even a gentle swipe — whose
+      // individual deltas are tiny — reliably crosses the threshold instead of
+      // being ignored (the old "needs a second scroll").
+      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? el.clientHeight : 1
+      const dy = e.deltaY * unit
+      if (e.timeStamp - lastWheelTs.current > 200 || Math.sign(dy) !== Math.sign(wheelAccum.current)) {
         wheelAccum.current = 0
       }
+      lastWheelTs.current = e.timeStamp
       wheelAccum.current += dy
       if (Math.abs(wheelAccum.current) < 28) return
       const dir = wheelAccum.current > 0 ? 1 : -1
       wheelAccum.current = 0
-      swallowActive.current = true
-      swallowStart.current = e.timeStamp
-      lastMomMag.current = absdy
+      // Fixed window from the snap: long enough to outlast the slide lock plus
+      // the strong start of the trackpad momentum tail; the accumulation
+      // threshold + 200ms gesture-gap reset absorb any weak leftover.
+      swallowUntil.current = e.timeStamp + TRANSITION_DURATION + 250
       goTo(current + dir)
     }
 
