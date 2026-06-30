@@ -95,6 +95,14 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
   const containerRef = useRef<HTMLDivElement>(null)
   const articleRef = useRef<HTMLDivElement>(null) // scrollable second slide
   const touchStartY = useRef(0)
+  // Cover-slide wheel state (refs so they survive handler re-creation):
+  // accumulated intent within one continuous gesture, the last wheel timestamp
+  // (to scope accumulation to a single gesture), and a momentum "swallow" flag
+  // + its settle timer that absorbs trailing trackpad inertia after a snap.
+  const wheelAccum = useRef(0)
+  const lastWheelTs = useRef(0)
+  const swallowMomentum = useRef(false)
+  const settleTimer = useRef<number>(0)
   const lenis = useLenis()
 
   const hasBody = post.body && post.body.length > 0
@@ -132,23 +140,60 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
+
+    // Keep the swallow window alive while momentum keeps arriving; it ends a
+    // short, fixed time after the LAST wheel event (i.e. once inertia settles).
+    const armSwallow = () => {
+      swallowMomentum.current = true
+      window.clearTimeout(settleTimer.current)
+      settleTimer.current = window.setTimeout(() => { swallowMomentum.current = false }, 140)
+    }
+
     const onWheel = (e: WheelEvent) => {
+      // Absorb trailing trackpad/mouse inertia after a snap so a hard flick on
+      // the cover can't overshoot into the middle of the article.
+      if (swallowMomentum.current) { e.preventDefault(); armSwallow(); return }
       if (isLocked) { e.preventDefault(); return }
-      if (Math.abs(e.deltaY) < 12) return
+
+      // Normalise across delta modes (px / line / page) so one mouse-wheel
+      // notch and a trackpad swipe are comparable.
+      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? el.clientHeight : 1
+      const dy = e.deltaY * unit
+
       if (current === 0) {
         e.preventDefault()
-        if (e.deltaY > 0) goTo(1)
-      } else {
-        const art = articleRef.current
-        if (e.deltaY < 0 && art && art.scrollTop <= 0) {
-          e.preventDefault()
-          goTo(0)
+        // Only a downward gesture advances. Accumulate intent WITHIN one
+        // continuous gesture (reset if the events stop or reverse), so even a
+        // gentle first swipe — whose individual deltas are tiny — reliably
+        // crosses the threshold instead of being ignored (the old "needs a
+        // second scroll" feel).
+        if (dy <= 0 || e.timeStamp - lastWheelTs.current > 200) wheelAccum.current = 0
+        lastWheelTs.current = e.timeStamp
+        if (dy > 0) {
+          wheelAccum.current += dy
+          if (wheelAccum.current >= 28) {
+            wheelAccum.current = 0
+            armSwallow()
+            goTo(1)
+          }
         }
-        // otherwise let the article scroll natively
+        return
+      }
+
+      // current === 1 — article scrolls natively; snap back only at its very top
+      if (Math.abs(dy) < 12) return
+      const art = articleRef.current
+      if (dy < 0 && art && art.scrollTop <= 0) {
+        e.preventDefault()
+        armSwallow()
+        goTo(0)
       }
     }
     el.addEventListener('wheel', onWheel, { passive: false })
-    return () => el.removeEventListener('wheel', onWheel)
+    return () => {
+      el.removeEventListener('wheel', onWheel)
+      window.clearTimeout(settleTimer.current)
+    }
   }, [current, isLocked, goTo])
 
   // Touch
