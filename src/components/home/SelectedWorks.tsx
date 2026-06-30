@@ -64,12 +64,13 @@ function ProjectCard({
           ) : project.thumbnail?.asset ? (
             <Image
               loader={sanityImageLoader}
-              src={urlFor(project.thumbnail).width(1200).height(938).url()}
+              src={urlFor(project.thumbnail).width(1100).height(859).url()}
               alt={project.name}
               fill
               loading="lazy"
               className="object-cover md:transition-transform md:duration-[250ms] md:ease-[cubic-bezier(0.4,0,0.2,1)] md:will-change-transform md:group-hover:-translate-y-12"
-              sizes="(max-width: 768px) 100vw, 50vw"
+              // Always a 2-col grid → each card is ~half the viewport at every size.
+              sizes="50vw"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-bg-card">

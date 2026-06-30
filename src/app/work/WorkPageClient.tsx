@@ -89,14 +89,16 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
             <Image
               loader={sanityImageLoader}
               src={urlFor(project.thumbnail)
-                .width(1400)
-                .height(1094)
+                .width(1100)
+                .height(859)
                 .url()}
               alt={project.name}
               fill
               loading="lazy"
               className="object-cover md:transition-transform md:duration-[250ms] md:ease-[cubic-bezier(0.4,0,0.2,1)] md:will-change-transform md:group-hover:-translate-y-12"
-              sizes="(max-width: 768px) 100vw, 50vw"
+              // Grid is 2-col up to lg, 3-col on lg+ — match the real slot widths
+              // so the browser doesn't fetch a full-width image for a half/third card.
+              sizes="(max-width: 1024px) 50vw, 33vw"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-bg-card">
