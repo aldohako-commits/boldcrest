@@ -97,16 +97,14 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
   const touchStartY = useRef(0)
   // Cover-slide wheel state (refs so they survive handler re-creation):
   // accumulated intent within one continuous gesture, the last wheel timestamp
-  // (drives both the accumulation reset and the momentum gap test), a momentum
-  // "swallow" flag set on a snap, and the magnitude of the last swallowed event.
-  // The swallow is gap-based: it absorbs the trailing inertia for exactly as long
-  // as the wheel stream keeps flowing and releases the moment it pauses (a real
-  // gesture boundary) or the user out-pushes the decaying tail — using
+  // (drives both the accumulation reset and the momentum gap test), and a
+  // momentum "swallow" flag set on a snap. The swallow is gap-based: it absorbs
+  // the trailing inertia for exactly as long as the wheel stream keeps flowing
+  // and releases the moment it pauses (a real gesture boundary) — using
   // timestamps only, so there's no timer to orphan and it can't get stuck.
   const wheelAccum = useRef(0)
   const lastWheelTs = useRef(0)
   const swallowActive = useRef(false)
-  const lastMomMag = useRef(0)
   const lenis = useLenis()
 
   const hasBody = post.body && post.body.length > 0
@@ -156,16 +154,17 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
 
       // Gap-based momentum swallow: after a snap, absorb the trailing trackpad
       // inertia so a hard flick can't overshoot into the article. Inertia is a
-      // continuous, decaying stream — keep eating it (and pin the article to the
-      // top) while events keep flowing. Release the instant the stream pauses
-      // (>120ms gap = a real new gesture) or the user out-pushes the decaying
-      // tail, then stay released for the rest of that gesture.
+      // continuous stream of wheel events (~60fps) — keep eating ALL of it (and
+      // pin the article to the top) while the stream keeps flowing, however long
+      // it lasts. Release only when the stream pauses (>150ms gap = the user has
+      // lifted off and started a real new gesture). No magnitude heuristic:
+      // real macOS inertia isn't monotonic (it can ramp up at the start / jitter),
+      // and reacting to that released mid-inertia and let it scroll in deep.
       if (swallowActive.current) {
-        if (gap > 120 || absdy > lastMomMag.current * 1.3 + 8) {
+        if (gap > 150) {
           swallowActive.current = false
         } else {
           e.preventDefault()
-          lastMomMag.current = absdy
           if (current === 1 && articleRef.current) articleRef.current.scrollTop = 0
           return
         }
@@ -186,7 +185,6 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
           if (wheelAccum.current >= 28) {
             wheelAccum.current = 0
             swallowActive.current = true
-            lastMomMag.current = absdy
             goTo(1)
           }
         }
@@ -199,7 +197,6 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
       if (dy < 0 && art && art.scrollTop <= 0) {
         e.preventDefault()
         swallowActive.current = true
-        lastMomMag.current = absdy
         goTo(0)
       }
     }
