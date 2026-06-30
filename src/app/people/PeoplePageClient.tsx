@@ -93,7 +93,7 @@ const FOUNDERS_PHOTO: string = '/People - Photos/Old 2.png'
 
 /* ── Auto-scrolling + draggable team-photo strip (b&w → color on hover) ── */
 const PHOTOS = [1, 2, 3, 4, 5, 6, 7]
-const PhotoMarquee = memo(function PhotoMarquee({ photos }: { photos: StripPhoto[] }) {
+const PhotoMarquee = memo(function PhotoMarquee({ photos, className = '' }: { photos: StripPhoto[]; className?: string }) {
   // 4 copies = a long-enough ring; items are RECYCLED (head → tail) so the loop is
   // seamless regardless of the count.
   const repeated = [...photos, ...photos, ...photos, ...photos]
@@ -239,7 +239,7 @@ const PhotoMarquee = memo(function PhotoMarquee({ photos }: { photos: StripPhoto
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
       onDragStart={(e) => e.preventDefault()}
-      className="relative min-h-0 w-full flex-1 cursor-grab touch-pan-y select-none overflow-hidden active:cursor-grabbing"
+      className={`relative min-h-0 w-full flex-1 cursor-grab touch-pan-y select-none overflow-hidden active:cursor-grabbing ${className}`}
     >
       <div ref={trackRef} className="flex h-full w-max will-change-transform">
         {repeated.map((p, i) => (
@@ -1004,17 +1004,18 @@ export default function PeoplePageClient({
           {/* Gap between the copy and the photo band, sized to MATCH the nav-logo →
               "People" label gap (logo bottom ≈57px, label top = the copy's pt → 63px
               gap; pt drops to 92px on short screens → 35px gap). The band below is
-              flex-1, so it still fills ALL remaining height down to the bottom edge —
-              no void/black bar. Both are dropped in landscape-short: the strip is a
-              cramped micro-carousel at 390px tall, so the hero is just the copy there. */}
-          {!isLandscapeShort && (
-            <>
-              <div aria-hidden className="h-[63px] shrink-0 [@media(max-height:780px)]:h-[35px]" />
+              flex-1, so on the deck it fills ALL remaining height down to the bottom
+              edge — no void/black bar. */}
+          <div aria-hidden className="h-[63px] shrink-0 [@media(max-height:780px)]:h-[35px] landscape-short:h-6!" />
 
-              {/* Photo band — auto-scrolling, draggable, b&w → color on hover (5 shown). */}
-              <PhotoMarquee photos={stripPhotos} />
-            </>
-          )}
+          {/* Photo band — auto-scrolling, draggable, b&w → color on hover (5 shown).
+              On the landscape-short SCROLL page there's no fixed-height parent to
+              flex into, so flex-1 would collapse to nothing; give it an explicit,
+              generous height there (NOT the cramped micro-strip) via flex-none. */}
+          <PhotoMarquee
+            photos={stripPhotos}
+            className="landscape-short:flex-none! landscape-short:h-[220px]!"
+          />
         </section>
 
         {/* ═══════════════════════════════════════════
