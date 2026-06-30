@@ -161,15 +161,18 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
       // stream (~60fps) — eat it (and pin the article to the top) while it flows.
       // Release when EITHER:
       //  • the stream pauses (>150ms gap) — the user lifted off, real new gesture; or
-      //  • past the inertia ramp window (>220ms after the snap) a clearly larger
-      //    push arrives (>2.6× the dying tail) — a deliberate new flick. The ramp
-      //    gate + the big multiplier keep real inertia (which ramps up then jitters
-      //    by only small amounts) from ever tripping the release mid-glide.
+      //  • past the inertia ramp window (>180ms after the snap) a clearly larger
+      //    push arrives — a deliberate NEW flick to scroll the body right away.
+      // Why 1.5× is safe: once past the ramp gate, real inertia only ever DECAYS
+      // (each event ≤ the previous), so it can never satisfy `> last × 1.5`; only
+      // an abrupt re-flick can. The gate skips the brief ramp-up where inertia
+      // momentarily grows. So this lets you re-scroll immediately without ever
+      // mis-releasing mid-glide (which would drift the body deeper).
       if (swallowActive.current) {
         const sinceSnap = e.timeStamp - swallowStart.current
         if (gap > 150) {
           swallowActive.current = false
-        } else if (sinceSnap > 220 && absdy > lastMomMag.current * 2.6 + 12) {
+        } else if (sinceSnap > 180 && absdy > lastMomMag.current * 1.5 + 12) {
           swallowActive.current = false
         } else {
           e.preventDefault()
@@ -179,7 +182,10 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
         }
       }
 
-      if (isLocked) { e.preventDefault(); return }
+      // NOTE: no blanket `isLocked` wheel-block here. The swallow above already
+      // absorbs the post-snap inertia, and goTo() keeps its own isLocked guard —
+      // so we don't need to freeze the body's native scroll for the whole 0.6s
+      // transition (that froze re-scrolling far longer than necessary).
 
       if (current === 0) {
         e.preventDefault()
