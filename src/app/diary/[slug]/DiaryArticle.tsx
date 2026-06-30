@@ -156,11 +156,11 @@ export default function DiaryArticle({ post, morePosts = [] }: { post: DiaryPost
 
       // Momentum swallow: after a snap, absorb the WHOLE trailing trackpad inertia
       // stream (and pin the article to the top) so a hard flick can never overshoot
-      // into the body. Release only when the stream pauses (>150ms gap = the user
+      // into the body. Release only when the stream pauses (>120ms gap = the user
       // lifted off and is starting a fresh gesture). No magnitude override — that's
       // the only way to guarantee it can't release mid-flick.
       if (swallowActive.current) {
-        if (gap > 150) {
+        if (gap > 120) {
           swallowActive.current = false
         } else {
           e.preventDefault()

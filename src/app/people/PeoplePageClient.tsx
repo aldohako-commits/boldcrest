@@ -691,12 +691,12 @@ export default function PeoplePageClient({
       lastWheelTs.current = e.timeStamp
 
       // Gap-based momentum swallow: after a step, eat the WHOLE continuous
-      // trackpad inertia stream until it PAUSES (>150ms gap = the user lifted
+      // trackpad inertia stream until it PAUSES (>120ms gap = the user lifted
       // off), so a hard flick's tail — however long it lasts — can never
       // accumulate into an extra step. No magnitude override (it mis-read real
       // inertia and let a hard flick skip), so nothing can release mid-flick.
       if (swallowActive.current) {
-        if (gap > 150) {
+        if (gap > 120) {
           swallowActive.current = false
         } else {
           return
