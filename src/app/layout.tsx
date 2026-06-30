@@ -8,11 +8,8 @@ import ImageGuard from '@/components/ImageGuard'
 import PageTransitionProvider from '@/components/PageTransition'
 import StartProjectProvider from '@/components/start-project/StartProjectProvider'
 import CookieBanner from '@/components/CookieBanner'
-import GoogleAnalytics from '@/components/GoogleAnalytics'
-import MetaPixel from '@/components/MetaPixel'
+import SiteAnalytics from '@/components/SiteAnalytics'
 import { SanityLive } from '@/sanity/lib/live'
-import { Analytics } from '@vercel/analytics/next'
-import { SpeedInsights } from '@vercel/speed-insights/next'
 
 const metropolis = localFont({
   src: [
@@ -173,11 +170,8 @@ export default function RootLayout({
           </PageTransitionProvider>
         </LenisProvider>
         <CookieBanner />
-        <GoogleAnalytics />
-        <MetaPixel />
         <SanityLive />
-        <Analytics />
-        <SpeedInsights />
+        <SiteAnalytics />
       </body>
     </html>
   )
