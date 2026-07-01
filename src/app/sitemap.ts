@@ -5,6 +5,11 @@ import { sitemapImageFrom } from '@/lib/seo'
 
 const BASE_URL = 'https://www.boldcrest.com'
 
+// Regenerate the sitemap at most hourly so newly published Sanity projects and
+// diary posts appear without needing a redeploy. (Without this the route is
+// baked at build time and new content is missing until the next deploy.)
+export const revalidate = 3600
+
 type SanityImage = { asset?: { _ref?: string } } | null
 
 interface ProjectRow {
