@@ -1138,12 +1138,6 @@ export default function PeoplePageClient({
                     The equation was simple, but powerful. Creative vision on one side. Business understanding on the other. Together, they became the foundation for what BoldCrest would grow into. We were 22, building our first team from the same university halls we were still walking through, driven by clear instinct, strong work ethic, and the belief that the market was ready for something sharper.
                   </p>
                 </FadeUp>
-
-                <FadeUp delay={0.2} active={active(2)}>
-                  <p className="text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.6]">
-                    At the time, social media was often treated as a place to post. We treated it as a place to think, build, and create. Not just content. Ideas.
-                  </p>
-                </FadeUp>
               </div>
             </div>
           </div>
