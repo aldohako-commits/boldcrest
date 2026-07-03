@@ -1129,13 +1129,13 @@ export default function PeoplePageClient({
 
                 <FadeUp delay={0.1} active={active(2)}>
                   <p className="text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.6]">
-                    BoldCrest began where two different strengths met. Xhulio brought the visual discipline, the instinct for form, and the ability to turn ideas into images with character. Aldo brought the relationships, the conversations, and the trust needed to turn one project into a long term partnership.
+                    BoldCrest began where two different strengths met. Xhulio brought the visual discipline, the instinct for form, and the ability to turn ideas into images with character. Aldo brought the relationships, the conversations, and the trust needed to turn one project into a long-term partnership.
                   </p>
                 </FadeUp>
 
                 <FadeUp delay={0.15} active={active(2)}>
                   <p className="text-[0.875rem] leading-[1.6] text-text-secondary md:text-[1rem] md:leading-[1.6]">
-                    The equation was simple, but powerful. Creative vision on one side. Business understanding on the other. Together, they became the foundation for what BoldCrest would grow into. We built our first team from the same university halls we were still walking through. We were 22. We did not have the luxury of waiting until everything looked perfect, so we started with what we had, a clear instinct, a strong work ethic, and the belief that the market was ready for something sharper.
+                    The equation was simple, but powerful. Creative vision on one side. Business understanding on the other. Together, they became the foundation for what BoldCrest would grow into. We were 22, building our first team from the same university halls we were still walking through, driven by clear instinct, strong work ethic, and the belief that the market was ready for something sharper.
                   </p>
                 </FadeUp>
 
