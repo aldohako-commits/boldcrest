@@ -199,6 +199,11 @@ export default function Header() {
               href={`${linkBase}/`}
               aria-label="BoldCrest — home"
               className="z-10 flex items-center"
+              // Anchors are natively draggable: a tap with a few px of finger/
+              // mouse travel starts a link-drag and Chrome flashes its drag
+              // ghost (URL pill + broken-image placeholder) over the menu.
+              draggable={false}
+              onDragStart={(e) => e.preventDefault()}
               // NOTE: the logo does NOT fade when the menu opens. Its position
               // matches the menu's logo, so keeping it solid makes the crest read
               // as one static logo through the open/close (only the hamburger↔X
