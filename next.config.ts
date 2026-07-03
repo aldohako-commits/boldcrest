@@ -58,9 +58,11 @@ const nextConfig: NextConfig = {
       // Renamed /work project slugs (old WordPress slugs → current Sanity slugs).
       // These still appear in GSC's internal-links graph from the old crawl;
       // 301 them to preserve link equity and stop the old URLs 404-ing.
+      // NOTE: "Allure Clean Forms" is an unpublished draft, so its project page
+      // 404s. Point the old URL to the portfolio index instead of a dead end.
       {
         source: "/work/allure-beauty-elegance-in-clean-forms",
-        destination: "/work/allure-beauty-clean-forms-of-beauty",
+        destination: "/work",
         permanent: true,
       },
       {
@@ -108,9 +110,11 @@ const nextConfig: NextConfig = {
         destination: "/work/albita-nostalgia-rewrapped",
         permanent: true,
       },
+      // NOTE: "Ama Caffe" is an unpublished draft, so its project page 404s.
+      // Point the old URL to the portfolio index instead of a dead end.
       {
         source: "/work/ama-caffe-capturing-coffee-culture-in-vivid-frames",
-        destination: "/work/ama-caffe-coffee-culture-captured",
+        destination: "/work",
         permanent: true,
       },
       {
@@ -121,6 +125,63 @@ const nextConfig: NextConfig = {
       {
         source: "/work/frenkcreative-from-lights-to-events-branding",
         destination: "/work/frenkcreative-lighting-up-events",
+        permanent: true,
+      },
+      // Old WordPress project URLs whose current project is an UNPUBLISHED draft
+      // (or wasn't migrated). Their /work/<slug> pages 404, so send the old URLs
+      // to the portfolio index rather than dead-ending. Repoint to the specific
+      // project if/when it's published.
+      {
+        source: "/work/fentimans-bold-botanicals-meeting-luxurious-flair",
+        destination: "/work",
+        permanent: true,
+      },
+      {
+        source: "/work/infratech-a-story-of-precision-legacy-branding",
+        destination: "/work",
+        permanent: true,
+      },
+      {
+        source: "/work/nfma-celebrating-strength-self-love",
+        destination: "/work",
+        permanent: true,
+      },
+      {
+        source: "/work/happy-pizza-crafting-joyful-branding-for-pizza-lovers",
+        destination: "/work",
+        permanent: true,
+      },
+      {
+        source: "/work/allure-beauty-aesthetic-excellence-in-beauty",
+        destination: "/work",
+        permanent: true,
+      },
+      // Old WordPress project slugs whose current project IS published — 301 to
+      // the live project page to preserve link equity.
+      {
+        source: "/work/hako-simply-delicious-2",
+        destination: "/work/hako-simply-delicious",
+        permanent: true,
+      },
+      {
+        source: "/work/timeless-crafting-a-minimalistic-logo-for-the-fashion-forward",
+        destination: "/work/timeless-minimal-but-timeless",
+        permanent: true,
+      },
+      // Old WordPress non-portfolio pages → current equivalents.
+      {
+        source: "/join-our-team",
+        destination: "/people",
+        permanent: true,
+      },
+      {
+        source: "/branding",
+        destination: "/services",
+        permanent: true,
+      },
+      {
+        source: "/cookie-policy-eu",
+        destination: "/cookie-policy",
         permanent: true,
       },
       // Old WordPress diary used nested category paths (/diary/insights/…,
