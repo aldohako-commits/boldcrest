@@ -706,8 +706,15 @@ export default function PeoplePageClient({
       // Fixed window from the snap. Middle ground (1150ms): long enough to absorb
       // most of a hard flick's momentum tail (fewer skips) but a FIXED, predictable
       // wait — not "absorb until all momentum dies", which felt too slow to re-step.
-      swallowUntil.current = e.timeStamp + TRANSITION_DURATION + 450
-      goTo(current + dir)
+      // EXCEPTION — the founders slide ("The Equation", index 2) must never be
+      // flicked past: absorb the inertia tail much longer when LANDING on it (either
+      // direction) so it is always a resting stop. Every other slide keeps the fast
+      // re-step. This is still a deadline (it lapses on its own), so a fresh,
+      // deliberate scroll always advances off it — no input is ever blocked, and
+      // touch/trackpad scrolling itself is unchanged.
+      const dest = current + dir
+      swallowUntil.current = e.timeStamp + TRANSITION_DURATION + (dest === 2 ? 1100 : 450)
+      goTo(dest)
     }
 
     el.addEventListener('wheel', onWheel, { passive: false })
