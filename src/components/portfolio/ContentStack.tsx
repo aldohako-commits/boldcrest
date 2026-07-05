@@ -144,6 +144,13 @@ export default function ContentStack({
         // the rest stay lazy.
         const isFirstImage = !firstImageRendered
         firstImageRendered = true
+        // Reserve the slide's REAL aspect before the image loads. With a hardcoded
+        // 1800×1200 + `h-auto`, every non-3:2 slide (portrait/square Behance frames)
+        // GREW on load — thousands of px of layout shift on long portfolios, which
+        // made the rail's snap positions stale mid-scroll (fast drag-scrubs and
+        // clicks landed one slide short of the target). The native ratio is encoded
+        // in the Sanity ref, so the box can be exact from the first paint.
+        const nativeAspect = refAspect(ref) || FALLBACK_ASPECT
         items.push({
           type: 'image',
           key: img._key,
@@ -162,7 +169,7 @@ export default function ContentStack({
                 src={urlFor(source).width(1800).quality(85).url()}
                 alt={img.alt || baseAlt}
                 width={1800}
-                height={1200}
+                height={Math.round(1800 / nativeAspect)}
                 {...(isFirstImage
                   ? { priority: true }
                   : { loading: 'lazy' as const })}
@@ -174,7 +181,7 @@ export default function ContentStack({
             </div>
           ),
           thumbSource: source,
-          aspect: refAspect(ref) || FALLBACK_ASPECT,
+          aspect: nativeAspect,
           half: img.half,
         })
       }
@@ -413,6 +420,36 @@ export default function ContentStack({
         /* ignore */
       }
       scrub.current.captured = false
+    }
+    // A fast drag can outrun the FROZEN geometry: lazy content loading during the
+    // scrub grows the document, so the frozen snaps (and Lenis's cached limit)
+    // land the page short of where the marker points — most visibly at the very
+    // end, where the line touched the last thumbnail but reconciled back one
+    // slide. On a real drag's release, re-map the final cursor position through
+    // LIVE snaps (+ a refreshed Lenis limit) and re-issue the jump. When nothing
+    // changed mid-drag this recomputes the exact same target, so it's a no-op.
+    const g = scrubGeom.current
+    if (e.type === 'pointerup' && scrub.current.moved && g && total > 0) {
+      const rail = railRef.current
+      const railTop = rail ? rail.getBoundingClientRect().top : g.railTop
+      const centers = g.buttons.map((bt) => bt.top + bt.h / 2)
+      const last = centers.length - 1
+      const my = Math.min(centers[last], Math.max(centers[0], e.clientY - railTop))
+      let i = 0
+      for (let k = 0; k < last; k++) {
+        if (my >= centers[k]) i = k
+        else break
+      }
+      const c0 = centers[i]
+      const c1 = i < last ? centers[i + 1] : c0
+      const f = c1 > c0 ? (my - c0) / (c1 - c0) : 0
+      const snaps = getSnaps() // LIVE snaps — the frozen ones may be stale by now
+      const s0 = snaps[i]
+      const s1 = i < snaps.length - 1 ? snaps[i + 1] : s0
+      const target = s0 + f * (s1 - s0)
+      lenis?.resize() // refresh the cached limit so the jump isn't clamped short
+      if (lenis) lenis.scrollTo(target, { immediate: true, force: true })
+      else window.scrollTo(0, target)
     }
     scrub.current.active = false
     scrubGeom.current = null
