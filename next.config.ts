@@ -34,6 +34,14 @@ const nextConfig: NextConfig = {
         destination: "/work/ak-invest-fast-secure-transfers",
         permanent: true,
       },
+      // Queen Lula project slug shortened (client corrected to Lufra®, tagline
+      // "Long Live the Queen" dropped from the name/URL). 301 the old slug so
+      // Behance/Pinterest/Google links keep resolving.
+      {
+        source: "/work/queen-lula-long-live-the-queen",
+        destination: "/work/queen-lula",
+        permanent: true,
+      },
       // Anmetal lived under the old WordPress /services/ path; it's now a
       // project page. 301 to the live slug so the indexed URL consolidates.
       {
