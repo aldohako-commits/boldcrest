@@ -16,5 +16,12 @@ export default function StartProjectPage() {
     router.replace('/')
   }, [open, router])
 
-  return null
+  /* The layout renders <Footer /> as a permanent sibling of the page. While this
+     redirect page is mounted the <main> is empty, so the footer would sit right
+     under the header — visible through the lightly-dimmed chat backdrop — until
+     router.replace('/') streams the home content in and pushes it down (the
+     "footer first, then jumps up to the hero" flash). A full-screen cover in the
+     site background colour hides the empty main + footer until '/' takes over.
+     z-[1000] keeps it below the chat backdrop (z-1900) and panel (z-2000). */
+  return <div aria-hidden className="fixed inset-0 z-[1000] bg-bg" />
 }
