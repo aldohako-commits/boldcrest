@@ -49,6 +49,14 @@ const nextConfig: NextConfig = {
         destination: "/work/anmetal-forged-through-design",
         permanent: true,
       },
+      // Google also has an older Anmetal /services URL indexed under a different
+      // tagline slug ("recipe" variant) that still 404s — send it to the same
+      // live project page.
+      {
+        source: "/services/anmetal-your-recipe-comes-first-2",
+        destination: "/work/anmetal-forged-through-design",
+        permanent: true,
+      },
       // Javy Coffee wasn't migrated as its own project — send the old indexed
       // URL to the portfolio index rather than letting it 404.
       {

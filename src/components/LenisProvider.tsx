@@ -27,6 +27,18 @@ export default function LenisProvider({ children }: { children: ReactNode }) {
 
     if (isMobile || prefersReduced) return
 
+    // On a client route change this effect re-runs, and a fresh Lenis instance
+    // reads window.scrollY at construction. If you navigated while the previous
+    // page's Lenis was still mid-scroll, that value is a stale mid-page position
+    // and the new page would "open from the middle" — so pin the window to the
+    // top first. EXCEPT on browser back/forward (popstate), where the user
+    // expects to land exactly where they left off: there we leave the restored
+    // scroll position alone. (`__navIsPop` is set by the popstate listener in
+    // PageTransition and reset on the next forward navigation.)
+    if (!(window as any).__navIsPop) {
+      window.scrollTo(0, 0)
+    }
+
     const instance = new Lenis({
       duration: 1.2,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),

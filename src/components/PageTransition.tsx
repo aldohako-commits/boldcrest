@@ -39,19 +39,66 @@ export default function PageTransitionProvider({
   const prevPathname = useRef(pathname)
   const readyForWipeOut = useRef(false)
 
-  // Force scroll to top on every pathname change
+  // ── Scroll behaviour across navigations ─────────────────────────────────
+  // Forward navigation (link click / fresh load) always lands at the TOP of the
+  // new page. Browser back/forward returns you to exactly where you left off.
+  // Next + Lenis don't restore scroll on their own — Lenis re-initialises to 0
+  // on the route remount — so we remember each history entry's scroll position
+  // ourselves (keyed by full URL on `window.__scrollMem`) and re-apply it.
+  const curUrlRef = useRef<string>('')
+
+  // On back/forward: remember where we were on the page we're leaving (its scroll
+  // is still current at popstate time) and flag the nav as a pop so the reset
+  // below — and the matching one in LenisProvider — restore instead of top.
   useEffect(() => {
-    window.scrollTo(0, 0)
-    // Also reset Lenis if present
-    const lenisEl = document.querySelector('[data-lenis-prevent]')
-    if ((window as any).__lenis) {
-      ;(window as any).__lenis.scrollTo(0, { immediate: true })
+    const mem = ((window as any).__scrollMem ||= {})
+    const onPop = () => {
+      if (curUrlRef.current) mem[curUrlRef.current] = window.scrollY
+      ;(window as any).__navIsPop = true
     }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+
+  // On every committed pathname change: forward → top; back/forward → restore the
+  // remembered offset. The restore is re-asserted across a few frames because the
+  // destination page's content (and therefore its scroll height) finishes laying
+  // out slightly after this effect runs — otherwise a tall page can't yet reach
+  // the saved offset and the browser clamps it short.
+  useEffect(() => {
+    const mem = ((window as any).__scrollMem ||= {})
+    const key = window.location.pathname + window.location.search
+    if ((window as any).__navIsPop) {
+      const y = mem[key]
+      if (typeof y === 'number') {
+        const apply = () => {
+          window.scrollTo(0, y)
+          if ((window as any).__lenis) (window as any).__lenis.scrollTo(y, { immediate: true })
+        }
+        apply()
+        requestAnimationFrame(apply)
+        setTimeout(apply, 90)
+        setTimeout(apply, 220)
+      }
+    } else {
+      window.scrollTo(0, 0)
+      if ((window as any).__lenis) {
+        ;(window as any).__lenis.scrollTo(0, { immediate: true })
+      }
+    }
+    curUrlRef.current = key
   }, [pathname])
 
   const navigate = useCallback(
     (href: string) => {
       if (href === pathname || transitioning.current) return
+
+      // Remember where we are on the page we're leaving so browser-back returns
+      // here, then mark this as a forward nav (the reset effects force top).
+      ;((window as any).__scrollMem ||= {})[
+        window.location.pathname + window.location.search
+      ] = window.scrollY
+      ;(window as any).__navIsPop = false
 
       transitioning.current = true
       readyForWipeOut.current = false
