@@ -84,16 +84,36 @@ export default function VimeoEmbed({
         if (playerRef.current) return
         const player = new Player(iframe)
         playerRef.current = player
-        // Hide the cover overlay only once the clip actually starts playing. If
-        // autoplay is blocked (iOS low-power), this never fires → cover stays.
-        player.on('play', () => setBgPlaying(true))
-        return player.ready().then(() => {
-          const side = Math.max(iframe.clientWidth, iframe.clientHeight)
-          const need = side * (window.devicePixelRatio || 1)
-          const q =
-            need <= 0 ? '1080p' : need <= 540 ? '540p' : need <= 720 ? '720p' : '1080p'
-          return player.setQuality(q).catch(() => {})
-        })
+
+        // Fire once, the moment the clip is genuinely playing: fade the cover and
+        // — only then, a beat later — nudge to the retina rendition. This closes
+        // two cold-first-load races that left loops looking dead on a new device:
+        //   1. On a fresh load the SDK often finishes attaching AFTER the iframe's
+        //      URL-driven autoplay has already emitted its 'play', so that event
+        //      is missed and the cover stays up over a clip that IS playing.
+        //      Listening to 'timeupdate' as well catches that missed start.
+        //   2. Calling setQuality() during the still-settling initial autoplay
+        //      makes Vimeo swap renditions mid-start, which sometimes left the
+        //      clip paused. Deferring it until playback is underway (plus a short
+        //      delay) keeps the autoplay intact — the retina bump still happens.
+        // If autoplay is truly blocked (iOS low-power), neither event fires, so
+        // the cover correctly stays and nothing is forced.
+        let started = false
+        const onStarted = () => {
+          if (started) return
+          started = true
+          setBgPlaying(true)
+          window.setTimeout(() => {
+            const side = Math.max(iframe.clientWidth, iframe.clientHeight)
+            const need = side * (window.devicePixelRatio || 1)
+            const q =
+              need <= 0 ? '1080p' : need <= 540 ? '540p' : need <= 720 ? '720p' : '1080p'
+            player.setQuality(q).catch(() => {})
+          }, 1000)
+        }
+        player.on('play', onStarted)
+        player.on('timeupdate', onStarted)
+        return player.ready().catch(() => {})
       })
       .catch(() => {})
   }
