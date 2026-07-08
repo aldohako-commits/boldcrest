@@ -17,13 +17,15 @@ interface VimeoEmbedProps {
   poster?: string | null
 }
 
-// The official Vimeo Player SDK, loaded once and shared. We use it for ONE thing:
-// pinning a retina-aware quality. Background players ignore the `quality` URL param
-// and the device pixel ratio, so a ~600px box on a 2× screen was served ~720p and
-// looked soft. setQuality() fixes that.
+// The official Vimeo Player SDK, loaded once and shared. We use it only to detect
+// when a background clip has actually started playing, so we can fade its cover.
+// NOTE: we deliberately do NOT call setQuality() to pin a retina rendition anymore.
+// Background players ignore the `quality` URL param, so setQuality has to switch
+// renditions mid-playback — and on large clips (e.g. 2160×2160) that switch
+// re-buffers and stalled the loop ~2s in. Letting Vimeo's adaptive stream choose
+// keeps loops smooth (slightly softer on 2× screens — an acceptable trade).
 type VimeoPlayer = {
   ready: () => Promise<void>
-  setQuality: (q: string) => Promise<string>
   on: (event: string, callback: () => void) => void
 }
 type VimeoPlayerCtor = new (el: HTMLIFrameElement) => VimeoPlayer
@@ -73,9 +75,8 @@ export default function VimeoEmbed({
   const playerRef = useRef<VimeoPlayer | null>(null)
   const [bgPlaying, setBgPlaying] = useState(false)
 
-  // Once the frame is loaded, attach the SDK player and pin a retina-aware rendition:
-  // smallest quality that covers the box at the device's pixel density, capped at
-  // 1080p so we never pull 2K/4K for a small looping clip.
+  // Once the frame is loaded, attach the SDK player only to learn when the clip is
+  // actually playing, so we can fade the cover off it.
   const onIframeLoad = () => {
     const iframe = iframeRef.current
     if (!iframe || playerRef.current) return
@@ -85,31 +86,18 @@ export default function VimeoEmbed({
         const player = new Player(iframe)
         playerRef.current = player
 
-        // Fire once, the moment the clip is genuinely playing: fade the cover and
-        // — only then, a beat later — nudge to the retina rendition. This closes
-        // two cold-first-load races that left loops looking dead on a new device:
-        //   1. On a fresh load the SDK often finishes attaching AFTER the iframe's
-        //      URL-driven autoplay has already emitted its 'play', so that event
-        //      is missed and the cover stays up over a clip that IS playing.
-        //      Listening to 'timeupdate' as well catches that missed start.
-        //   2. Calling setQuality() during the still-settling initial autoplay
-        //      makes Vimeo swap renditions mid-start, which sometimes left the
-        //      clip paused. Deferring it until playback is underway (plus a short
-        //      delay) keeps the autoplay intact — the retina bump still happens.
-        // If autoplay is truly blocked (iOS low-power), neither event fires, so
-        // the cover correctly stays and nothing is forced.
+        // Fade the cover the moment the clip is genuinely playing. On a cold first
+        // load the SDK often finishes attaching AFTER the iframe's URL-driven
+        // autoplay has already emitted its 'play', so that event is missed and the
+        // cover would stay up over a clip that IS playing — listening to
+        // 'timeupdate' as well catches that missed start. Fires once via the guard.
+        // If autoplay is truly blocked (iOS low-power), neither event fires, so the
+        // cover correctly stays.
         let started = false
         const onStarted = () => {
           if (started) return
           started = true
           setBgPlaying(true)
-          window.setTimeout(() => {
-            const side = Math.max(iframe.clientWidth, iframe.clientHeight)
-            const need = side * (window.devicePixelRatio || 1)
-            const q =
-              need <= 0 ? '1080p' : need <= 540 ? '540p' : need <= 720 ? '720p' : '1080p'
-            player.setQuality(q).catch(() => {})
-          }, 1000)
         }
         player.on('play', onStarted)
         player.on('timeupdate', onStarted)
