@@ -12,6 +12,7 @@ const capabilities = [
     color: '#DA291C',
     heading: 'Brand Dev',
     abbr: 'BRND DEV',
+    href: '/services/brand-development',
     tags: [
       'Visual Identity',
       'Packaging Design',
@@ -35,6 +36,7 @@ const capabilities = [
     color: '#f9b311',
     heading: 'Still & Motion',
     abbr: 'STL & MTN',
+    href: '/services/still-motion',
     tags: [
       'Photography',
       'Videography',
@@ -59,6 +61,7 @@ const capabilities = [
     color: '#004c95',
     heading: 'Comms',
     abbr: 'COMMS',
+    href: '/services/communication',
     tags: [
       'Social Media',
       'Digital Marketing',
@@ -204,12 +207,17 @@ export default function ServiceCards() {
                   </p>
                 </div>
 
-                {/* Bottom: service tags */}
+                {/* Bottom: service tags. These point at the card's real service
+                    page, NOT a /work?service=<tag> filter: most tags here
+                    (Visual Identity, Logo Design, Motion Graphics, Media
+                    Planning…) are not values in the project `services` list, so
+                    those filters matched zero projects. Same reasoning as the
+                    footer's service column — link the indexable service pages. */}
                 <div className="flex flex-wrap gap-2">
                   {cap.tags.map((tag) => (
                     <Link
                       key={tag}
-                      href={`/work?service=${encodeURIComponent(tag)}`}
+                      href={cap.href}
                       className="rounded-full border px-3.5 py-1.5 text-[0.7rem] font-medium uppercase tracking-[0.05em] transition-all duration-200"
                       style={{
                         borderColor: 'var(--zone-fg-faint)',
