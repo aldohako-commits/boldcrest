@@ -136,7 +136,20 @@ export default function RootLayout({
               image: 'https://www.boldcrest.com/logo-1000.png',
               email: 'info@boldcrest.com',
               description: 'Creative agency offering brand development, photography, video, animation, and communication. 300+ projects, 30+ brands, 7+ years.',
-              address: { '@type': 'PostalAddress', addressLocality: 'Tirana', addressCountry: 'AL' },
+              foundingDate: '2019',
+              founder: [
+                { '@type': 'Person', name: 'Xhulio Joka' },
+                { '@type': 'Person', name: 'Aldo Hako' },
+              ],
+              // Full street address — kept identical to the primary Google Business
+              // Profile listing so Google resolves them to one entity (NAP match).
+              address: {
+                '@type': 'PostalAddress',
+                streetAddress: 'Olympic Residence, 37/1, Rruga Prokop Mima',
+                addressLocality: 'Tirana',
+                postalCode: '1019',
+                addressCountry: 'AL',
+              },
               sameAs: ['https://www.instagram.com/boldcrest/', 'https://www.behance.net/boldcrest', 'https://www.linkedin.com/company/boldcrest/', 'https://www.facebook.com/boldcrest', 'https://vimeo.com/boldcrest'],
             }),
           }}
