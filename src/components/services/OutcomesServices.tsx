@@ -1,7 +1,19 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, useInView } from 'framer-motion'
+
+// Stable anchor id for a capability, e.g. "Logo Design" → "logo-design".
+// Strips accents (Albanian ë/ç etc.) so ids stay ascii and URL-safe.
+function slugify(value: string) {
+  return value
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
 
 interface Outcome {
   title: string
@@ -36,6 +48,45 @@ export default function OutcomesServices({
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
   const [openIndex, setOpenIndex] = useState<number | null>(null)
+
+  // On mount, if the URL points at a capability (#logo-design), open it and
+  // scroll it into view. Lenis owns scrolling and intercepts window.scrollTo,
+  // so use its imperative API when present; below 768px and under
+  // prefers-reduced-motion Lenis is off, so fall back to native scrollIntoView.
+  useEffect(() => {
+    const hash = decodeURIComponent(window.location.hash.replace(/^#/, ''))
+    if (!hash) return
+
+    const index = services.findIndex((s) => slugify(s.name) === hash)
+    if (index === -1) return
+
+    setOpenIndex(index)
+
+    const scrollToItem = () => {
+      const el = document.getElementById(hash)
+      if (!el) return
+      const lenis = (window as { __lenis?: { scrollTo: (t: number, o?: object) => void } }).__lenis
+      if (lenis) {
+        const y = el.getBoundingClientRect().top + window.scrollY
+        lenis.scrollTo(y, { immediate: true })
+      } else {
+        el.scrollIntoView({ block: 'start' })
+      }
+    }
+
+    // Lenis initialises a frame or two after mount, and the section's content
+    // settles slightly later; re-assert across a few frames so the target is
+    // reachable regardless of which lands first.
+    const raf = requestAnimationFrame(scrollToItem)
+    const t1 = setTimeout(scrollToItem, 120)
+    const t2 = setTimeout(scrollToItem, 300)
+    return () => {
+      cancelAnimationFrame(raf)
+      clearTimeout(t1)
+      clearTimeout(t2)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <section ref={ref} className="px-[var(--gutter)] pt-0 pb-[var(--space-lg)]">
@@ -96,7 +147,11 @@ export default function OutcomesServices({
             {services.map((service, i) => {
               const isOpen = openIndex === i
               return (
-                <div key={service.name} className="border-t border-border/40 last:border-b">
+                <div
+                  key={service.name}
+                  id={slugify(service.name)}
+                  className="scroll-mt-24 border-t border-border/40 last:border-b"
+                >
                   <button
                     type="button"
                     onClick={() => setOpenIndex(isOpen ? null : i)}
