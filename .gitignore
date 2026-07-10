@@ -42,6 +42,10 @@ yarn-error.log*
 # Claude local working dir (launch configs, worktrees) — never commit
 /.claude
 
+# Claude workspace: internal notes and third-party reference material. This
+# repo is public — memory lives in the private boldcrest/boldcrest-claude.
+/_Claude
+
 # Team headshots live in Sanity, not the repo
 /public/Team Photos
 
