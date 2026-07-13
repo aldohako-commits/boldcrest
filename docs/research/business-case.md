@@ -96,7 +96,7 @@ Anchors: Dentalino (Serbia) €20–30/mo = regional dental price floor; ANS £2
 | Fiscalization certification proves slow/costly | Med / High | Launch via certified partner API (devPOS/easyPos); certify own stack later; confirm DPT requirements in month 1 |
 | Albania-only revenue too small | High / Med | Tourism transaction layer + regional expansion are core to the plan, not options; gate hiring to expansion milestones |
 | Price sensitivity worse than modeled (VAT drag, cash habits) | Med / Med | Solo tier at €19; annual prepay discounts; transaction-funded economics on tourism tier |
-| **DenteX entrenches as the default tourism CRM before we launch** | Med / High | Differentiate on clinical depth + aesthetics + published pricing; move fast on design partners; consider partnership/coexistence (they're CRM, we're EMR) if they've locked the top clinics |
+| **DenteX entrenches as the default tourism CRM before we launch** | Low–Med / Med (downgraded after teardown: no verifiable customers, no registry entity, no reviews, no patient-side product — see `competitor-teardowns.md`) | Differentiate on clinical depth + aesthetics + patient booking/portal + published pricing; move fast on design partners |
 | Pabau or Fresha localizes for the Balkans | Low–Med / High | Move fast on fiscalization + tourism workflows (they won't build Albanian tax integration for a small market); lock in facilitator channel |
 | Aesthetics regulatory shock (Botox status, further raids) | Med / Med (aesthetics module only) | Lead aesthetics with compliance/traceability; keep dental as revenue backbone |
 | Health-data breach / Law 124-2024 enforcement | Low / Severe | GDPR-grade architecture from day one; DPO; EEA hosting; audit trails — also a selling point |

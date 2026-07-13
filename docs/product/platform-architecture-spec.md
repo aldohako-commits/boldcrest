@@ -35,6 +35,7 @@ This means the two verticals are mostly **configuration + specialized UI** over 
 ### 2.4 Communications & reminders
 - Template-based messaging over SMS / WhatsApp / email with delivery tracking, in Albanian/Italian/English; automated reminder schedules per appointment type (the Cochrane-proven no-show lever).
 - Two-way inbox on the patient timeline (DenteX's WhatsApp-unification is table stakes for tourism clinics).
+- **Compliance boundary (regulatory memo, Guideline 2/2025):** WhatsApp and personal apps are prohibited for exchanging *health data*. Design rule: WhatsApp/SMS carry scheduling, reminders, and links only; clinical content (records, x-rays, treatment plans, photos) travels exclusively through the secure patient portal, with the message templates enforcing this split. This is a differentiator — DenteX and BeautyBooking route clinical conversations through WhatsApp.
 
 ### 2.5 Recall / protocol engine ⭐ (the differentiating core asset)
 - A generic **protocol definition**: trigger (treatment performed / time since visit / manual) → schedule of follow-up actions (message, task, booking prompt) with escalation and stop conditions.
@@ -104,9 +105,17 @@ Vertical-agnostic by design — a dental implant journey and an aesthetics proce
 - **Design partners per vertical:** recruit separately (tourism-dental clinics ≠ medspas); one shared design-partner pool would bias the core toward whichever vertical shouts louder.
 - **Definition of "parallel" success:** both verticals demo on the same core build, and a mixed clinic (dental + aesthetics under one roof — common in Tirana) runs both modules on one account. That mixed-clinic case is also a sales wedge no competitor covers.
 
-## 8. Open questions (feed from other workstreams)
+## 8. Resolved inputs from the research workstreams
 
-- Fiscalization adapter: which partner API first (workstream #9 comparison) and does the certificate model force any invoice-flow constraint (compliance memo).
-- Injectable legality in Albania (aesthetics research) may reshape how prominent the injectable-inventory UX is at launch vs laser/skin treatments.
-- DenteX teardown may reveal tourism-module table-stakes not listed here — reconcile after teardown lands.
-- E-signature legal validity (AKSHI) determines whether consent e-signing is qualified-signature-grade or click-to-sign-with-audit-trail.
+- **Fiscalization adapter:** integrate-first via easyPos or fature.al (public API docs, test environments); self-certification is legally unavailable to a startup (10-employee/30M-ALL-turnover/1-year-history criteria + 10M ALL guarantee — see `regulatory-compliance-memo.md`). Adapter must handle: NSLF/NIVF, QR rendering, offline queue with UII invoices + re-fiscalization, corrective invoices (no deletes), cash-deposit events, UBL 2.1 e-invoices. Onboarding must walk each clinic through its AKSHI e-certificate (4,000 ALL/yr).
+- **Injectables (aesthetics):** botox remains unregistered in Albania; only 4 specialist profiles may inject. Aesthetics module leads with legal treatments (fillers/lasers), practitioner-credential tracking, and provenance documentation; injectable inventory UX frames around CE-marked/registered products.
+- **E-signature:** click-to-sign with robust audit trail suffices for routine consent demonstrability under Law 124/2024; support QES (AKCESK/EU-qualified) for high-risk procedures. Wet-ink requirements still open with counsel.
+- **Teardown reconciliation:** the aesthetics parity bar (from Pabau's most-loved features) = consent forms auto-chained to bookings, before/after photos with capture stencils, injection plotting with automatic stock deduction, automated reminders. The tourism parity bar (from DenteX) = unified lead inbox, branded signable PDF quotes, travel calendar with flights/hotels per patient, affiliate tracking. Our additions neither has: patient online booking + portal, mobile apps, odontogram, imaging integrations, public API.
+- **Compliance features promoted to core** (Guideline 2/2025 requirements): per-record access audit trail (who/what/when), encrypted transit incl. mobile identity verification, retention/anonymization engine, "share abroad" flow with prior-information capture and Art. 27 transfer logging, breach-escalation runbook (processor→controller immediately, controller→Commissioner ≤72h), clinic license + technical-director credential capture at onboarding (II.6.A.3 dental / II.6.A.5 aesthetics), practitioner validation against the USSH register.
+
+## 9. Remaining open questions
+
+- DPO threshold ("large-scale") and standard DPA clauses — ask the IDP Commissioner.
+- Wet-ink consent requirements and telemedicine status for cross-border pre-consults — health-law counsel.
+- easyPos vs fature.al — decide after prototyping both APIs and reviewing white-label contract terms.
+- Dental-record retention periods under Albanian sector law (drives the retention engine defaults).
