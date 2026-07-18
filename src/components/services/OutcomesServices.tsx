@@ -54,8 +54,18 @@ export default function OutcomesServices({
   // so use its imperative API when present; below 768px and under
   // prefers-reduced-motion Lenis is off, so fall back to native scrollIntoView.
   useEffect(() => {
-    const hash = decodeURIComponent(window.location.hash.replace(/^#/, ''))
-    if (!hash) return
+    const raw = window.location.hash.replace(/^#/, '')
+    if (!raw) return
+
+    // decodeURIComponent throws URIError on a malformed escape ("#100%"), and an
+    // uncaught throw here would take the whole page down. A hash we can't decode
+    // simply isn't one of ours.
+    let hash: string
+    try {
+      hash = decodeURIComponent(raw)
+    } catch {
+      return
+    }
 
     const index = services.findIndex((s) => slugify(s.name) === hash)
     if (index === -1) return
@@ -67,7 +77,12 @@ export default function OutcomesServices({
       if (!el) return
       const lenis = (window as { __lenis?: { scrollTo: (t: number, o?: object) => void } }).__lenis
       if (lenis) {
-        const y = el.getBoundingClientRect().top + window.scrollY
+        // Read scroll-margin-top off the element rather than repeating the
+        // header height here: native scrollIntoView already honours it, so
+        // this keeps both paths clearing the fixed header by the same amount
+        // and leaves `scroll-mt-*` the single source of truth.
+        const offset = parseFloat(getComputedStyle(el).scrollMarginTop) || 0
+        const y = el.getBoundingClientRect().top + window.scrollY - offset
         lenis.scrollTo(y, { immediate: true })
       } else {
         el.scrollIntoView({ block: 'start' })
