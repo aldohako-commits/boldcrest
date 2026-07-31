@@ -70,14 +70,16 @@ export function proxy(req: NextRequest) {
   // Any other boldcrest.com subdomain isn't a real destination — DNS is
   // wildcarded (*.boldcrest.com → Vercel) so typos and retired subdomains
   // would otherwise silently serve the homepage (Next's routing is
-  // host-agnostic; only the rules above make a host special). Rewriting to a
-  // path with no matching route lets Next's own not-found.tsx render, with a
-  // real 404 status, instead of Vercel's bare "DEPLOYMENT_NOT_FOUND" or an
-  // unrelated page quietly loading under the wrong host.
+  // host-agnostic; only the rules above make a host special). REDIRECT
+  // (not rewrite) to the canonical host, same path: a rewrite would render
+  // the site under the wrong host, and every nav link on the page is
+  // relative, so visitors get stuck bouncing around the bad host forever
+  // with no way back to the real site. A path that's genuinely invalid
+  // still 404s normally — just on www.boldcrest.com, where the nav actually
+  // works.
   if (host.endsWith('.boldcrest.com') && !CANONICAL_HOSTS.has(host)) {
-    const url = req.nextUrl.clone()
-    url.pathname = '/not-found-trigger'
-    return NextResponse.rewrite(url)
+    const dest = new URL(req.nextUrl.pathname + req.nextUrl.search, CANONICAL_SITE)
+    return NextResponse.redirect(dest, 308)
   }
 
   // The public boldcrest.com/careers URL is retired — careers now lives at
