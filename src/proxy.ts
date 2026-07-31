@@ -25,19 +25,10 @@ const SUBDOMAIN_EMBEDS: Record<string, string> = {
  *
  * 307 (temporary) is used on purpose so the targets can change later without
  * browsers caching the old destination. Switch to 308 if a target is permanent.
- *
- * NOTE on `archive.boldcrest.com`: the office MikroTik overrides this host to the
- * NAS's LAN address (192.168.1.83) via split DNS, so in the office — and over the
- * WireGuard tunnel — it resolves straight to the NAS for SMB folder access and
- * never reaches Vercel. The redirect below is the OUTSIDE path only, kept as a
- * fallback so remote staff without the VPN still land on DSM.
- * `synology.boldcrest.com` is the canonical browser shortcut: it is not overridden
- * anywhere, so it hits QuickConnect from everywhere including inside the office.
  */
 const SUBDOMAIN_REDIRECTS: Record<string, string> = {
   'drive.boldcrest.com': 'https://boldarchive.cz1.quickconnect.to/?launchApp=SYNO.SDS.Drive.Application',
   'archive.boldcrest.com': 'http://quickconnect.to/BoldArchive',
-  'synology.boldcrest.com': 'http://quickconnect.to/BoldArchive',
 }
 
 /**
