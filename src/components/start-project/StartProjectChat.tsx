@@ -7,6 +7,19 @@ import { submitProjectForm } from './actions'
 import { botReply, greeting } from './replies'
 import { trackLead } from '@/lib/analytics'
 
+/**
+ * Single source of truth for "is this a usable email address".
+ *
+ * Both ways of leaving the email step — the OK button AND the Enter key — must
+ * use THIS regex. They used to disagree: the button tested the pattern but Enter
+ * only tested `.trim()` (non-empty), so hitting Return with e.g. "aldo" advanced
+ * happily. The malformed address then failed BOTH downstream integrations at
+ * submit time — ClickUp `400 Value is not a valid email` and Resend `422 Invalid
+ * reply_to` — while the visitor still saw the success state, silently losing the
+ * lead. (Observed in production 2026-08-31.)
+ */
+const EMAIL_RE = /^\S+@\S+\.\S+$/
+
 /* ════════════════════════════════════════════════════
    Types & data
 ══════════════════════════════════════════════════════ */
@@ -852,15 +865,18 @@ export default function StartProjectChat() {
   const handleSubmit = async () => {
     setStep('submitting')
     const fd = new FormData()
-    fd.set('name', a.name)
-    fd.set('position', a.position)
-    fd.set('company', a.company)
-    fd.set('email', a.email)
+    // Trim every free-text answer. Validation already tested `.trim()`, but the
+    // RAW value was submitted — so " aldo@boldcrest.com " passed the check and
+    // was then rejected by Resend/ClickUp for the surrounding whitespace.
+    fd.set('name', a.name.trim())
+    fd.set('position', a.position.trim())
+    fd.set('company', a.company.trim())
+    fd.set('email', a.email.trim())
     fd.set('services', a.services.join(', '))
-    fd.set('message', a.message)
-    fd.set('kickoff', a.kickoff)
-    fd.set('deadline', a.deadline)
-    fd.set('budget', a.budget)
+    fd.set('message', a.message.trim())
+    fd.set('kickoff', a.kickoff.trim())
+    fd.set('deadline', a.deadline.trim())
+    fd.set('budget', a.budget.trim())
     fd.set('source', a.source.join(', '))
     const res = await submitProjectForm(fd)
     if (res.success) {
@@ -1149,13 +1165,13 @@ export default function StartProjectChat() {
                   value={a.email}
                   type="email"
                   onChange={(v) => setA({ ...a, email: v })}
-                  onSubmit={() => a.email.trim() && advance()}
+                  onSubmit={() => EMAIL_RE.test(a.email.trim()) && advance()}
                   active={isActive('email')}
                 />
                 {isActive('email') && (
                   <div className="flex justify-end">
                     <OkButton
-                      disabled={!/^\S+@\S+\.\S+$/.test(a.email.trim())}
+                      disabled={!EMAIL_RE.test(a.email.trim())}
                       onClick={advance}
                     />
                   </div>
